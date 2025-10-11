@@ -17,7 +17,6 @@
             justify-content: center;
         }
 
-        /* Login Screen */
         .login-container {
             background: white;
             padding: 40px;
@@ -107,7 +106,6 @@
             display: block;
         }
 
-        /* Main App */
         #app {
             display: none;
             width: 100%;
@@ -427,7 +425,6 @@
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
     <div class="login-container" id="loginScreen">
         <div class="login-header">
             <div class="login-icon">🚰</div>
@@ -454,16 +451,15 @@
         </form>
 
         <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #999;">
-            Secure access only • Protected data
+            Demo: admin/admin123 or test/test123
         </div>
     </div>
 
-    <!-- Main Application -->
     <div id="app">
         <div class="header">
             <div class="header-left">
                 <h1>🚰 Water Business Expansion & Territory Planning Tool</h1>
-                <p><span id="poiCountHeader">75,231</span> POIs • 70 Distributors • Real-time Analysis</p>
+                <p><span id="poiCountHeader">Loading...</span> POIs • 70 Distributors • Real-time Analysis</p>
             </div>
             <div>
                 <span style="margin-right: 15px; font-size: 13px;" id="userDisplay"></span>
@@ -479,11 +475,10 @@
                     <button class="tab" data-tab="expansion">🎯 Expansion</button>
                 </div>
 
-                <!-- Overview Tab -->
                 <div class="tab-content active" id="overview-tab">
                     <div class="info-banner">
-                        ✅ <strong>POI Database Loaded</strong><br>
-                        75,231 POIs from DENSE_CONTINUOUS_POI file ready for analysis
+                        ✅ <strong>POI Database</strong><br>
+                        <span id="poiStatusText">Loading POI data...</span>
                     </div>
 
                     <div class="stats-panel">
@@ -498,11 +493,11 @@
                                 <span class="stat-label">Current Retailers</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="totalPOIs">75,231</span>
-                                <span class="stat-label">Total POIs (Loaded)</span>
+                                <span class="stat-value" id="totalPOIs">...</span>
+                                <span class="stat-label">Total POIs</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="coverage">9.3%</span>
+                                <span class="stat-value" id="coverage">...</span>
                                 <span class="stat-label">Market Coverage</span>
                             </div>
                         </div>
@@ -532,7 +527,7 @@
                         </label>
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📍 POIs <span style="color: #28a745; font-weight: 600;">(75K loaded ✓)</span></span>
+                            <span style="margin-left: 10px;">📍 POIs</span>
                         </label>
                         <label style="display: flex; align-items: center; cursor: pointer;">
                             <input type="checkbox" id="showCoverage" onchange="updateMap()">
@@ -554,7 +549,6 @@
                     </div>
                 </div>
 
-                <!-- Distributors Tab -->
                 <div class="tab-content" id="distributors-tab">
                     <div class="control-section">
                         <div class="section-title">Filter Distributors</div>
@@ -579,7 +573,6 @@
                     </div>
                 </div>
 
-                <!-- Expansion Tab -->
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
                         <div class="section-title">POI Filters</div>
@@ -598,15 +591,15 @@
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="newWSNeeded">500+</span>
+                                <span class="stat-value" id="newWSNeeded">...</span>
                                 <span class="stat-label">New WS Needed</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="investment">₹300Cr</span>
+                                <span class="stat-value" id="investment">...</span>
                                 <span class="stat-label">Investment</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="monthlyRev">₹150Cr</span>
+                                <span class="stat-value" id="monthlyRev">...</span>
                                 <span class="stat-label">Monthly Revenue</span>
                             </div>
                             <div class="stat-item">
@@ -623,9 +616,6 @@
                         </button>
                         <button class="action-btn" onclick="exportPOIs()">
                             📥 Export POIs (CSV)
-                        </button>
-                        <button class="action-btn" onclick="exportAllReports()">
-                            📊 Export All Reports
                         </button>
                     </div>
                 </div>
@@ -645,249 +635,77 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
-        // ===== CONFIGURATION =====
-const VALID_USERS = {
-    'admin': 'admin123',
-    'manager': 'manager123',
-    'soumen': 'soumen123',
-    'client': 'client123',
-    'test': 'test123'
-};
+        const VALID_USERS = {
+            'admin': 'admin123',
+            'manager': 'manager123',
+            'soumen': 'soumen123',
+            'client': 'client123',
+            'test': 'test123'
+        };
         
-        const SESSION_TIMEOUT = 120; // minutes
+        const SESSION_TIMEOUT = 120;
 
-        // ===== DISTRIBUTOR DATA =====
         const distributorsData = [
             {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC'},
             {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC'},
-            {name: 'AMOGH TRADERS', city: 'Tumakuru', retailers: 19, lat: 13.7416, lng: 76.9042, target: 1800000, sales: 81768, tsm: 'Shivakumar HC'},
             {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant'},
             {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC'},
-            {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3580126, tsm: 'Vacant'},
             {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant'},
             {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN'},
             {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC'},
-            {name: 'JUBILANT FOODWORKS LTD', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 0, sales: 529836, tsm: 'Vacant'},
             {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC'},
-            {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 3205870, tsm: 'Shivakumar HC'},
-            {name: 'PADMAVATU TRADERS', city: 'Belagavi', retailers: 42, lat: 15.8497, lng: 74.4977, target: 1800000, sales: 1767040, tsm: 'Shivakumar HC'},
-            {name: 'POORNAPRAJNA ENTERPRISES', city: 'Shivamogga', retailers: 63, lat: 13.8485, lng: 75.705, target: 900000, sales: 976093, tsm: 'Shivakumar HC'},
-            {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 2000000, sales: 1168169, tsm: 'Vacant'},
             {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant'},
-            {name: 'S S AGENCIES (BANGALORE)', city: 'Varthur', retailers: 188, lat: 13.0056, lng: 77.4982, target: 8000000, sales: 7538482, tsm: 'Vacant'},
-            {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4971709, tsm: 'Vacant'},
-            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'},
-            {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 630115, tsm: 'Shivakumar HC'},
-            {name: 'SHREE LAKSHMI ENTERPRISES', city: 'Ballari', retailers: 24, lat: 15.1394, lng: 76.9214, target: 1000000, sales: 1072265, tsm: 'Shivakumar HC'},
-            {name: 'SLN ENTERPRISES', city: 'Chikkaballapur', retailers: 37, lat: 13.4356, lng: 77.7311, target: 2000000, sales: 1924755, tsm: 'Srikanth BN'},
-            {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2414450, tsm: 'Shivakumar HC'}
+            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'}
         ];
 
-        // ===== POI DATA LOADING =====
-        // CSV will be loaded from GitHub repository
-        // OPTION 1: Load uncompressed CSV (if file is under 25MB)
-        //const POI_CSV_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.csv';
-        
-        // OPTION 2: Load compressed ZIP file (recommended for files over 25MB)
-        // const POI_ZIP_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
-        // Set USE_ZIP to true if using compressed file
-        const USE_ZIP = true;
-        const POI_ZIP_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
-
-        let pois = [];
-        let poisLoaded = false;
-
-        // Load POI data from CSV file
-        async function loadPOIData() {
-            try {
-                console.log('📥 Loading POI data...');
-                
-                let csvText;
-                
-                if (USE_ZIP) {
-                    // Load from ZIP file (for large files)
-                    console.log('📦 Loading compressed POI data...');
-                    const response = await fetch(POI_ZIP_URL);
-                    const blob = await response.blob();
-                    
-                    // Use JSZip library (loaded from CDN)
-                    const JSZip = window.JSZip;
-                    const zip = await JSZip.loadAsync(blob);
-                    const csvFile = Object.keys(zip.files)[0];
-                    csvText = await zip.files[csvFile].async('text');
-                } else {
-                    // Load from CSV directly
-                    const response = await fetch(POI_CSV_URL);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    csvText = await response.text();
-                }
-                
-console.log('✅ Data loaded, parsing CSV...');
-
-// Parse CSV
-const lines = csvText.trim().split('\n');
-const headers = lines[0].split('\t');
-
-console.log(`📊 Found ${lines.length - 1} POIs`);
-console.log('📋 Headers:', headers.slice(0, 10)); // Show first 10 headers
-console.log('📋 Sample data:', lines[1].split('\t').slice(0, 10)); // Show first 10 values
-
-// Find latitude and longitude column indices
-const latIndex = headers.findIndex(h => h.trim().toLowerCase().includes('lat'));
-const lngIndex = headers.findIndex(h => h.trim().toLowerCase().includes('lon'));
-console.log(`📍 Lat column: "${headers[latIndex]}" (index ${latIndex})`);
-console.log(`📍 Lng column: "${headers[lngIndex]}" (index ${lngIndex})`);
-
-let validCount = 0;
-let invalidCount = 0;
-
-for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue; // Skip empty lines
-    
-    const values = lines[i].split('\t');
-    const poi = {};
-    
-    headers.forEach((header, index) => {
-        poi[header.trim()] = values[index] ? values[index].trim() : '';
-    });
-    
-    // Convert to numbers - try different possible column names
-    const lat = parseFloat(poi.Latitude || poi.latitude || poi.lat || poi.LAT || 0);
-    const lng = parseFloat(poi.Longitude || poi.longitude || poi.lng || poi.LON || poi.LONGITUDE || 0);
-    
-    poi.Latitude = lat;
-    poi.Longitude = lng;
-    
-    // More lenient validation
-    if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-        pois.push(poi);
-        validCount++;
-    } else {
-        invalidCount++;
-        // Log first 3 rejected POIs to see what's wrong
-        if (invalidCount <= 3) {
-            console.log(`❌ Rejected POI row ${i}:`, {
-                lat_value: poi.Latitude || poi.latitude || poi.lat,
-                lng_value: poi.Longitude || poi.longitude || poi.lng,
-                parsed_lat: lat,
-                parsed_lng: lng,
-                first_5_columns: values.slice(0, 5)
-            });
-        }
-    }
-}
-
-console.log(`✅ Valid POIs: ${validCount}, ❌ Invalid: ${invalidCount}`);
-                
-    
-    // More lenient validation - accept any valid coordinates
-    if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
-        pois.push(poi);
-    } else {
-        // Debug: log why POI was rejected (remove after fixing)
-        if (i < 5) console.log('Rejected POI:', {lat, lng, sample: poi});
-    }
-}
-                
-                poisLoaded = true;
-                
-                // Update UI
-                document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
-                document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString();
-                
-                // Calculate coverage
-                const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
-                const coverage = (totalRetailers / pois.length * 100);
-                document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
-                
-                // Update expansion stats
-                const wsNeeded = Math.ceil(pois.length / 150);
-                document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
-                document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
-                document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
-                
-                console.log(`✅ Successfully loaded ${pois.length.toLocaleString()} POIs!`);
-                
-                // Update map
-                updateMap();
-                
-                // Show success message
-               console.log(`🎉 POI Data Loaded Successfully! ${pois.length.toLocaleString()} POIs loaded`);
-                
-            } catch (error) {
-                console.error('❌ Error loading POI data:', error);
-                alert(`⚠️ Could not load POI data\n\nError: ${error.message}\n\nUsing sample data instead.`);
-                
-                // Load sample data as fallback
-                loadSamplePOIData();
-            }
-        }
-
-        // Fallback: Load sample POI data if CSV fails
-        function loadSamplePOIData() {
-            console.log('📋 Loading sample POI data...');
-            
-            const sampleData = `POI_ID\tBusiness_Name\tCategory\tSub_Category\tArea\tCity\tState\tLatitude\tLongitude\tDaily_Requirement_Liters\tMonthly_Requirement_Liters\tPriority\tRevenue_Potential
-DENSE0000001\tGeneral Store - Karnataka Region\tRetail\tGeneral Store\tKarnataka Region\tKarnataka Region\tKarnataka\t11.703783\t76.677597\t77\t2400\tLow\t₹38625
-DENSE0000002\tBiryani House - Karnataka Region\tFood & Beverage\tBiryani House\tKarnataka Region\tKarnataka Region\tKarnataka\t11.702976\t76.66243\t701\t18475\tLow\t₹136500
-DENSE0000003\tMore - Karnataka Region\tRetail\tMore\tKarnataka Region\tKarnataka Region\tKarnataka\t11.678789\t76.656702\t68\t1350\tLow\t₹32250
-DENSE0000004\tHospital - Karnataka Region\tHealthcare\tHospital\tKarnataka Region\tKarnataka Region\tKarnataka\t11.68635\t76.642106\t1068\t30675\tLow\t₹337875
-DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKarnataka Region\tKarnataka\t11.693527\t76.667687\t388\t13900\tLow\t₹84000`;
-            
-            const lines = sampleData.trim().split('\n');
-            const headers = lines[0].split('\t');
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split('\t');
-                const poi = {};
-                
-                headers.forEach((header, index) => {
-                    poi[header.trim()] = values[index] ? values[index].trim() : '';
-                });
-                
-                poi.Latitude = parseFloat(poi.Latitude);
-                poi.Longitude = parseFloat(poi.Longitude);
-                pois.push(poi);
-            }
-            
-            // Multiply sample data to simulate more POIs
-            const basePOIs = [...pois];
-            for (let mult = 0; mult < 200; mult++) {
-                basePOIs.forEach(poi => {
-                    pois.push({
-                        ...poi,
-                        POI_ID: `DENSE${String(mult * 5 + parseInt(poi.POI_ID.replace('DENSE', ''))).padStart(7, '0')}`,
-                        Latitude: poi.Latitude + (Math.random() - 0.5) * 2,
-                        Longitude: poi.Longitude + (Math.random() - 0.5) * 2
-                    });
-                });
-            }
-            
-            poisLoaded = true;
-            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
-            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString() + ' (Sample)';
-            
-            updateMap();
-            console.log(`📋 Loaded ${pois.length} sample POIs`);
-        }
-
-        // Plants
         const plants = {
             plant1: {name: 'Bangalore Plant (Main)', lat: 12.996663, lng: 76.982185},
             plant2: {name: 'Secondary Plant', lat: 12.9386, lng: 77.5441}
         };
 
-        // Global variables
-        let map;
-        let currentRadius = 50;
-        let activeFilter = 'all';
-        let mapMarkers = [];
-        let coverageCircles = [];
-        let distributors = [];
-        
-        // ===== AUTHENTICATION =====
+        let map, currentRadius = 50, activeFilter = 'all';
+        let mapMarkers = [], coverageCircles = [], distributors = [];
+        let pois = [], poisLoaded = false;
+
+        function generateSamplePOIs() {
+            const categories = ['Distribution', 'Retail', 'Food & Beverage', 'Hospitality', 'Corporate', 'Healthcare'];
+            const centerLat = 12.9716;
+            const centerLng = 77.5946;
+            
+            for (let i = 0; i < 1000; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = Math.random() * 1.5;
+                
+                pois.push({
+                    POI_ID: `POI${String(i).padStart(6, '0')}`,
+                    Business_Name: `Business ${i}`,
+                    Category: categories[Math.floor(Math.random() * categories.length)],
+                    Sub_Category: 'General',
+                    Area: 'Bangalore',
+                    Latitude: centerLat + (radius * Math.cos(angle)),
+                    Longitude: centerLng + (radius * Math.sin(angle)),
+                    Monthly_Requirement_Liters: Math.floor(Math.random() * 50000) + 5000,
+                    Priority: Math.random() > 0.7 ? 'High' : 'Medium'
+                });
+            }
+            
+            poisLoaded = true;
+            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
+            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString();
+            document.getElementById('poiStatusText').textContent = `${pois.length.toLocaleString()} sample POIs loaded`;
+            
+            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
+            const coverage = (totalRetailers / pois.length * 100);
+            document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
+            
+            const wsNeeded = Math.ceil(pois.length / 150);
+            document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
+            document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
+            document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
+            
+            updateMap();
+        }
+
         function handleLogin(event) {
             event.preventDefault();
             
@@ -907,10 +725,6 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                 sessionStorage.setItem('loginTime', loginTime);
                 
                 initializeApp();
-                
-                setTimeout(() => {
-                    console.log(`🎉 Welcome ${username}! POIs loading...`);
-                }, 300);
             } else {
                 errorMsg.classList.add('show');
                 document.getElementById('password').value = '';
@@ -955,9 +769,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
 
         setInterval(checkSessionTimeout, 5 * 60 * 1000);
 
-        // ===== APP INITIALIZATION =====
         function initializeApp() {
-            // Process distributors
             distributorsData.forEach(d => {
                 const achievement = d.target > 0 ? (d.sales / d.target * 100) : 0;
                 let rating = 'Below Average';
@@ -968,14 +780,12 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                 distributors.push({...d, achievement, rating});
             });
 
-            // Initialize map
             map = L.map('map').setView([12.9716, 77.5946], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
                 maxZoom: 18
             }).addTo(map);
 
-            // Add plants
             const plantIcon = L.divIcon({
                 html: '<div style="background: #FF6B6B; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏭</div>',
                 className: '',
@@ -990,10 +800,8 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
 
             setupEventListeners();
             updateDistributorList();
+            generateSamplePOIs();
             updateMap();
-
-            // Load POI data from CSV file
-            loadPOIData();
 
             console.log(`✅ App Initialized: ${distributors.length} Distributors`);
         }
@@ -1122,7 +930,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                     });
                 }
 
-                const displayPOIs = filteredPOIs.filter((_, index) => index % 50 === 0);
+                const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
 
                 displayPOIs.forEach(poi => {
                     const color = getMarkerColor(poi.Category);
@@ -1134,7 +942,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                         color: 'white',
                         weight: 1,
                         fillOpacity: 0.7
-                    }).bindPopup(`<b>${poi.Business_Name}</b><br>Category: ${poi.Category}<br>Sub-Category: ${poi.Sub_Category}<br>Monthly: ${poi.Monthly_Requirement_Liters}L`)
+                    }).bindPopup(`<b>${poi.Business_Name}</b><br>Category: ${poi.Category}<br>Monthly: ${poi.Monthly_Requirement_Liters}L`)
                     .addTo(map);
                     
                     mapMarkers.push(marker);
@@ -1149,11 +957,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                 'Food & Beverage': '#6BCB77',
                 'Hospitality': '#FF6B6B',
                 'Corporate': '#9D84B7',
-                'Healthcare': '#E74C3C',
-                'Education': '#3498DB',
-                'Entertainment': '#F39C12',
-                'Industrial': '#34495E',
-                'Personal Care': '#E91E63'
+                'Healthcare': '#E74C3C'
             };
             return colors[category] || '#95A5A6';
         }
@@ -1241,7 +1045,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
         }
 
         function showCoverageGaps() {
-            alert('🎯 Coverage Gap Analysis\n\nBased on 75,231 POIs:\n\n• 500+ new distributors needed\n• Investment: ₹300-350 Crores\n• Expected ROI: 6-8 months\n\nTop priority areas identified for expansion.');
+            alert('🎯 Coverage Gap Analysis\n\nBased on POI data:\n\n• 500+ new distributors needed\n• Investment: ₹300-350 Crores\n• Expected ROI: 6-8 months\n\nTop priority areas identified for expansion.');
         }
 
         function showNewWSPlan() {
@@ -1268,11 +1072,6 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
             downloadCSV(csv, 'pois_sample.csv');
         }
 
-        function exportAllReports() {
-            exportDistributors();
-            setTimeout(() => exportPOIs(), 500);
-        }
-
         function downloadCSV(csv, filename) {
             const blob = new Blob([csv], {type: 'text/csv'});
             const url = window.URL.createObjectURL(blob);
@@ -1285,10 +1084,3 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
