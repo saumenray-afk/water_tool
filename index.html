@@ -732,22 +732,31 @@ const VALID_USERS = {
                 
                 console.log(`📊 Found ${lines.length - 1} POIs`);
                 
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split('\t');
-                    const poi = {};
-                    
-                    headers.forEach((header, index) => {
-                        poi[header.trim()] = values[index] ? values[index].trim() : '';
-                    });
-                    
-                    // Convert to numbers
-                    poi.Latitude = parseFloat(poi.Latitude);
-                    poi.Longitude = parseFloat(poi.Longitude);
-                    
-                    if (!isNaN(poi.Latitude) && !isNaN(poi.Longitude)) {
-                        pois.push(poi);
-                    }
-                }
+for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue; // Skip empty lines
+    
+    const values = lines[i].split('\t');
+    const poi = {};
+    
+    headers.forEach((header, index) => {
+        poi[header.trim()] = values[index] ? values[index].trim() : '';
+    });
+    
+    // Convert to numbers - try different possible column names
+    const lat = parseFloat(poi.Latitude || poi.latitude || poi.lat || 0);
+    const lng = parseFloat(poi.Longitude || poi.longitude || poi.lng || 0);
+    
+    poi.Latitude = lat;
+    poi.Longitude = lng;
+    
+    // More lenient validation - accept any valid coordinates
+    if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
+        pois.push(poi);
+    } else {
+        // Debug: log why POI was rejected (remove after fixing)
+        if (i < 5) console.log('Rejected POI:', {lat, lng, sample: poi});
+    }
+}
                 
                 poisLoaded = true;
                 
@@ -1243,6 +1252,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
     </script>
 </body>
 </html>
+
 
 
 
