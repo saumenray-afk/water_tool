@@ -478,18 +478,7 @@
                 <div class="tab-content active" id="overview-tab">
                     <div class="info-banner">
                         ✅ <strong>POI Database</strong><br>
-                        <span id="poiStatusText">Ready to load POI data</span>
-                    </div>
-
-                    <div class="control-section" style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <div class="section-title">📁 Load POI Data</div>
-                        <input type="file" id="poiFileInput" accept=".zip,.csv" style="width: 100%; padding: 10px; border: 2px dashed #667eea; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">
-                        <button class="action-btn" onclick="loadFromFile()" style="margin: 0;">
-                            📤 Load ZIP File
-                        </button>
-                        <div style="font-size: 11px; color: #666; margin-top: 8px;">
-                            Select DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip from your computer
-                        </div>
+                        <span id="poiStatusText">Ready to load POI data from GitHub</span>
                     </div>
 
                     <div class="stats-panel">
@@ -678,7 +667,17 @@
         let mapMarkers = [], coverageCircles = [], distributors = [];
         let pois = [], poisLoaded = false;
 
-        const POI_ZIP_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
+        // GitHub raw URL - update with your GitHub username and repository name
+        // Format: https://raw.githubusercontent.com/USERNAME/REPOSITORY/main/FILENAME
+        const GITHUB_USERNAME = 'YOUR_USERNAME';  // Change this to your GitHub username
+        const GITHUB_REPO = 'YOUR_REPO';  // Change this to your repository name
+        const GITHUB_BRANCH = 'main';  // or 'master' if that's your default branch
+        const POI_ZIP_FILENAME = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
+        
+        const POI_ZIP_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/${POI_ZIP_FILENAME}`;
+        
+        // Alternative: If you know the exact GitHub raw URL, paste it here directly:
+        // const POI_ZIP_URL = 'https://raw.githubusercontent.com/username/repo/main/DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
 
         async function loadFromFile() {
             const fileInput = document.getElementById('poiFileInput');
@@ -893,28 +892,34 @@
 
         async function loadPOIData() {
             try {
-                console.log('📥 Attempting to load POI data from URL...');
-                console.log('📍 ZIP URL:', POI_ZIP_URL);
-                document.getElementById('poiStatusText').textContent = 'Attempting to load from URL...';
+                console.log('📥 Loading POI data from GitHub...');
+                console.log('📍 GitHub URL:', POI_ZIP_URL);
+                document.getElementById('poiStatusText').textContent = 'Loading from GitHub...';
                 
                 const response = await fetch(POI_ZIP_URL);
                 console.log('📡 Response status:', response.status, response.statusText);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: File not found. Please use the file upload option.`);
+                    if (response.status === 404) {
+                        throw new Error(`File not found (404). Please check:\n1. GitHub username: ${GITHUB_USERNAME}\n2. Repository name: ${GITHUB_REPO}\n3. Branch name: ${GITHUB_BRANCH}\n4. File exists in repository root`);
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const blob = await response.blob();
-                console.log('📦 Downloaded:', blob.size, 'bytes');
+                console.log('📦 Downloaded:', blob.size.toLocaleString(), 'bytes');
+                
+                if (blob.size === 0) {
+                    throw new Error('Downloaded file is empty');
+                }
                 
                 await loadPOIDataFromBlob(blob);
                 
             } catch (error) {
-                console.log('⚠️ Could not load from URL:', error.message);
-                console.log('💡 Please use the file upload option to load your ZIP file');
+                console.error('❌ Error loading from GitHub:', error);
                 document.getElementById('poiStatusText').innerHTML = 
-                    `<span style="color: #ff9800;">⚠️ ${error.message}</span><br>
-                    <span style="font-size: 11px;">Please upload the ZIP file using the button above.</span>`;
+                    `<span style="color: #dc3545;">⚠️ ${error.message}</span><br>
+                    <span style="font-size: 11px;">Update GITHUB_USERNAME and GITHUB_REPO in the code (lines 447-449)</span>`;
             }
         }
 
