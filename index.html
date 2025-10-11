@@ -643,6 +643,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         // ===== CONFIGURATION =====
         const VALID_USERS = {
@@ -683,10 +684,13 @@
 
         // ===== POI DATA LOADING =====
         // CSV will be loaded from GitHub repository
-        // IMPORTANT: Make sure your CSV file name matches exactly (including extension)
+        // OPTION 1: Load uncompressed CSV (if file is under 25MB)
         const POI_CSV_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.csv';
-        // This will load from the same directory as the HTML file
-        // Repository name: water_tool (underscore is fine, no code changes needed)
+        
+        // OPTION 2: Load compressed ZIP file (recommended for files over 25MB)
+        // const POI_ZIP_URL = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
+        // Set USE_ZIP to true if using compressed file
+        const USE_ZIP = true;
 
         let pois = [];
         let poisLoaded = false;
@@ -694,15 +698,31 @@
         // Load POI data from CSV file
         async function loadPOIData() {
             try {
-                console.log('📥 Loading POI data from CSV...');
+                console.log('📥 Loading POI data...');
                 
-                const response = await fetch(POI_CSV_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                let csvText;
+                
+                if (USE_ZIP) {
+                    // Load from ZIP file (for large files)
+                    alert('📦 Loading compressed POI data...\n\nThis may take 10-15 seconds.');
+                    const response = await fetch(POI_ZIP_URL);
+                    const blob = await response.blob();
+                    
+                    // Use JSZip library (loaded from CDN)
+                    const JSZip = window.JSZip;
+                    const zip = await JSZip.loadAsync(blob);
+                    const csvFile = Object.keys(zip.files)[0];
+                    csvText = await zip.files[csvFile].async('text');
+                } else {
+                    // Load from CSV directly
+                    const response = await fetch(POI_CSV_URL);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    csvText = await response.text();
                 }
                 
-                const csvText = await response.text();
-                console.log('✅ CSV file loaded, parsing data...');
+                console.log('✅ Data loaded, parsing CSV...');
                 
                 // Parse CSV
                 const lines = csvText.trim().split('\n');
@@ -750,11 +770,11 @@
                 updateMap();
                 
                 // Show success message
-                alert(`🎉 POI Data Loaded Successfully!\n\n✅ ${pois.length.toLocaleString()} POIs loaded from CSV\n✅ Ready for analysis\n✅ All features unlocked`);
+                alert(`🎉 POI Data Loaded Successfully!\n\n✅ ${pois.length.toLocaleString()} POIs loaded\n✅ Ready for analysis\n✅ All features unlocked`);
                 
             } catch (error) {
                 console.error('❌ Error loading POI data:', error);
-                alert(`⚠️ Could not load POI data\n\nError: ${error.message}\n\nPlease ensure DENSE_CONTINUOUS_POI_150KM_20251010_225505.csv is in the same folder as this HTML file.`);
+                alert(`⚠️ Could not load POI data\n\nError: ${error.message}\n\nUsing sample data instead.`);
                 
                 // Load sample data as fallback
                 loadSamplePOIData();
