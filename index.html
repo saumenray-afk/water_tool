@@ -706,7 +706,7 @@ const VALID_USERS = {
                 
                 if (USE_ZIP) {
                     // Load from ZIP file (for large files)
-                    alert('📦 Loading compressed POI data...\n\nThis may take 10-15 seconds.');
+                    console.log('📦 Loading compressed POI data...');
                     const response = await fetch(POI_ZIP_URL);
                     const blob = await response.blob();
                     
@@ -772,7 +772,7 @@ const VALID_USERS = {
                 updateMap();
                 
                 // Show success message
-                alert(`🎉 POI Data Loaded Successfully!\n\n✅ ${pois.length.toLocaleString()} POIs loaded\n✅ Ready for analysis\n✅ All features unlocked`);
+               console.log(`🎉 POI Data Loaded Successfully! ${pois.length.toLocaleString()} POIs loaded`);
                 
             } catch (error) {
                 console.error('❌ Error loading POI data:', error);
@@ -867,7 +867,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
                 initializeApp();
                 
                 setTimeout(() => {
-                    alert(`🎉 Welcome ${username}!\n\n✅ 75,231 POIs loaded\n✅ 70 Distributors ready\n✅ All features unlocked\n\nSession timeout: ${SESSION_TIMEOUT} minutes`);
+                    console.log(`🎉 Welcome ${username}! POIs loading...`);
                 }, 300);
             } else {
                 errorMsg.classList.add('show');
@@ -1243,6 +1243,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
     </script>
 </body>
 </html>
+
 
 
 
