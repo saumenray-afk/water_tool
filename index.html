@@ -724,14 +724,25 @@ const VALID_USERS = {
                     csvText = await response.text();
                 }
                 
-                console.log('✅ Data loaded, parsing CSV...');
-                
-                // Parse CSV
-                const lines = csvText.trim().split('\n');
-                const headers = lines[0].split('\t');
-                
-                console.log(`📊 Found ${lines.length - 1} POIs`);
-                
+console.log('✅ Data loaded, parsing CSV...');
+
+// Parse CSV
+const lines = csvText.trim().split('\n');
+const headers = lines[0].split('\t');
+
+console.log(`📊 Found ${lines.length - 1} POIs`);
+console.log('📋 Headers:', headers.slice(0, 10)); // Show first 10 headers
+console.log('📋 Sample data:', lines[1].split('\t').slice(0, 10)); // Show first 10 values
+
+// Find latitude and longitude column indices
+const latIndex = headers.findIndex(h => h.trim().toLowerCase().includes('lat'));
+const lngIndex = headers.findIndex(h => h.trim().toLowerCase().includes('lon'));
+console.log(`📍 Lat column: "${headers[latIndex]}" (index ${latIndex})`);
+console.log(`📍 Lng column: "${headers[lngIndex]}" (index ${lngIndex})`);
+
+let validCount = 0;
+let invalidCount = 0;
+
 for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue; // Skip empty lines
     
@@ -743,11 +754,33 @@ for (let i = 1; i < lines.length; i++) {
     });
     
     // Convert to numbers - try different possible column names
-    const lat = parseFloat(poi.Latitude || poi.latitude || poi.lat || 0);
-    const lng = parseFloat(poi.Longitude || poi.longitude || poi.lng || 0);
+    const lat = parseFloat(poi.Latitude || poi.latitude || poi.lat || poi.LAT || 0);
+    const lng = parseFloat(poi.Longitude || poi.longitude || poi.lng || poi.LON || poi.LONGITUDE || 0);
     
     poi.Latitude = lat;
     poi.Longitude = lng;
+    
+    // More lenient validation
+    if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+        pois.push(poi);
+        validCount++;
+    } else {
+        invalidCount++;
+        // Log first 3 rejected POIs to see what's wrong
+        if (invalidCount <= 3) {
+            console.log(`❌ Rejected POI row ${i}:`, {
+                lat_value: poi.Latitude || poi.latitude || poi.lat,
+                lng_value: poi.Longitude || poi.longitude || poi.lng,
+                parsed_lat: lat,
+                parsed_lng: lng,
+                first_5_columns: values.slice(0, 5)
+            });
+        }
+    }
+}
+
+console.log(`✅ Valid POIs: ${validCount}, ❌ Invalid: ${invalidCount}`);
+                
     
     // More lenient validation - accept any valid coordinates
     if (lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng)) {
@@ -1252,6 +1285,7 @@ DENSE0000005\tSchool - Karnataka Region\tEducation\tSchool\tKarnataka Region\tKa
     </script>
 </body>
 </html>
+
 
 
 
