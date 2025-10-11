@@ -478,7 +478,18 @@
                 <div class="tab-content active" id="overview-tab">
                     <div class="info-banner">
                         ✅ <strong>POI Database</strong><br>
-                        <span id="poiStatusText">Loading POI data...</span>
+                        <span id="poiStatusText">Ready to load POI data</span>
+                    </div>
+
+                    <div class="control-section" style="background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <div class="section-title">📁 Load POI Data</div>
+                        <input type="file" id="poiFileInput" accept=".zip,.csv" style="width: 100%; padding: 10px; border: 2px dashed #667eea; border-radius: 8px; cursor: pointer; margin-bottom: 10px;">
+                        <button class="action-btn" onclick="loadFromFile()" style="margin: 0;">
+                            📤 Load ZIP File
+                        </button>
+                        <div style="font-size: 11px; color: #666; margin-top: 8px;">
+                            Select DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip from your computer
+                        </div>
                     </div>
 
                     <div class="stats-panel">
