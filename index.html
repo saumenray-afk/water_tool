@@ -671,65 +671,143 @@
 
         async function loadPOIData() {
             try {
-                console.log('📥 Loading POI data from ZIP file...');
+                console.log('📥 Starting POI data load...');
+                console.log('📍 ZIP URL:', POI_ZIP_URL);
                 document.getElementById('poiStatusText').textContent = 'Loading POI data from ZIP file...';
                 
+                // Try to fetch the ZIP file
+                console.log('🌐 Fetching ZIP file...');
                 const response = await fetch(POI_ZIP_URL);
+                console.log('📡 Response status:', response.status, response.statusText);
+                console.log('📡 Response headers:', {
+                    'content-type': response.headers.get('content-type'),
+                    'content-length': response.headers.get('content-length')
+                });
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - File not found or inaccessible`);
                 }
                 
                 const blob = await response.blob();
-                console.log('📦 ZIP file loaded, extracting...');
+                console.log('📦 Blob received, size:', blob.size, 'bytes, type:', blob.type);
                 
+                if (blob.size === 0) {
+                    throw new Error('ZIP file is empty (0 bytes)');
+                }
+                
+                console.log('📦 Extracting ZIP...');
                 const zip = await JSZip.loadAsync(blob);
-                const csvFileName = Object.keys(zip.files)[0];
-                console.log(`📄 Found CSV file: ${csvFileName}`);
+                
+                const fileNames = Object.keys(zip.files);
+                console.log('📁 Files in ZIP:', fileNames);
+                
+                if (fileNames.length === 0) {
+                    throw new Error('ZIP file contains no files');
+                }
+                
+                const csvFileName = fileNames.find(name => name.endsWith('.csv') || name.endsWith('.txt') || name.endsWith('.tsv')) || fileNames[0];
+                console.log(`📄 Extracting file: ${csvFileName}`);
                 
                 const csvText = await zip.files[csvFileName].async('text');
-                console.log('✅ CSV extracted, parsing data...');
+                const textLength = csvText.length;
+                console.log(`✅ CSV extracted: ${textLength} characters`);
                 
+                if (textLength === 0) {
+                    throw new Error('CSV file is empty');
+                }
+                
+                // Show first 500 characters for debugging
+                console.log('📝 First 500 chars:', csvText.substring(0, 500));
+                
+                console.log('🔍 Parsing CSV...');
                 const lines = csvText.trim().split('\n');
-                const headers = lines[0].split('\t');
+                console.log(`📊 Total lines: ${lines.length}`);
                 
-                console.log(`📊 Found ${lines.length - 1} rows with ${headers.length} columns`);
-                console.log('📋 Headers:', headers.slice(0, 10).join(', '));
+                if (lines.length < 2) {
+                    throw new Error('CSV has no data rows');
+                }
+                
+                // Try different delimiters
+                let delimiter = '\t';
+                if (lines[0].split(',').length > lines[0].split('\t').length) {
+                    delimiter = ',';
+                }
+                console.log('🔧 Using delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
+                
+                const headers = lines[0].split(delimiter).map(h => h.trim());
+                console.log(`📋 Headers (${headers.length}):`, headers);
+                
+                // Find lat/lng columns
+                const latHeaders = ['latitude', 'lat', 'Latitude', 'LAT', 'LATITUDE'];
+                const lngHeaders = ['longitude', 'lng', 'lon', 'Longitude', 'LON', 'LONGITUDE', 'Long'];
+                
+                const latCol = headers.findIndex(h => latHeaders.some(lh => h.toLowerCase().includes(lh.toLowerCase())));
+                const lngCol = headers.findIndex(h => lngHeaders.some(lh => h.toLowerCase().includes(lh.toLowerCase())));
+                
+                console.log(`📍 Latitude column: ${latCol} (${headers[latCol]})`);
+                console.log(`📍 Longitude column: ${lngCol} (${headers[lngCol]})`);
+                
+                if (latCol === -1 || lngCol === -1) {
+                    throw new Error('Could not find latitude/longitude columns');
+                }
                 
                 let validCount = 0;
                 let invalidCount = 0;
                 
+                // Sample first row for debugging
+                const sampleValues = lines[1].split(delimiter);
+                console.log('📊 Sample row:', {
+                    lat: sampleValues[latCol],
+                    lng: sampleValues[lngCol],
+                    allValues: sampleValues.slice(0, 5)
+                });
+                
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
-                    const values = lines[i].split('\t');
-                    const poi = {};
+                    const values = lines[i].split(delimiter);
                     
+                    if (values.length < headers.length - 5) {
+                        continue; // Skip malformed rows
+                    }
+                    
+                    const poi = {};
                     headers.forEach((header, index) => {
-                        poi[header.trim()] = values[index] ? values[index].trim() : '';
+                        poi[header] = values[index] ? values[index].trim() : '';
                     });
                     
-                    const lat = parseFloat(poi.Latitude || poi.latitude || poi.lat || poi.LAT || 0);
-                    const lng = parseFloat(poi.Longitude || poi.longitude || poi.lng || poi.LON || poi.LONGITUDE || 0);
+                    const lat = parseFloat(values[latCol]);
+                    const lng = parseFloat(values[lngCol]);
                     
-                    if (lat && lng && !isNaN(lat) && !isNaN(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+                    if (lat && lng && !isNaN(lat) && !isNaN(lng) && 
+                        Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
+                        lat !== 0 && lng !== 0) {
                         poi.Latitude = lat;
                         poi.Longitude = lng;
                         pois.push(poi);
                         validCount++;
                     } else {
                         invalidCount++;
-                        if (invalidCount <= 3) {
-                            console.log(`❌ Invalid POI at row ${i}:`, {lat, lng});
+                        if (invalidCount <= 5) {
+                            console.log(`❌ Invalid row ${i}: lat=${values[latCol]}, lng=${values[lngCol]}`);
                         }
+                    }
+                    
+                    // Progress updates for large files
+                    if (i % 10000 === 0) {
+                        console.log(`⏳ Processing: ${i}/${lines.length} rows...`);
+                        document.getElementById('poiStatusText').textContent = 
+                            `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
                     }
                 }
                 
                 poisLoaded = true;
-                console.log(`✅ Successfully loaded ${validCount.toLocaleString()} valid POIs (${invalidCount} invalid)`);
+                console.log(`✅ SUCCESS! Loaded ${validCount.toLocaleString()} valid POIs (${invalidCount} invalid)`);
                 
                 document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
                 document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString();
-                document.getElementById('poiStatusText').textContent = `${pois.length.toLocaleString()} POIs loaded successfully from ZIP file`;
+                document.getElementById('poiStatusText').textContent = 
+                    `✅ ${pois.length.toLocaleString()} POIs loaded from ${csvFileName}`;
                 
                 const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
                 const coverage = (totalRetailers / pois.length * 100);
@@ -743,8 +821,11 @@
                 updateMap();
                 
             } catch (error) {
-                console.error('❌ Error loading POI data:', error);
-                document.getElementById('poiStatusText').innerHTML = `<span style="color: #dc3545;">⚠️ Could not load ZIP file: ${error.message}</span><br>Using sample data instead.`;
+                console.error('❌ ERROR loading POI data:', error);
+                console.error('❌ Error stack:', error.stack);
+                document.getElementById('poiStatusText').innerHTML = 
+                    `<span style="color: #dc3545;">⚠️ Error: ${error.message}</span><br>
+                    <span style="font-size: 11px;">Check browser console (F12) for details. Using sample data.</span>`;
                 generateSamplePOIs();
             }
         }
@@ -882,7 +963,7 @@
 
             setupEventListeners();
             updateDistributorList();
-            generateSamplePOIs();
+            loadPOIData();
             updateMap();
 
             console.log(`✅ App Initialized: ${distributors.length} Distributors`);
