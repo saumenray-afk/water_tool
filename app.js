@@ -20,18 +20,18 @@ const VALID_USERS = {
 
 const SESSION_TIMEOUT = 120; // minutes
 
-// Sample distributor data
+// Sample distributor data with wholesaler classifications
 const distributorsData = [
-    {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC'},
-    {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC'},
-    {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant'},
-    {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC'},
-    {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant'},
-    {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN'},
-    {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC'},
-    {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC'},
-    {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant'},
-    {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'}
+    {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC', classification: 'Super Stockist'},
+    {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC', classification: 'Distributor'},
+    {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant', classification: 'Super Stockist'},
+    {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC', classification: 'Sub Distributor'},
+    {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant', classification: 'Distributor'},
+    {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN', classification: 'Distributor'},
+    {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC', classification: 'Sub Distributor'},
+    {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC', classification: 'Distributor'},
+    {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant', classification: 'Super Stockist'},
+    {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant', classification: 'Super Stockist'}
 ];
 
 // Plant locations
@@ -42,8 +42,11 @@ const plants = {
 
 // Global variables
 let map, currentRadius = 50, activeFilter = 'all';
-let mapMarkers = [], coverageCircles = [], distributors = [];
+let mapMarkers = [], coverageCircles = [], distributors = [], distanceLines = [];
 let pois = [], poisLoaded = false;
+let selectedPlantForExport = null;
+let selectedDistributorForExport = null;
+let customRadiusEnabled = false;
 
 // Robust CSV Parser that handles quoted fields
 function parseCSVLine(line, delimiter = ',') {
@@ -88,6 +91,34 @@ function formatNumber(value) {
     const num = parseFloat(value);
     if (isNaN(num)) return value;
     return num.toLocaleString('en-IN');
+}
+
+// Calculate distance between two points
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// Find nearest plant for a given location
+function findNearestPlant(lat, lng) {
+    let nearestPlant = null;
+    let minDistance = Infinity;
+    
+    Object.entries(plants).forEach(([key, plant]) => {
+        const distance = calculateDistance(lat, lng, plant.lat, plant.lng);
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestPlant = {key, ...plant, distance};
+        }
+    });
+    
+    return nearestPlant;
 }
 
 // Create detailed POI popup content
@@ -226,6 +257,8 @@ function createDistributorPopup(dist) {
                              dist.achievement >= 75 ? 'badge-good' :
                              dist.achievement >= 60 ? 'badge-average' : 'badge-below';
     
+    const nearestPlant = findNearestPlant(dist.lat, dist.lng);
+    
     return `
         <div style="min-width: 280px; font-family: 'Segoe UI', sans-serif;">
             <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px; margin: -10px -10px 10px -10px; border-radius: 4px 4px 0 0;">
@@ -233,7 +266,7 @@ function createDistributorPopup(dist) {
                     📦 ${dist.name}
                 </div>
                 <div style="font-size: 11px; opacity: 0.9;">
-                    Distributor - ${dist.city}
+                    ${dist.classification} - ${dist.city}
                 </div>
             </div>
             
@@ -270,6 +303,14 @@ function createDistributorPopup(dist) {
                         <td style="padding: 6px; color: #666;">🏙️ City:</td>
                         <td style="padding: 6px; font-weight: 600; text-align: right;">${dist.city}</td>
                     </tr>
+                    <tr>
+                        <td style="padding: 6px; color: #666;">🏭 Nearest Plant:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">${nearestPlant.distance.toFixed(1)} KM</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td style="padding: 6px; color: #666;">🏢 Type:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">${dist.classification}</td>
+                    </tr>
                 </table>
                 
                 <div style="margin-top: 12px; padding: 10px; background: ${dist.achievement >= 90 ? '#d4edda' : dist.achievement >= 75 ? '#fff3cd' : '#f8d7da'}; border-radius: 6px; border-left: 4px solid ${dist.achievement >= 90 ? '#28a745' : dist.achievement >= 75 ? '#ffc107' : '#dc3545'};">
@@ -282,6 +323,10 @@ function createDistributorPopup(dist) {
                         Gap: ₹${((dist.target - dist.sales) / 100000).toFixed(1)}L
                     </div>
                 </div>
+                
+                <button onclick="selectDistributorForPOIExport(${dist.index})" style="width: 100%; margin-top: 10px; padding: 8px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                    📍 Export POIs Around This Distributor
+                </button>
             </div>
         </div>
     `;
@@ -542,16 +587,56 @@ function updatePOIStats() {
     document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
 }
 
+// Draw distance lines between plants and distributors
+function drawPlantDistributorLines() {
+    // Clear existing lines
+    distanceLines.forEach(line => map.removeLayer(line));
+    distanceLines = [];
+    
+    if (!document.getElementById('showDistLines').checked) {
+        return;
+    }
+    
+    distributors.forEach(dist => {
+        const nearestPlant = findNearestPlant(dist.lat, dist.lng);
+        
+        const line = L.polyline(
+            [[nearestPlant.lat, nearestPlant.lng], [dist.lat, dist.lng]],
+            {
+                color: '#FF6B6B',
+                weight: 2,
+                opacity: 0.6,
+                dashArray: '5, 10'
+            }
+        ).addTo(map);
+        
+        // Add tooltip to the line showing distance
+        line.bindTooltip(
+            `<div style="text-align: center;">
+                <b>${dist.name}</b><br>
+                Distance: ${nearestPlant.distance.toFixed(2)} KM<br>
+                From: ${nearestPlant.name}
+            </div>`,
+            {
+                permanent: false,
+                direction: 'center'
+            }
+        );
+        
+        distanceLines.push(line);
+    });
+}
+
 // Application initialization
 function initializeApp() {
-    distributorsData.forEach(d => {
+    distributorsData.forEach((d, index) => {
         const achievement = d.target > 0 ? (d.sales / d.target * 100) : 0;
         let rating = 'Below Average';
         if (achievement >= 90) rating = 'Excellent';
         else if (achievement >= 75) rating = 'Good';
         else if (achievement >= 60) rating = 'Average';
 
-        distributors.push({...d, achievement, rating});
+        distributors.push({...d, achievement, rating, index});
     });
 
     map = L.map('map').setView([12.9716, 77.5946], 10);
@@ -595,9 +680,36 @@ function setupEventListeners() {
             document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentRadius = parseInt(this.dataset.radius);
+            customRadiusEnabled = false;
+            document.getElementById('customRadiusInput').value = '';
             updateMap();
         });
     });
+}
+
+function toggleCustomRadius() {
+    customRadiusEnabled = document.getElementById('useCustomRadius').checked;
+    document.getElementById('customRadiusInput').disabled = !customRadiusEnabled;
+    
+    if (customRadiusEnabled) {
+        document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+    }
+}
+
+function applyCustomRadius() {
+    const input = document.getElementById('customRadiusInput');
+    const value = parseInt(input.value);
+    
+    if (isNaN(value) || value < 1 || value > 500) {
+        alert('Please enter a valid radius between 1 and 500 KM');
+        return;
+    }
+    
+    currentRadius = value;
+    customRadiusEnabled = true;
+    document.getElementById('useCustomRadius').checked = true;
+    document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+    updateMap();
 }
 
 function updateDistributorList() {
@@ -622,7 +734,7 @@ function updateDistributorList() {
                 </span>
             </div>
             <div class="distributor-meta">
-                ${dist.city} • ${dist.retailers} retailers
+                ${dist.city} • ${dist.retailers} retailers • ${dist.classification}
             </div>
         `;
         
@@ -645,7 +757,7 @@ function updateMap() {
     coverageCircles.forEach(circle => map.removeLayer(circle));
     coverageCircles = [];
 
-    if (currentRadius > 0) {
+    if (currentRadius > 0 && document.getElementById('showPlants').checked) {
         Object.values(plants).forEach(plant => {
             const circle = L.circle([plant.lat, plant.lng], {
                 radius: currentRadius * 1000,
@@ -672,8 +784,7 @@ function updateMap() {
                 .bindPopup(createDistributorPopup(dist), { maxWidth: 350 })
                 .addTo(map);
             
-            // Add tooltip on hover
-            marker.bindTooltip(`<b>${dist.name}</b><br>${dist.achievement.toFixed(1)}% Achievement`, {
+            marker.bindTooltip(`<b>${dist.name}</b><br>${dist.achievement.toFixed(1)}% • ${dist.classification}`, {
                 permanent: false,
                 direction: 'top'
             });
@@ -726,7 +837,6 @@ function updateMap() {
             }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
             .addTo(map);
             
-            // Add tooltip on hover - show key information
             const tooltipContent = `
                 <div style="text-align: center;">
                     <b>${poi.Business_Name || poi.POI_ID}</b><br>
@@ -743,6 +853,9 @@ function updateMap() {
             mapMarkers.push(marker);
         });
     }
+    
+    // Draw distance lines
+    drawPlantDistributorLines();
 }
 
 function getMarkerColor(category) {
@@ -760,11 +873,13 @@ function getMarkerColor(category) {
 function filterDistributors() {
     const perfFilter = document.getElementById('perfFilter').value;
     const cityFilter = document.getElementById('cityFilter').value;
+    const classFilter = document.getElementById('classFilter').value;
     
     const filtered = distributors.filter(d => {
         const perfMatch = perfFilter === 'all' || d.rating === perfFilter;
         const cityMatch = cityFilter === 'all' || d.city === cityFilter;
-        return perfMatch && cityMatch;
+        const classMatch = classFilter === 'all' || d.classification === classFilter;
+        return perfMatch && cityMatch && classMatch;
     });
     
     const list = document.getElementById('distributorList');
@@ -788,7 +903,7 @@ function filterDistributors() {
                 </span>
             </div>
             <div class="distributor-meta">
-                ${dist.city} • ${dist.retailers} retailers
+                ${dist.city} • ${dist.retailers} retailers • ${dist.classification}
             </div>
         `;
         
@@ -803,17 +918,6 @@ function filterPOIs(category, element) {
     updateMap();
 }
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
 function showPerformanceReport() {
     const modal = document.getElementById('reportModal');
     const content = document.getElementById('modalContent');
@@ -822,6 +926,12 @@ function showPerformanceReport() {
     const good = distributors.filter(d => d.rating === 'Good');
     const average = distributors.filter(d => d.rating === 'Average');
     const below = distributors.filter(d => d.rating === 'Below Average');
+    
+    // Classification breakdown
+    const classifications = {};
+    distributors.forEach(d => {
+        classifications[d.classification] = (classifications[d.classification] || 0) + 1;
+    });
     
     content.innerHTML = `
         <div class="modal-header">📊 Distributor Performance Report</div>
@@ -833,6 +943,16 @@ function showPerformanceReport() {
                 <tr><td>✅ Good (75-90%)</td><td>${good.length}</td><td>${(good.length/distributors.length*100).toFixed(1)}%</td><td>₹${(good.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
                 <tr><td>⚠️ Average (60-75%)</td><td>${average.length}</td><td>${(average.length/distributors.length*100).toFixed(1)}%</td><td>₹${(average.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
                 <tr><td>❌ Below (<60%)</td><td>${below.length}</td><td>${(below.length/distributors.length*100).toFixed(1)}%</td><td>₹${(below.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
+            </table>
+        </div>
+        
+        <div class="report-section">
+            <div class="report-title">Classification Breakdown</div>
+            <table>
+                <tr><th>Type</th><th>Count</th><th>% of Total</th></tr>
+                ${Object.entries(classifications).map(([type, count]) => `
+                    <tr><td>${type}</td><td>${count}</td><td>${(count/distributors.length*100).toFixed(1)}%</td></tr>
+                `).join('')}
             </table>
         </div>
     `;
@@ -859,12 +979,143 @@ function closeModal() {
     document.getElementById('reportModal').classList.remove('active');
 }
 
-function exportDistributors() {
-    let csv = 'Name,City,Retailers,Achievement_%,Rating,Sales,Target\n';
-    distributors.forEach(d => {
-        csv += `"${d.name}","${d.city}",${d.retailers},${d.achievement.toFixed(2)},"${d.rating}",${d.sales},${d.target}\n`;
+// Export POIs by plant
+function exportPOIsByPlant() {
+    if (pois.length === 0) {
+        alert('No POI data available. Please wait for data to load.');
+        return;
+    }
+    
+    const plantKey = document.getElementById('plantSelect').value;
+    if (!plantKey) {
+        alert('Please select a plant first.');
+        return;
+    }
+    
+    const plant = plants[plantKey];
+    const radiusKM = currentRadius > 0 ? currentRadius : 150;
+    
+    const filteredPOIs = pois.filter(poi => {
+        const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+        return distance <= radiusKM;
     });
-    downloadCSV(csv, 'distributors.csv');
+    
+    if (filteredPOIs.length === 0) {
+        alert(`No POIs found within ${radiusKM} KM of ${plant.name}`);
+        return;
+    }
+    
+    const headers = Object.keys(filteredPOIs[0]);
+    let csv = headers.join(',') + '\n';
+    
+    filteredPOIs.forEach(poi => {
+        const row = headers.map(h => {
+            const val = poi[h] || '';
+            return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+        });
+        csv += row.join(',') + '\n';
+    });
+    
+    downloadCSV(csv, `POIs_${plantKey}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
+    alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs from ${plant.name} within ${radiusKM} KM radius`);
+}
+
+// Select distributor for POI export
+function selectDistributorForPOIExport(index) {
+    selectedDistributorForExport = index;
+    const dist = distributors[index];
+    
+    // Show modal for radius selection
+    const modal = document.getElementById('reportModal');
+    const content = document.getElementById('modalContent');
+    
+    content.innerHTML = `
+        <div class="modal-header">📍 Export POIs Around ${dist.name}</div>
+        <div class="report-section">
+            <div class="report-title">Select Export Radius</div>
+            <p style="margin-bottom: 15px;">Choose the radius around this distributor to export POIs:</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 10)">10 KM</button>
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 25)">25 KM</button>
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 50)">50 KM</button>
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 75)">75 KM</button>
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 100)">100 KM</button>
+                <button class="action-btn" onclick="exportPOIsByDistributor(${index}, 150)">150 KM</button>
+            </div>
+            <div style="margin-top: 20px;">
+                <label style="font-weight: 600; margin-bottom: 8px; display: block;">Custom Radius (KM):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="distCustomRadius" min="1" max="500" placeholder="Enter radius" style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;">
+                    <button class="action-btn" style="flex: 0 0 auto; width: auto; padding: 10px 20px;" onclick="exportPOIsByDistributorCustom(${index})">Export</button>
+                </div>
+            </div>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+// Export POIs around distributor
+function exportPOIsByDistributor(index, radiusKM) {
+    if (pois.length === 0) {
+        alert('No POI data available. Please wait for data to load.');
+        return;
+    }
+    
+    const dist = distributors[index];
+    
+    const filteredPOIs = pois.filter(poi => {
+        const distance = calculateDistance(poi.Latitude, poi.Longitude, dist.lat, dist.lng);
+        return distance <= radiusKM;
+    });
+    
+    if (filteredPOIs.length === 0) {
+        alert(`No POIs found within ${radiusKM} KM of ${dist.name}`);
+        return;
+    }
+    
+    const headers = Object.keys(filteredPOIs[0]);
+    let csv = 'Distributor_Name,Distributor_City,Distributor_Classification,Distance_To_POI_KM,' + headers.join(',') + '\n';
+    
+    filteredPOIs.forEach(poi => {
+        const distance = calculateDistance(poi.Latitude, poi.Longitude, dist.lat, dist.lng);
+        const row = [
+            `"${dist.name}"`,
+            `"${dist.city}"`,
+            `"${dist.classification}"`,
+            distance.toFixed(2)
+        ];
+        headers.forEach(h => {
+            const val = poi[h] || '';
+            row.push(typeof val === 'string' && val.includes(',') ? `"${val}"` : val);
+        });
+        csv += row.join(',') + '\n';
+    });
+    
+    downloadCSV(csv, `POIs_${dist.name.replace(/[^a-zA-Z0-9]/g, '_')}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
+    closeModal();
+    alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs within ${radiusKM} KM of ${dist.name}`);
+}
+
+// Export POIs with custom radius
+function exportPOIsByDistributorCustom(index) {
+    const radiusInput = document.getElementById('distCustomRadius');
+    const radiusKM = parseInt(radiusInput.value);
+    
+    if (isNaN(radiusKM) || radiusKM < 1 || radiusKM > 500) {
+        alert('Please enter a valid radius between 1 and 500 KM');
+        return;
+    }
+    
+    exportPOIsByDistributor(index, radiusKM);
+}
+
+function exportDistributors() {
+    let csv = 'Name,City,Classification,Retailers,Achievement_%,Rating,Sales,Target,TSM,Nearest_Plant,Distance_To_Plant_KM\n';
+    distributors.forEach(d => {
+        const nearestPlant = findNearestPlant(d.lat, d.lng);
+        csv += `"${d.name}","${d.city}","${d.classification}",${d.retailers},${d.achievement.toFixed(2)},"${d.rating}",${d.sales},${d.target},"${d.tsm}","${nearestPlant.name}",${nearestPlant.distance.toFixed(2)}\n`;
+    });
+    downloadCSV(csv, 'distributors_with_classification.csv');
 }
 
 function exportPOIs() {
@@ -888,7 +1139,7 @@ function exportPOIs() {
 }
 
 function downloadCSV(csv, filename) {
-    const blob = new Blob([csv], {type: 'text/csv;charset-utf-8;'});
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -898,7 +1149,3 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
-
-
-
-
