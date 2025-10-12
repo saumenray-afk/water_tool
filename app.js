@@ -661,6 +661,7 @@ function initializeApp() {
 
     setupEventListeners();
     updateDistributorList();
+    populateDistributorDropdown();
     updateMap();
     loadPOIData();
 
@@ -796,14 +797,28 @@ function updateMap() {
     }
 
     if (document.getElementById('showCoverage').checked) {
+        const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
         distributors.forEach(dist => {
             const circle = L.circle([dist.lat, dist.lng], {
-                radius: 25000,
+                radius: coverageRadius * 1000,
                 color: '#28a745',
                 fillColor: '#28a745',
                 fillOpacity: 0.08,
                 weight: 1
             }).addTo(map);
+            
+            // Add tooltip showing coverage radius
+            circle.bindTooltip(
+                `<div style="text-align: center;">
+                    <b>${dist.name}</b><br>
+                    Coverage: ${coverageRadius} KM
+                </div>`,
+                {
+                    permanent: false,
+                    direction: 'center'
+                }
+            );
+            
             coverageCircles.push(circle);
         });
     }
@@ -1136,6 +1151,69 @@ function exportDistributors() {
         csv += `"${d.name}","${d.city}","${d.classification}",${d.retailers},${d.achievement.toFixed(2)},"${d.rating}",${d.sales},${d.target},"${d.tsm}","${nearestPlant.name}",${nearestPlant.distance.toFixed(2)}\n`;
     });
     downloadCSV(csv, 'distributors_with_classification.csv');
+}
+
+// NEW: Populate distributor dropdown
+function populateDistributorDropdown() {
+    const select = document.getElementById('distributorSelect');
+    
+    // Clear existing options except first
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    // Sort distributors by name
+    const sortedDistributors = [...distributors].sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Add distributor options
+    sortedDistributors.forEach((dist, originalIndex) => {
+        const option = document.createElement('option');
+        option.value = dist.index;
+        option.textContent = `${dist.name} (${dist.city})`;
+        select.appendChild(option);
+    });
+}
+
+// NEW: Update distributor export info display
+function updateDistributorExportInfo() {
+    const select = document.getElementById('distributorSelect');
+    const infoDiv = document.getElementById('distExportInfo');
+    const infoText = document.getElementById('distInfoText');
+    
+    if (select.value) {
+        const distIndex = parseInt(select.value);
+        const dist = distributors[distIndex];
+        const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
+        
+        infoText.innerHTML = `
+            <div style="margin-bottom: 3px;">${dist.name}</div>
+            <div style="font-size: 11px; color: #666;">${dist.city} • ${dist.classification} • ${coverageRadius} KM radius</div>
+        `;
+        infoDiv.style.display = 'block';
+    } else {
+        infoDiv.style.display = 'none';
+    }
+}
+
+// NEW: Export POIs by selected distributor from dropdown
+function exportPOIsBySelectedDistributor() {
+    const select = document.getElementById('distributorSelect');
+    
+    if (!select.value) {
+        alert('Please select a distributor first.');
+        return;
+    }
+    
+    if (pois.length === 0) {
+        alert('No POI data available. Please wait for data to load.');
+        return;
+    }
+    
+    const distIndex = parseInt(select.value);
+    const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
+    
+    // Use the existing export function
+    exportPOIsByDistributor(distIndex, coverageRadius);
 }
 
 function exportPOIs() {
