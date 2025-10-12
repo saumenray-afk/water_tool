@@ -1,8 +1,8 @@
 // Configuration - IMPORTANT: Update these values with your GitHub repository details
 const GITHUB_CONFIG = {
-    username: 'YOUR_GITHUB_USERNAME',  // Replace with your GitHub username
-    repo: 'YOUR_REPO_NAME',            // Replace with your repository name
-    branch: 'main',                     // Change to 'master' if that's your default branch
+    username: 'saumenray-afk',
+    repo: 'water_tool',
+    branch: 'main',
     dataFile: 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip'
 };
 
@@ -121,7 +121,7 @@ async function loadPOIData() {
         
         if (!response.ok) {
             if (response.status === 404) {
-                throw new Error(`File not found (404). Please check your GitHub configuration in app.js`);
+                throw new Error(`File not found (404). Please check:\n1. File "DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip" is uploaded to repository root\n2. Repository is Public (not Private)\n3. File name matches exactly (case-sensitive)`);
             }
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -138,8 +138,7 @@ async function loadPOIData() {
     } catch (error) {
         console.error('❌ Error loading from GitHub:', error);
         document.getElementById('poiStatusText').innerHTML = 
-            `<span style="color: #dc3545;">⚠️ ${error.message}</span><br>
-            <span style="font-size: 11px;">Update GITHUB_CONFIG in app.js file</span>`;
+            `<span style="color: #dc3545;">⚠️ ${error.message}</span>`;
     }
 }
 
@@ -227,7 +226,7 @@ async function parsePOIData(csvText, fileName) {
     // Verify with sample data
     if (lines.length > 1) {
         const sampleValues = lines[1].split(delimiter);
-        console.log('📊 Sample row:');
+        console.log('📊 Sample row (first 10 columns):');
         for (let i = 0; i < Math.min(10, sampleValues.length); i++) {
             console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
         }
@@ -666,3 +665,5 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
+
+
