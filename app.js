@@ -41,7 +41,9 @@ const plants = {
 };
 
 // Global variables
-let map, currentRadius = 50, activeFilter = 'all';
+let map, currentRadius = 50;
+let activeCategoryFilter = 'all';
+let activeSubCategoryFilter = 'all';
 let mapMarkers = [], coverageCircles = [], distributors = [], distanceLines = [];
 let pois = [], poisLoaded = false;
 let selectedPlantForExport = null;
@@ -809,8 +811,14 @@ function updateMap() {
     if (document.getElementById('showPOIs').checked && pois.length > 0) {
         let filteredPOIs = pois;
 
-        if (activeFilter !== 'all') {
-            filteredPOIs = pois.filter(poi => poi.Category === activeFilter);
+        // Apply category filter
+        if (activeCategoryFilter !== 'all') {
+            filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
+        }
+
+        // Apply sub-category filter (only if Distribution is selected)
+        if (activeCategoryFilter === 'Distribution' && activeSubCategoryFilter !== 'all') {
+            filteredPOIs = filteredPOIs.filter(poi => poi.Sub_Category === activeSubCategoryFilter);
         }
 
         if (currentRadius > 0) {
@@ -840,7 +848,7 @@ function updateMap() {
             const tooltipContent = `
                 <div style="text-align: center;">
                     <b>${poi.Business_Name || poi.POI_ID}</b><br>
-                    <span style="font-size: 11px;">${poi.Category} • ${poi.City}</span><br>
+                    <span style="font-size: 11px;">${poi.Sub_Category || poi.Category} • ${poi.City}</span><br>
                     <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
                 </div>
             `;
@@ -911,10 +919,39 @@ function filterDistributors() {
     });
 }
 
-function filterPOIs(category, element) {
-    document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+// NEW: Filter POIs by Category
+function filterPOIsByCategory(category, element) {
+    // Update active filter chip
+    document.querySelectorAll('#expansion-tab .filter-chip').forEach(chip => {
+        if (!chip.parentElement.classList.contains('sub-category-filters')) {
+            chip.classList.remove('active');
+        }
+    });
     element.classList.add('active');
-    activeFilter = category;
+    
+    activeCategoryFilter = category;
+    
+    // Show/hide sub-category filters for Distribution
+    const subFilters = document.getElementById('distributionSubFilters');
+    if (category === 'Distribution') {
+        subFilters.classList.add('active');
+    } else {
+        subFilters.classList.remove('active');
+        activeSubCategoryFilter = 'all';
+    }
+    
+    updateMap();
+}
+
+// NEW: Filter POIs by Sub-Category (Distribution only)
+function filterPOIsBySubCategory(subCategory, element) {
+    // Update active filter chip
+    document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    element.classList.add('active');
+    
+    activeSubCategoryFilter = subCategory;
     updateMap();
 }
 
@@ -1005,18 +1042,7 @@ function exportPOIsByPlant() {
         return;
     }
     
-    const headers = Object.keys(filteredPOIs[0]);
-    let csv = headers.join(',') + '\n';
-    
-    filteredPOIs.forEach(poi => {
-        const row = headers.map(h => {
-            const val = poi[h] || '';
-            return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
-        });
-        csv += row.join(',') + '\n';
-    });
-    
-    downloadCSV(csv, `POIs_${plantKey}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
+    exportPOIsToCSV(filteredPOIs, `POIs_${plantKey}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
     alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs from ${plant.name} within ${radiusKM} KM radius`);
 }
 
@@ -1073,25 +1099,19 @@ function exportPOIsByDistributor(index, radiusKM) {
         return;
     }
     
-    const headers = Object.keys(filteredPOIs[0]);
-    let csv = 'Distributor_Name,Distributor_City,Distributor_Classification,Distance_To_POI_KM,' + headers.join(',') + '\n';
-    
-    filteredPOIs.forEach(poi => {
+    // Add distributor info to each POI
+    const enrichedPOIs = filteredPOIs.map(poi => {
         const distance = calculateDistance(poi.Latitude, poi.Longitude, dist.lat, dist.lng);
-        const row = [
-            `"${dist.name}"`,
-            `"${dist.city}"`,
-            `"${dist.classification}"`,
-            distance.toFixed(2)
-        ];
-        headers.forEach(h => {
-            const val = poi[h] || '';
-            row.push(typeof val === 'string' && val.includes(',') ? `"${val}"` : val);
-        });
-        csv += row.join(',') + '\n';
+        return {
+            Distributor_Name: dist.name,
+            Distributor_City: dist.city,
+            Distributor_Classification: dist.classification,
+            Distance_To_Distributor_KM: distance.toFixed(2),
+            ...poi
+        };
     });
     
-    downloadCSV(csv, `POIs_${dist.name.replace(/[^a-zA-Z0-9]/g, '_')}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
+    exportPOIsToCSV(enrichedPOIs, `POIs_${dist.name.replace(/[^a-zA-Z0-9]/g, '_')}_${radiusKM}KM_${new Date().toISOString().split('T')[0]}.csv`);
     closeModal();
     alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs within ${radiusKM} KM of ${dist.name}`);
 }
@@ -1124,18 +1144,51 @@ function exportPOIs() {
         return;
     }
     
-    const headers = Object.keys(pois[0]);
-    let csv = headers.join(',') + '\n';
+    const exportLimit = 10000; // Export first 10,000 POIs or all if less
+    const poisToExport = pois.slice(0, exportLimit);
     
-    pois.slice(0, 5000).forEach(poi => {
+    exportPOIsToCSV(poisToExport, `all_pois_export_${new Date().toISOString().split('T')[0]}.csv`);
+    
+    if (pois.length > exportLimit) {
+        alert(`✅ Exported ${exportLimit.toLocaleString()} POIs (limited from ${pois.length.toLocaleString()} total)`);
+    } else {
+        alert(`✅ Exported all ${poisToExport.length.toLocaleString()} POIs`);
+    }
+}
+
+// NEW: Comprehensive POI export function with ALL details
+function exportPOIsToCSV(poisArray, filename) {
+    if (poisArray.length === 0) {
+        alert('No POIs to export');
+        return;
+    }
+    
+    // Get all unique headers from all POIs
+    const allHeaders = new Set();
+    poisArray.forEach(poi => {
+        Object.keys(poi).forEach(key => allHeaders.add(key));
+    });
+    
+    const headers = Array.from(allHeaders);
+    
+    // Create CSV with all headers
+    let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+    
+    // Add all POI data
+    poisArray.forEach(poi => {
         const row = headers.map(h => {
-            const val = poi[h] || '';
-            return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+            const val = poi[h] !== undefined ? poi[h] : '';
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            const strVal = String(val);
+            if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+                return `"${strVal.replace(/"/g, '""')}"`;
+            }
+            return strVal;
         });
         csv += row.join(',') + '\n';
     });
     
-    downloadCSV(csv, 'pois_export.csv');
+    downloadCSV(csv, filename);
 }
 
 function downloadCSV(csv, filename) {
