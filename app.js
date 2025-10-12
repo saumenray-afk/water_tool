@@ -57,15 +57,12 @@ function parseCSVLine(line, delimiter = ',') {
         
         if (char === '"') {
             if (inQuotes && nextChar === '"') {
-                // Escaped quote
                 current += '"';
-                i++; // Skip next quote
+                i++;
             } else {
-                // Toggle quote mode
                 inQuotes = !inQuotes;
             }
         } else if (char === delimiter && !inQuotes) {
-            // End of field
             result.push(current.trim());
             current = '';
         } else {
@@ -73,10 +70,221 @@ function parseCSVLine(line, delimiter = ',') {
         }
     }
     
-    // Push last field
     result.push(current.trim());
-    
     return result;
+}
+
+// Helper function to format currency
+function formatCurrency(value) {
+    if (!value) return 'N/A';
+    const num = parseFloat(value.toString().replace(/[^0-9.-]/g, ''));
+    if (isNaN(num)) return value;
+    return '₹' + num.toLocaleString('en-IN');
+}
+
+// Helper function to format numbers
+function formatNumber(value) {
+    if (!value) return 'N/A';
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return num.toLocaleString('en-IN');
+}
+
+// Create detailed POI popup content
+function createPOIPopup(poi) {
+    const priority = poi.Priority || 'N/A';
+    const priorityClass = priority === 'High' ? 'badge-excellent' : 
+                          priority === 'Medium' ? 'badge-good' : 'badge-average';
+    
+    const consumption = poi.Water_Consumption || 'N/A';
+    const consumptionClass = consumption === 'High' ? 'badge-below' : 
+                             consumption === 'Medium' ? 'badge-average' : 'badge-good';
+    
+    return `
+        <div style="min-width: 280px; max-width: 350px; font-family: 'Segoe UI', sans-serif;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; margin: -10px -10px 10px -10px; border-radius: 4px 4px 0 0;">
+                <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">
+                    ${poi.Business_Name || poi.POI_ID || 'Unknown Business'}
+                </div>
+                <div style="font-size: 11px; opacity: 0.9;">
+                    ${poi.Sub_Category || poi.Category || 'Business'}
+                </div>
+            </div>
+            
+            <div style="padding: 8px 0;">
+                <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 4px 0; color: #666; width: 45%;">📍 Location:</td>
+                        <td style="padding: 4px 0; font-weight: 600;">${poi.City || poi.Area || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px 0; color: #666;">📮 Pincode:</td>
+                        <td style="padding: 4px 0; font-weight: 600;">${poi.Pincode || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px 0; color: #666;">🏢 Type:</td>
+                        <td style="padding: 4px 0; font-weight: 600;">${poi.Business_Type || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px 0; color: #666;">📏 Distance:</td>
+                        <td style="padding: 4px 0; font-weight: 600;">${poi.Distance_From_Plant_KM ? poi.Distance_From_Plant_KM + ' KM' : 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px 0; color: #666;">🏭 Plant:</td>
+                        <td style="padding: 4px 0; font-size: 11px;">${poi.Nearest_Plant || 'N/A'}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="border-top: 1px solid #e0e0e0; margin: 8px 0; padding-top: 8px;">
+                <div style="font-size: 11px; font-weight: 700; color: #667eea; margin-bottom: 6px;">💧 WATER REQUIREMENTS</div>
+                <table style="width: 100%; font-size: 12px;">
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Daily:</td>
+                        <td style="padding: 3px 0; font-weight: 600; text-align: right;">${formatNumber(poi.Daily_Requirement_Liters)} L</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Monthly:</td>
+                        <td style="padding: 3px 0; font-weight: 600; text-align: right;">${formatNumber(poi.Monthly_Requirement_Liters)} L</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Consumption:</td>
+                        <td style="padding: 3px 0; text-align: right;">
+                            <span class="performance-badge ${consumptionClass}" style="display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">
+                                ${consumption}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="border-top: 1px solid #e0e0e0; margin: 8px 0; padding-top: 8px;">
+                <div style="font-size: 11px; font-weight: 700; color: #667eea; margin-bottom: 6px;">💰 BUSINESS POTENTIAL</div>
+                <table style="width: 100%; font-size: 12px;">
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Revenue:</td>
+                        <td style="padding: 3px 0; font-weight: 600; text-align: right;">${formatCurrency(poi.Revenue_Potential)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Priority:</td>
+                        <td style="padding: 3px 0; text-align: right;">
+                            <span class="performance-badge ${priorityClass}" style="display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">
+                                ${priority}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Lead Score:</td>
+                        <td style="padding: 3px 0; font-weight: 600; text-align: right;">${poi.Lead_Score || 'N/A'}/100</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; color: #666;">Price Sensitivity:</td>
+                        <td style="padding: 3px 0; font-weight: 600; text-align: right;">${poi.Price_Sensitivity || 'N/A'}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="border-top: 1px solid #e0e0e0; margin: 8px 0; padding-top: 8px;">
+                <div style="font-size: 11px; font-weight: 700; color: #667eea; margin-bottom: 6px;">📞 CONTACT INFO</div>
+                <table style="width: 100%; font-size: 11px;">
+                    <tr>
+                        <td style="padding: 2px 0; color: #666;">Status:</td>
+                        <td style="padding: 2px 0; font-weight: 600;">${poi.Contact_Status || 'New Lead'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0; color: #666;">Sales Stage:</td>
+                        <td style="padding: 2px 0; font-weight: 600;">${poi.Sales_Stage || 'Prospecting'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0; color: #666;">Best Time:</td>
+                        <td style="padding: 2px 0;">${poi.Best_Contact_Time || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0; color: #666;">Current Supplier:</td>
+                        <td style="padding: 2px 0;">${poi.Current_Water_Supplier || 'Unknown'}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            ${poi.Landmark ? `
+            <div style="background: #f8f9ff; padding: 8px; border-radius: 6px; margin-top: 8px; font-size: 11px;">
+                <strong style="color: #667eea;">📍 Landmark:</strong> ${poi.Landmark}
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #999; text-align: center;">
+                ID: ${poi.POI_ID || 'N/A'} • Created: ${poi.Created_Date || 'N/A'}
+            </div>
+        </div>
+    `;
+}
+
+// Create detailed Distributor popup content
+function createDistributorPopup(dist) {
+    const achievementPercent = dist.achievement.toFixed(1);
+    const achievementClass = dist.achievement >= 90 ? 'badge-excellent' :
+                             dist.achievement >= 75 ? 'badge-good' :
+                             dist.achievement >= 60 ? 'badge-average' : 'badge-below';
+    
+    return `
+        <div style="min-width: 280px; font-family: 'Segoe UI', sans-serif;">
+            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px; margin: -10px -10px 10px -10px; border-radius: 4px 4px 0 0;">
+                <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">
+                    📦 ${dist.name}
+                </div>
+                <div style="font-size: 11px; opacity: 0.9;">
+                    Distributor - ${dist.city}
+                </div>
+            </div>
+            
+            <div style="padding: 8px 0;">
+                <div style="text-align: center; margin: 10px 0;">
+                    <div style="font-size: 32px; font-weight: 700; color: ${dist.achievement >= 75 ? '#28a745' : dist.achievement >= 60 ? '#ffc107' : '#dc3545'};">
+                        ${achievementPercent}%
+                    </div>
+                    <div style="font-size: 11px; color: #666; margin-top: 4px;">
+                        <span class="performance-badge ${achievementClass}" style="display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            ${dist.rating}
+                        </span>
+                    </div>
+                </div>
+                
+                <table style="width: 100%; font-size: 12px; margin-top: 10px;">
+                    <tr style="background: #f8f9ff;">
+                        <td style="padding: 6px; color: #666;">🎯 Target:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">₹${(dist.target / 100000).toFixed(1)}L</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; color: #666;">💰 Sales:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">₹${(dist.sales / 100000).toFixed(1)}L</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td style="padding: 6px; color: #666;">📍 Retailers:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">${dist.retailers}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; color: #666;">👤 TSM:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">${dist.tsm}</td>
+                    </tr>
+                    <tr style="background: #f8f9ff;">
+                        <td style="padding: 6px; color: #666;">🏙️ City:</td>
+                        <td style="padding: 6px; font-weight: 600; text-align: right;">${dist.city}</td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 12px; padding: 10px; background: ${dist.achievement >= 90 ? '#d4edda' : dist.achievement >= 75 ? '#fff3cd' : '#f8d7da'}; border-radius: 6px; border-left: 4px solid ${dist.achievement >= 90 ? '#28a745' : dist.achievement >= 75 ? '#ffc107' : '#dc3545'};">
+                    <div style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">
+                        ${dist.achievement >= 90 ? '🌟 Excellent Performance!' : 
+                          dist.achievement >= 75 ? '✅ Good Performance' : 
+                          dist.achievement >= 60 ? '⚠️ Average Performance' : '❌ Below Target'}
+                    </div>
+                    <div style="font-size: 10px;">
+                        Gap: ₹${((dist.target - dist.sales) / 100000).toFixed(1)}L
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // Authentication functions
@@ -235,19 +443,16 @@ async function parsePOIData(csvText, fileName) {
         throw new Error('CSV has no data rows');
     }
     
-    // Detect delimiter from first line
     const firstLine = lines[0];
     const commaCount = (firstLine.match(/,/g) || []).length;
     const tabCount = (firstLine.match(/\t/g) || []).length;
     const delimiter = commaCount > tabCount ? ',' : '\t';
     
-    console.log(`🔧 Delimiter: ${delimiter === ',' ? 'COMMA' : 'TAB'} (commas: ${commaCount}, tabs: ${tabCount})`);
+    console.log(`🔧 Delimiter: ${delimiter === ',' ? 'COMMA' : 'TAB'}`);
     
-    // Parse headers using robust parser
     const headers = parseCSVLine(firstLine, delimiter);
     console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 20));
     
-    // Find lat/lng columns
     let latCol = headers.findIndex(h => 
         h.toLowerCase() === 'latitude' || h.toLowerCase() === 'lat'
     );
@@ -258,26 +463,13 @@ async function parsePOIData(csvText, fileName) {
     console.log(`📍 Latitude column: ${latCol} ("${headers[latCol]}")`);
     console.log(`📍 Longitude column: ${lngCol} ("${headers[lngCol]}")`);
     
-    // Sample first data row
-    if (lines.length > 1) {
-        const sampleValues = parseCSVLine(lines[1], delimiter);
-        console.log('📊 Sample row parsed (first 15 columns):');
-        for (let i = 0; i < Math.min(15, sampleValues.length); i++) {
-            console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
-        }
-        console.log(`  Sample Latitude [${latCol}]: "${sampleValues[latCol]}"`);
-        console.log(`  Sample Longitude [${lngCol}]: "${sampleValues[lngCol]}"`);
-    }
-    
     if (latCol === -1 || lngCol === -1) {
-        throw new Error(`Could not find lat/lng columns. Lat: ${latCol}, Lng: ${lngCol}`);
+        throw new Error(`Could not find lat/lng columns`);
     }
     
-    // Parse POI data
     pois = [];
     let validCount = 0;
     let invalidCount = 0;
-    let errorSamples = [];
     
     console.log('\n🔄 Starting row processing...');
     
@@ -301,34 +493,7 @@ async function parsePOIData(csvText, fileName) {
             const lat = parseFloat(values[latCol]);
             const lng = parseFloat(values[lngCol]);
             
-            // Validate coordinates
-            if (isNaN(lat) || isNaN(lng)) {
-                invalidCount++;
-                if (errorSamples.length < 3) {
-                    errorSamples.push({
-                        line: i,
-                        reason: 'non-numeric',
-                        lat: values[latCol],
-                        lng: values[lngCol]
-                    });
-                }
-                continue;
-            }
-            
-            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-                invalidCount++;
-                if (errorSamples.length < 3) {
-                    errorSamples.push({
-                        line: i,
-                        reason: 'out of range',
-                        lat: lat,
-                        lng: lng
-                    });
-                }
-                continue;
-            }
-            
-            if (lat === 0 && lng === 0) {
+            if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180 || (lat === 0 && lng === 0)) {
                 invalidCount++;
                 continue;
             }
@@ -338,7 +503,6 @@ async function parsePOIData(csvText, fileName) {
             pois.push(poi);
             validCount++;
             
-            // Progress updates
             if (i % 10000 === 0) {
                 console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)`);
                 document.getElementById('poiStatusText').textContent = 
@@ -348,31 +512,16 @@ async function parsePOIData(csvText, fileName) {
             }
         } catch (parseError) {
             invalidCount++;
-            if (errorSamples.length < 3) {
-                errorSamples.push({
-                    line: i,
-                    reason: 'parse error',
-                    error: parseError.message
-                });
-            }
         }
     }
     
-    console.log('\n📊 PARSING COMPLETE:');
-    console.log(`   ✅ Valid POIs: ${validCount.toLocaleString()}`);
-    console.log(`   ❌ Invalid rows: ${invalidCount.toLocaleString()}`);
-    
-    if (errorSamples.length > 0) {
-        console.log('\n📋 Sample errors:', errorSamples);
-    }
+    console.log(`\n✅ SUCCESS! Loaded ${validCount.toLocaleString()} POIs (${invalidCount.toLocaleString()} invalid)`);
     
     if (validCount === 0) {
-        throw new Error(`No valid POIs found! All ${invalidCount} rows were invalid.`);
+        throw new Error(`No valid POIs found!`);
     }
     
     poisLoaded = true;
-    console.log(`\n✅ SUCCESS! Loaded ${validCount.toLocaleString()} POIs`);
-    
     updatePOIStats();
     updateMap();
 }
@@ -419,7 +568,7 @@ function initializeApp() {
 
     Object.values(plants).forEach(plant => {
         L.marker([plant.lat, plant.lng], {icon: plantIcon})
-            .bindPopup(`<b>${plant.name}</b><br>Water Production Facility`)
+            .bindPopup(`<div style="text-align: center; padding: 5px;"><b style="font-size: 14px;">🏭 ${plant.name}</b><br><span style="font-size: 12px; color: #666;">Water Production Facility</span></div>`)
             .addTo(map);
     });
 
@@ -520,8 +669,14 @@ function updateMap() {
             });
 
             const marker = L.marker([dist.lat, dist.lng], {icon: distIcon})
-                .bindPopup(`<b>${dist.name}</b><br>Achievement: ${dist.achievement.toFixed(1)}%<br>Retailers: ${dist.retailers}<br>City: ${dist.city}`)
+                .bindPopup(createDistributorPopup(dist), { maxWidth: 350 })
                 .addTo(map);
+            
+            // Add tooltip on hover
+            marker.bindTooltip(`<b>${dist.name}</b><br>${dist.achievement.toFixed(1)}% Achievement`, {
+                permanent: false,
+                direction: 'top'
+            });
             
             mapMarkers.push(marker);
         });
@@ -568,11 +723,22 @@ function updateMap() {
                 color: 'white',
                 weight: 1,
                 fillOpacity: 0.7
-            }).bindPopup(`
-                <b>${poi.Business_Name || poi.POI_ID}</b><br>
-                Category: ${poi.Category || 'N/A'}<br>
-                ${poi.Monthly_Requirement_Liters ? `Monthly: ${poi.Monthly_Requirement_Liters}L` : ''}
-            `).addTo(map);
+            }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
+            .addTo(map);
+            
+            // Add tooltip on hover - show key information
+            const tooltipContent = `
+                <div style="text-align: center;">
+                    <b>${poi.Business_Name || poi.POI_ID}</b><br>
+                    <span style="font-size: 11px;">${poi.Category} • ${poi.City}</span><br>
+                    <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
+                </div>
+            `;
+            marker.bindTooltip(tooltipContent, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -5]
+            });
             
             mapMarkers.push(marker);
         });
@@ -722,7 +888,7 @@ function exportPOIs() {
 }
 
 function downloadCSV(csv, filename) {
-    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const blob = new Blob([csv], {type: 'text/csv;charset-utf-8;'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
