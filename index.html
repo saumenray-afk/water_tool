@@ -333,6 +333,26 @@
         .filter-chip:hover { border-color: #667eea; }
         .filter-chip.active { background: #667eea; color: white; border-color: #667eea; }
 
+        .sub-category-filters {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sub-category-filters.active {
+            display: block;
+        }
+
+        .sub-category-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
         #map { flex: 1; height: 100%; }
 
         .modal {
@@ -421,6 +441,15 @@
             margin-bottom: 15px;
             font-size: 12px;
             color: #1565c0;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 10px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -566,20 +595,20 @@
                 <div class="tab-content" id="distributors-tab">
                     <div class="control-section">
                         <div class="section-title">Filter Distributors</div>
-                        <select id="perfFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
+                        <select id="perfFilter" onchange="filterDistributors()">
                             <option value="all">All Performance Levels</option>
                             <option value="Excellent">Excellent (90%+)</option>
                             <option value="Good">Good (75-90%)</option>
                             <option value="Average">Average (60-75%)</option>
                             <option value="Below Average">Below Average (<60%)</option>
                         </select>
-                        <select id="cityFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
+                        <select id="cityFilter" onchange="filterDistributors()">
                             <option value="all">All Cities</option>
                             <option value="Bangalore">Bangalore</option>
                             <option value="Mysuru">Mysuru</option>
                             <option value="Bengaluru">Bengaluru</option>
                         </select>
-                        <select id="classFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0;">
+                        <select id="classFilter" onchange="filterDistributors()">
                             <option value="all">All Classifications</option>
                             <option value="Super Stockist">Super Stockist</option>
                             <option value="Distributor">Distributor</option>
@@ -595,15 +624,26 @@
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">POI Filters</div>
+                        <div class="section-title">POI Category Filters</div>
                         <div>
-                            <button class="filter-chip active" onclick="filterPOIs('all', this)">All</button>
-                            <button class="filter-chip" onclick="filterPOIs('Distribution', this)">Distribution</button>
-                            <button class="filter-chip" onclick="filterPOIs('Retail', this)">Retail</button>
-                            <button class="filter-chip" onclick="filterPOIs('Food & Beverage', this)">F&B</button>
-                            <button class="filter-chip" onclick="filterPOIs('Hospitality', this)">Hospitality</button>
-                            <button class="filter-chip" onclick="filterPOIs('Corporate', this)">Corporate</button>
-                            <button class="filter-chip" onclick="filterPOIs('Healthcare', this)">Healthcare</button>
+                            <button class="filter-chip active" onclick="filterPOIsByCategory('all', this)">All Categories</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Distribution', this)">Distribution</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Retail', this)">Retail</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Food & Beverage', this)">F&B</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Hospitality', this)">Hospitality</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Corporate', this)">Corporate</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Healthcare', this)">Healthcare</button>
+                        </div>
+                        
+                        <!-- Sub-category filters for Distribution -->
+                        <div class="sub-category-filters" id="distributionSubFilters">
+                            <div class="sub-category-title">📦 Distribution Sub-Categories</div>
+                            <button class="filter-chip active" onclick="filterPOIsBySubCategory('all', this)">All Distribution</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Bulk Supplier', this)">Bulk Supplier</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Cash & Carry', this)">Cash & Carry</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Distributor', this)">Distributor</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Stockist', this)">Stockist</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Wholesaler', this)">Wholesaler</button>
                         </div>
                     </div>
 
@@ -631,7 +671,7 @@
 
                     <div class="control-section">
                         <div class="section-title">🏭 Export POIs by Plant</div>
-                        <select id="plantSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
+                        <select id="plantSelect">
                             <option value="">Select a plant...</option>
                             <option value="plant1">Bangalore Plant (Main)</option>
                             <option value="plant2">Secondary Plant</option>
@@ -650,7 +690,7 @@
                             📥 Export Distributors (CSV)
                         </button>
                         <button class="action-btn" onclick="exportPOIs()">
-                            📥 Export POIs (CSV)
+                            📥 Export All POIs (CSV)
                         </button>
                         <p style="font-size: 11px; color: #666; margin-top: 8px;">
                             💡 To export POIs around a specific distributor, click on the distributor marker on the map
