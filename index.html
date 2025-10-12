@@ -513,6 +513,16 @@
                             <button class="radius-btn" data-radius="125">125 KM</button>
                             <button class="radius-btn" data-radius="0">Clear</button>
                         </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                <input type="checkbox" id="useCustomRadius" onchange="toggleCustomRadius()">
+                                <span style="margin-left: 10px; font-weight: 600; font-size: 13px;">🎯 Use Custom Radius</span>
+                            </label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="customRadiusInput" min="1" max="500" placeholder="Enter KM (1-500)" disabled style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px;">
+                                <button onclick="applyCustomRadius()" style="padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Apply</button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="control-section">
@@ -529,9 +539,13 @@
                             <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
                             <span style="margin-left: 10px;">📍 POIs</span>
                         </label>
-                        <label style="display: flex; align-items: center; cursor: pointer;">
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" id="showCoverage" onchange="updateMap()">
                             <span style="margin-left: 10px;">🎯 25KM Coverage Circles</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="showDistLines" onchange="updateMap()">
+                            <span style="margin-left: 10px;">📏 Plant-Distributor Distance Lines</span>
                         </label>
                     </div>
 
@@ -559,11 +573,17 @@
                             <option value="Average">Average (60-75%)</option>
                             <option value="Below Average">Below Average (<60%)</option>
                         </select>
-                        <select id="cityFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0;">
+                        <select id="cityFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
                             <option value="all">All Cities</option>
                             <option value="Bangalore">Bangalore</option>
                             <option value="Mysuru">Mysuru</option>
                             <option value="Bengaluru">Bengaluru</option>
+                        </select>
+                        <select id="classFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0;">
+                            <option value="all">All Classifications</option>
+                            <option value="Super Stockist">Super Stockist</option>
+                            <option value="Distributor">Distributor</option>
+                            <option value="Sub Distributor">Sub Distributor</option>
                         </select>
                     </div>
 
@@ -610,6 +630,21 @@
                     </div>
 
                     <div class="control-section">
+                        <div class="section-title">🏭 Export POIs by Plant</div>
+                        <select id="plantSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
+                            <option value="">Select a plant...</option>
+                            <option value="plant1">Bangalore Plant (Main)</option>
+                            <option value="plant2">Secondary Plant</option>
+                        </select>
+                        <button class="action-btn" onclick="exportPOIsByPlant()">
+                            📥 Export POIs from Selected Plant
+                        </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 Export will use current radius setting or 150 KM if no radius selected
+                        </p>
+                    </div>
+
+                    <div class="control-section">
                         <div class="section-title">Export Options</div>
                         <button class="action-btn" onclick="exportDistributors()">
                             📥 Export Distributors (CSV)
@@ -617,6 +652,9 @@
                         <button class="action-btn" onclick="exportPOIs()">
                             📥 Export POIs (CSV)
                         </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 To export POIs around a specific distributor, click on the distributor marker on the map
+                        </p>
                     </div>
                 </div>
             </div>
