@@ -45,6 +45,40 @@ let map, currentRadius = 50, activeFilter = 'all';
 let mapMarkers = [], coverageCircles = [], distributors = [];
 let pois = [], poisLoaded = false;
 
+// Robust CSV Parser that handles quoted fields
+function parseCSVLine(line, delimiter = ',') {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Escaped quote
+                current += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote mode
+                inQuotes = !inQuotes;
+            }
+        } else if (char === delimiter && !inQuotes) {
+            // End of field
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    // Push last field
+    result.push(current.trim());
+    
+    return result;
+}
+
 // Authentication functions
 function handleLogin(event) {
     event.preventDefault();
@@ -121,7 +155,7 @@ async function loadPOIData() {
         
         if (!response.ok) {
             if (response.status === 404) {
-                throw new Error(`File not found (404). Please check:\n1. File "DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip" is uploaded to repository root\n2. Repository is Public (not Private)\n3. File name matches exactly (case-sensitive)`);
+                throw new Error(`File not found (404). Please check your configuration.`);
             }
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -145,14 +179,10 @@ async function loadPOIData() {
 async function loadPOIDataFromBlob(blob) {
     try {
         console.log('📦 Processing file, size:', blob.size, 'bytes');
-        
-        if (blob.size === 0) {
-            throw new Error('File is empty (0 bytes)');
-        }
-        
         console.log('📦 Extracting ZIP...');
-        const zip = await JSZip.loadAsync(blob);
+        document.getElementById('poiStatusText').textContent = 'Extracting ZIP file...';
         
+        const zip = await JSZip.loadAsync(blob);
         const fileNames = Object.keys(zip.files);
         console.log('📁 Files in ZIP:', fileNames);
         
@@ -161,17 +191,24 @@ async function loadPOIDataFromBlob(blob) {
         }
         
         const csvFileName = fileNames.find(name => 
-            name.endsWith('.csv') || name.endsWith('.txt') || name.endsWith('.tsv')
-        ) || fileNames[0];
-        console.log(`📄 Extracting file: ${csvFileName}`);
+            !name.startsWith('__MACOSX') && 
+            !name.startsWith('.') &&
+            (name.toLowerCase().endsWith('.csv') || 
+             name.toLowerCase().endsWith('.txt') || 
+             name.toLowerCase().endsWith('.tsv'))
+        );
         
+        if (!csvFileName) {
+            throw new Error('No CSV file found in ZIP');
+        }
+        
+        console.log(`📄 Extracting file: ${csvFileName}`);
         document.getElementById('poiStatusText').textContent = `Extracting ${csvFileName}...`;
         
         const csvText = await zip.files[csvFileName].async('text');
-        const textLength = csvText.length;
-        console.log(`✅ CSV extracted: ${textLength.toLocaleString()} characters`);
+        console.log(`✅ CSV extracted: ${csvText.length.toLocaleString()} characters`);
         
-        if (textLength === 0) {
+        if (csvText.length === 0) {
             throw new Error('CSV file is empty');
         }
         
@@ -188,7 +225,7 @@ async function loadPOIDataFromBlob(blob) {
 }
 
 async function parsePOIData(csvText, fileName) {
-    console.log('🔍 Parsing CSV data...');
+    console.log('🔍 Parsing CSV data with robust parser...');
     document.getElementById('poiStatusText').textContent = 'Parsing CSV data...';
     
     const lines = csvText.trim().split('\n');
@@ -198,103 +235,143 @@ async function parsePOIData(csvText, fileName) {
         throw new Error('CSV has no data rows');
     }
     
-    // Detect delimiter
-    let delimiter = '\t';
+    // Detect delimiter from first line
     const firstLine = lines[0];
-    const tabCount = (firstLine.match(/\t/g) || []).length;
     const commaCount = (firstLine.match(/,/g) || []).length;
+    const tabCount = (firstLine.match(/\t/g) || []).length;
+    const delimiter = commaCount > tabCount ? ',' : '\t';
     
-    if (commaCount > tabCount) {
-        delimiter = ',';
-    }
-    console.log('🔧 Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA', `(tabs: ${tabCount}, commas: ${commaCount})`);
+    console.log(`🔧 Delimiter: ${delimiter === ',' ? 'COMMA' : 'TAB'} (commas: ${commaCount}, tabs: ${tabCount})`);
     
-    const headers = firstLine.split(delimiter).map(h => h.trim());
-    console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 15));
+    // Parse headers using robust parser
+    const headers = parseCSVLine(firstLine, delimiter);
+    console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 20));
     
     // Find lat/lng columns
     let latCol = headers.findIndex(h => 
-        h === 'Latitude' || h === 'latitude' || h === 'lat' || h === 'LAT'
+        h.toLowerCase() === 'latitude' || h.toLowerCase() === 'lat'
     );
     let lngCol = headers.findIndex(h => 
-        h === 'Longitude' || h === 'longitude' || h === 'lng' || h === 'LON' || h === 'Long'
+        h.toLowerCase() === 'longitude' || h.toLowerCase() === 'lng' || h.toLowerCase() === 'long'
     );
     
     console.log(`📍 Latitude column: ${latCol} ("${headers[latCol]}")`);
     console.log(`📍 Longitude column: ${lngCol} ("${headers[lngCol]}")`);
     
-    // Verify with sample data
+    // Sample first data row
     if (lines.length > 1) {
-        const sampleValues = lines[1].split(delimiter);
-        console.log('📊 Sample row (first 10 columns):');
-        for (let i = 0; i < Math.min(10, sampleValues.length); i++) {
+        const sampleValues = parseCSVLine(lines[1], delimiter);
+        console.log('📊 Sample row parsed (first 15 columns):');
+        for (let i = 0; i < Math.min(15, sampleValues.length); i++) {
             console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
         }
-        
-        // Find numeric lat/lng if not found by header
-        for (let i = 0; i < sampleValues.length; i++) {
-            const val = parseFloat(sampleValues[i]);
-            if (!isNaN(val)) {
-                if (val >= 8 && val <= 22 && latCol === -1) {
-                    console.log(`  🎯 Found Latitude at column ${i}: ${val}`);
-                    latCol = i;
-                }
-                if (val >= 74 && val <= 78 && lngCol === -1) {
-                    console.log(`  🎯 Found Longitude at column ${i}: ${val}`);
-                    lngCol = i;
-                }
-            }
-        }
+        console.log(`  Sample Latitude [${latCol}]: "${sampleValues[latCol]}"`);
+        console.log(`  Sample Longitude [${lngCol}]: "${sampleValues[lngCol]}"`);
     }
     
     if (latCol === -1 || lngCol === -1) {
-        throw new Error(`Could not find valid lat/lng columns. Found lat=${latCol}, lng=${lngCol}`);
+        throw new Error(`Could not find lat/lng columns. Lat: ${latCol}, Lng: ${lngCol}`);
     }
     
     // Parse POI data
     pois = [];
     let validCount = 0;
     let invalidCount = 0;
+    let errorSamples = [];
+    
+    console.log('\n🔄 Starting row processing...');
     
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        const values = line.split(delimiter);
-        
-        if (values.length < 3) continue;
-        
-        const poi = {};
-        headers.forEach((header, index) => {
-            poi[header] = values[index] ? values[index].trim() : '';
-        });
-        
-        const lat = parseFloat(values[latCol]);
-        const lng = parseFloat(values[lngCol]);
-        
-        if (lat && lng && !isNaN(lat) && !isNaN(lng) && 
-            Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
-            lat !== 0 && lng !== 0) {
+        try {
+            const values = parseCSVLine(line, delimiter);
+            
+            if (values.length < headers.length - 5) {
+                invalidCount++;
+                continue;
+            }
+            
+            const poi = {};
+            headers.forEach((header, index) => {
+                poi[header] = values[index] ? values[index].trim() : '';
+            });
+            
+            const lat = parseFloat(values[latCol]);
+            const lng = parseFloat(values[lngCol]);
+            
+            // Validate coordinates
+            if (isNaN(lat) || isNaN(lng)) {
+                invalidCount++;
+                if (errorSamples.length < 3) {
+                    errorSamples.push({
+                        line: i,
+                        reason: 'non-numeric',
+                        lat: values[latCol],
+                        lng: values[lngCol]
+                    });
+                }
+                continue;
+            }
+            
+            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+                invalidCount++;
+                if (errorSamples.length < 3) {
+                    errorSamples.push({
+                        line: i,
+                        reason: 'out of range',
+                        lat: lat,
+                        lng: lng
+                    });
+                }
+                continue;
+            }
+            
+            if (lat === 0 && lng === 0) {
+                invalidCount++;
+                continue;
+            }
+            
             poi.Latitude = lat;
             poi.Longitude = lng;
             pois.push(poi);
             validCount++;
-        } else {
-            invalidCount++;
-        }
-        
-        // Progress updates
-        if (i % 10000 === 0) {
-            console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)...`);
-            document.getElementById('poiStatusText').textContent = 
-                `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
             
-            await new Promise(resolve => setTimeout(resolve, 0));
+            // Progress updates
+            if (i % 10000 === 0) {
+                console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)`);
+                document.getElementById('poiStatusText').textContent = 
+                    `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
+                
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        } catch (parseError) {
+            invalidCount++;
+            if (errorSamples.length < 3) {
+                errorSamples.push({
+                    line: i,
+                    reason: 'parse error',
+                    error: parseError.message
+                });
+            }
         }
     }
     
+    console.log('\n📊 PARSING COMPLETE:');
+    console.log(`   ✅ Valid POIs: ${validCount.toLocaleString()}`);
+    console.log(`   ❌ Invalid rows: ${invalidCount.toLocaleString()}`);
+    
+    if (errorSamples.length > 0) {
+        console.log('\n📋 Sample errors:', errorSamples);
+    }
+    
+    if (validCount === 0) {
+        throw new Error(`No valid POIs found! All ${invalidCount} rows were invalid.`);
+    }
+    
     poisLoaded = true;
-    console.log(`✅ SUCCESS! Loaded ${validCount.toLocaleString()} valid POIs (${invalidCount.toLocaleString()} invalid)`);
+    console.log(`\n✅ SUCCESS! Loaded ${validCount.toLocaleString()} POIs`);
     
     updatePOIStats();
     updateMap();
@@ -307,7 +384,7 @@ function updatePOIStats() {
         `✅ ${pois.length.toLocaleString()} POIs loaded successfully`;
     
     const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
-    const coverage = totalRetailers > 0 ? (totalRetailers / pois.length * 100) : 0;
+    const coverage = totalRetailers > 0 && pois.length > 0 ? (totalRetailers / pois.length * 100) : 0;
     document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
     
     const wsNeeded = Math.ceil(pois.length / 150);
@@ -318,7 +395,6 @@ function updatePOIStats() {
 
 // Application initialization
 function initializeApp() {
-    // Process distributors
     distributorsData.forEach(d => {
         const achievement = d.target > 0 ? (d.sales / d.target * 100) : 0;
         let rating = 'Below Average';
@@ -329,14 +405,12 @@ function initializeApp() {
         distributors.push({...d, achievement, rating});
     });
 
-    // Initialize map
     map = L.map('map').setView([12.9716, 77.5946], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',
         maxZoom: 18
     }).addTo(map);
 
-    // Add plant markers
     const plantIcon = L.divIcon({
         html: '<div style="background: #FF6B6B; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏭</div>',
         className: '',
@@ -352,8 +426,6 @@ function initializeApp() {
     setupEventListeners();
     updateDistributorList();
     updateMap();
-    
-    // Load POI data from GitHub
     loadPOIData();
 
     console.log(`✅ App Initialized: ${distributors.length} Distributors`);
@@ -424,7 +496,6 @@ function updateMap() {
     coverageCircles.forEach(circle => map.removeLayer(circle));
     coverageCircles = [];
 
-    // Draw radius circles around plants
     if (currentRadius > 0) {
         Object.values(plants).forEach(plant => {
             const circle = L.circle([plant.lat, plant.lng], {
@@ -438,7 +509,6 @@ function updateMap() {
         });
     }
 
-    // Show distributors
     if (document.getElementById('showDistributors').checked) {
         distributors.forEach(dist => {
             const color = dist.achievement >= 75 ? '#28a745' : 
@@ -457,7 +527,6 @@ function updateMap() {
         });
     }
 
-    // Show coverage circles
     if (document.getElementById('showCoverage').checked) {
         distributors.forEach(dist => {
             const circle = L.circle([dist.lat, dist.lng], {
@@ -471,7 +540,6 @@ function updateMap() {
         });
     }
 
-    // Show POIs
     if (document.getElementById('showPOIs').checked && pois.length > 0) {
         let filteredPOIs = pois;
 
@@ -488,7 +556,6 @@ function updateMap() {
             });
         }
 
-        // Display subset for performance (every 10th POI)
         const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
 
         displayPOIs.forEach(poi => {
@@ -571,7 +638,7 @@ function filterPOIs(category, element) {
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Earth radius in km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -665,5 +732,7 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
+
+
 
 
