@@ -11,11 +11,11 @@ const POI_ZIP_URL = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}
 
 // User authentication
 const VALID_USERS = {
-    'admin': 'admin123',
+    'admin': 'admin2024!',
     'manager': 'manager123',
     'soumen': 'soumen123',
     'client': 'client123',
-    'test': 'test123'
+    'test': 'test2024!'
 };
 
 const SESSION_TIMEOUT = 120; // minutes
