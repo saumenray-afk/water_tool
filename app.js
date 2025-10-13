@@ -20,18 +20,54 @@ const VALID_USERS = {
 
 const SESSION_TIMEOUT = 120; // minutes
 
-// Sample distributor data with wholesaler classifications
+// Actual distributor data from your CSV file
 const distributorsData = [
-    {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC', classification: 'Super Stockist'},
-    {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC', classification: 'Distributor'},
-    {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant', classification: 'Super Stockist'},
-    {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC', classification: 'Sub Distributor'},
-    {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant', classification: 'Distributor'},
-    {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN', classification: 'Distributor'},
-    {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC', classification: 'Sub Distributor'},
-    {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC', classification: 'Distributor'},
-    {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant', classification: 'Super Stockist'},
-    {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant', classification: 'Super Stockist'}
+    {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'AKSHAYA AURA', city: 'Bangalore', retailers: 1, lat: 12.9762, lng: 77.5735, target: 0, sales: 10169, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'AURA ENTERPRISES (Bengaluru)', city: 'Bengaluru', retailers: 55, lat: 13.0382, lng: 77.5156, target: 100000, sales: 239293, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3806435, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'BHASKAR-GOWRIBIDNUR', city: 'Tumkur', retailers: 38, lat: 13.522, lng: 77.2373, target: 120000, sales: 460946, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'DINESH KUMAR (BENGALURU)', city: 'Bengaluru', retailers: 21, lat: 12.7981, lng: 77.6846, target: 90000, sales: 159636, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'EPOCH FILMING', city: 'Bangalore', retailers: 20, lat: 13.0382, lng: 77.5156, target: 90000, sales: 86796, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'HANVIK CREATIONS', city: 'Bangalore', retailers: 38, lat: 12.9917, lng: 77.5073, target: 100000, sales: 167667, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'HIMESH FOODS PRIVATE LIMITED(BANGALORE)', city: 'Bangalore', retailers: 11, lat: 13.0096, lng: 77.556, target: 48000, sales: 50000, tsm: 'Not Assigned', classification: 'Retailer'},
+    {name: 'JUBILANT FOODWORKS LTD (BANGALORE)', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 50000, sales: 529836, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'KUSH ENTERPRISES', city: 'Bengaluru', retailers: 18, lat: 13.0714, lng: 77.6783, target: 320000, sales: 154189, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 2755869, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'PNS ENTERPRISES (Vijayapura)', city: 'Bengaluru', retailers: 22, lat: 13.0916, lng: 77.6866, target: 100000, sales: 278531, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 200000, sales: 1069068, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'RAVI KH', city: 'Bengaluru', retailers: 24, lat: 12.9181, lng: 77.5442, target: 100000, sales: 103670, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'S L V enterprises (Bengaluru)', city: 'Bengaluru', retailers: 22, lat: 12.9181, lng: 77.5442, target: 120000, sales: 627077, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SAANVI ENTERPRISES', city: 'Bengaluru', retailers: 21, lat: 12.9568, lng: 77.7286, target: 90000, sales: 92376, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4371139, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'SAKSHI ENTERPRISES(BENGALURU)', city: 'Bengaluru', retailers: 22, lat: 12.9846, lng: 77.5362, target: 100000, sales: 414261, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SANGVI AGRO PULSES', city: 'Bangalore', retailers: 107, lat: 13.0112, lng: 77.5192, target: 10000000, sales: 1019460, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 621439, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Shashank Enterprises', city: 'Bengaluru', retailers: 134, lat: 12.8826, lng: 77.6412, target: 5000000, sales: 953899, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SM ELIXIR', city: 'Bengaluru', retailers: 4, lat: 12.9352, lng: 77.5838, target: 160000, sales: 372438, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SM INFRA ELECTRADE', city: 'Bangalore', retailers: 6, lat: 12.9352, lng: 77.5838, target: 300000, sales: 189238, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SRI BASAVESHWARA ENTERPRISES', city: 'Bangalore', retailers: 40, lat: 13.0916, lng: 77.6866, target: 3000000, sales: 544236, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SRI DEVIRAMMA FOODS AND BEVERAGES', city: 'Bangalore', retailers: 13, lat: 12.9582, lng: 77.5116, target: 0, sales: 56946, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'Sri Lakshmi Narasimha Swamy Enterprises', city: 'Bangalore', retailers: 41, lat: 13.0714, lng: 77.6783, target: 10000000, sales: 178303, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Sri Lakshmi Narasimha Swamy Enterprises (BANGALORE)', city: 'Bangalore', retailers: 5, lat: 13.0714, lng: 77.6783, target: 4000000, sales: 2543899, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Sri Lakshmi Venkateshwra Enterprises Pure Water Supply', city: 'Bangalore', retailers: 43, lat: 12.9496, lng: 77.6226, target: 2000000, sales: 744752, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Sri Mangala Agencies', city: 'Tumkur', retailers: 138, lat: 13.3409, lng: 77.101, target: 90000, sales: 225081, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SRI MANJUNATHA ENTERPRISES', city: 'Tumkur', retailers: 22, lat: 13.3409, lng: 77.101, target: 2000000, sales: 911792, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Sri Manjunatha Enterprises(NELAMANGALA)', city: 'Bengaluru', retailers: 46, lat: 12.7981, lng: 77.6846, target: 90000, sales: 476985, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'SRI VEERABHADRASWAMY AGENCIES', city: 'Bengaluru', retailers: 38, lat: 13.3326, lng: 77.5376, target: 160000, sales: 165928, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'Sri Vinayaka Enterprises (Banglore)', city: 'Bangalore', retailers: 42, lat: 13.0714, lng: 77.6783, target: 3200000, sales: 683462, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'VENNA VENKATARAMA (Nagabhushan)', city: 'Bangalore', retailers: 19, lat: 13.2186, lng: 77.2062, target: 90000, sales: 83832, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2217457, tsm: 'Not Assigned', classification: 'Distributor'},
+    {name: 'OYO HOTELS AND HOMES PRIVATE LIMITED (Karnataka)', city: 'Bengaluru', retailers: 16, lat: 13.0086, lng: 77.6956, target: 0, sales: 70272, tsm: 'Tejas Manjunath(Bengaluru)-Horeca', classification: 'Distributor'},
+    {name: 'JAI MARUTHI ENTERPRISES (BANGLORE)', city: 'Bangalore', retailers: 47, lat: 13.0056, lng: 77.5562, target: 0, sales: 204901, tsm: 'Not Assigned', classification: 'Distributor'}
 ];
 
 // Plant locations
@@ -665,6 +701,11 @@ function initializeApp() {
     updateMap();
     loadPOIData();
 
+    // Update total distributors count in UI
+    document.getElementById('totalDist').textContent = distributors.length;
+    const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
+    document.getElementById('totalRetailers').textContent = totalRetailers.toLocaleString() + '+';
+
     console.log(`✅ App Initialized: ${distributors.length} Distributors`);
 }
 
@@ -1031,7 +1072,7 @@ function closeModal() {
     document.getElementById('reportModal').classList.remove('active');
 }
 
-// Export POIs by plant
+// Export POIs by plant - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsByPlant() {
     if (pois.length === 0) {
         alert('No POI data available. Please wait for data to load.');
@@ -1095,7 +1136,7 @@ function selectDistributorForPOIExport(index) {
     modal.classList.add('active');
 }
 
-// Export POIs around distributor
+// Export POIs around distributor - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsByDistributor(index, radiusKM) {
     if (pois.length === 0) {
         alert('No POI data available. Please wait for data to load.');
@@ -1195,7 +1236,7 @@ function updateDistributorExportInfo() {
     }
 }
 
-// NEW: Export POIs by selected distributor from dropdown
+// NEW: Export POIs by selected distributor from dropdown - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsBySelectedDistributor() {
     const select = document.getElementById('distributorSelect');
     
@@ -1216,22 +1257,16 @@ function exportPOIsBySelectedDistributor() {
     exportPOIsByDistributor(distIndex, coverageRadius);
 }
 
+// Export ALL POIs - REMOVED THE LIMIT, NOW EXPORTS ALL POIS
 function exportPOIs() {
     if (pois.length === 0) {
         alert('No POI data available to export. Please wait for data to load.');
         return;
     }
     
-    const exportLimit = 10000; // Export first 10,000 POIs or all if less
-    const poisToExport = pois.slice(0, exportLimit);
-    
-    exportPOIsToCSV(poisToExport, `all_pois_export_${new Date().toISOString().split('T')[0]}.csv`);
-    
-    if (pois.length > exportLimit) {
-        alert(`✅ Exported ${exportLimit.toLocaleString()} POIs (limited from ${pois.length.toLocaleString()} total)`);
-    } else {
-        alert(`✅ Exported all ${poisToExport.length.toLocaleString()} POIs`);
-    }
+    // Export all POIs (removed the 10,000 limit)
+    exportPOIsToCSV(pois, `all_pois_export_${new Date().toISOString().split('T')[0]}.csv`);
+    alert(`✅ Exported all ${pois.length.toLocaleString()} POIs`);
 }
 
 // NEW: Comprehensive POI export function with ALL details
