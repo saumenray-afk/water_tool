@@ -578,33 +578,34 @@
                                    onchange="updateMap()" 
                                    style="width: 100px; padding: 6px 8px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 12px;">
                         </div>
-                        <div class="control-section">
-    <div class="section-title">📊 Current View Statistics</div>
-    <div style="background: #f8f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
-        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">POIs in Current Radius:</div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            <div style="text-align: center;">
-                <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="currentRadiusPOIs">0</div>
-                <div style="font-size: 10px; color: #666;">Total POIs</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 20px; font-weight: 700; color: #28a745;" id="filteredPOIs">0</div>
-                <div style="font-size: 10px; color: #666;">Filtered POIs</div>
-            </div>
-        </div>
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Active Radius: <strong id="activeRadiusDisplay">None</strong></div>
-            <div style="font-size: 11px; color: #666;">Active Filter: <strong id="activeFilterDisplay">All Categories</strong></div>
-        </div>
-        <button class="action-btn" onclick="exportCurrentViewPOIs()" style="margin-top: 10px;">
-            📥 Export Current View POIs
-        </button>
-    </div>
-</div>
                         <label style="display: flex; align-items: center; cursor: pointer;">
                             <input type="checkbox" id="showDistLines" onchange="updateMap()">
                             <span style="margin-left: 10px;">📏 Plant-Distributor Distance Lines</span>
                         </label>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📊 Current View Statistics</div>
+                        <div style="background: #f8f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">POIs in Current Radius:</div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="currentRadiusPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Total POIs</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #28a745;" id="filteredPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Filtered POIs</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Active Radius: <strong id="activeRadiusDisplay">None</strong></div>
+                                <div style="font-size: 11px; color: #666;">Active Filter: <strong id="activeFilterDisplay">All Categories</strong></div>
+                            </div>
+                            <button class="action-btn" onclick="exportCurrentViewPOIs()" style="margin-top: 10px;">
+                                📥 Export Current View POIs
+                            </button>
+                        </div>
                     </div>
 
                     <div class="control-section">
@@ -760,4 +761,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
