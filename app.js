@@ -85,7 +85,14 @@ let pois = [], poisLoaded = false;
 let selectedPlantForExport = null;
 let selectedDistributorForExport = null;
 let customRadiusEnabled = false;
-
+let currentViewPOIs = [];
+let currentViewStats = {
+    totalInRadius: 0,
+    filtered: 0,
+    radius: 0,
+    category: 'all',
+    subCategory: 'all'
+};
 // Robust CSV Parser that handles quoted fields
 function parseCSVLine(line, delimiter = ',') {
     const result = [];
@@ -801,6 +808,16 @@ function updateMap() {
     coverageCircles.forEach(circle => map.removeLayer(circle));
     coverageCircles = [];
 
+    // Reset current view stats
+    currentViewPOIs = [];
+    currentViewStats = {
+        totalInRadius: 0,
+        filtered: 0,
+        radius: currentRadius,
+        category: activeCategoryFilter,
+        subCategory: activeSubCategoryFilter
+    };
+
     if (currentRadius > 0 && document.getElementById('showPlants').checked) {
         Object.values(plants).forEach(plant => {
             const circle = L.circle([plant.lat, plant.lng], {
@@ -848,7 +865,6 @@ function updateMap() {
                 weight: 1
             }).addTo(map);
             
-            // Add tooltip showing coverage radius
             circle.bindTooltip(
                 `<div style="text-align: center;">
                     <b>${dist.name}</b><br>
@@ -865,9 +881,23 @@ function updateMap() {
     }
 
     if (document.getElementById('showPOIs').checked && pois.length > 0) {
-        let filteredPOIs = pois;
+        let poisInRadius = pois;
+
+        // First filter by radius if active
+        if (currentRadius > 0) {
+            poisInRadius = poisInRadius.filter(poi => {
+                return Object.values(plants).some(plant => {
+                    const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                    return distance <= currentRadius;
+                });
+            });
+        }
+
+        // Update total POIs in radius
+        currentViewStats.totalInRadius = poisInRadius.length;
 
         // Apply category filter
+        let filteredPOIs = poisInRadius;
         if (activeCategoryFilter !== 'all') {
             filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
         }
@@ -877,15 +907,14 @@ function updateMap() {
             filteredPOIs = filteredPOIs.filter(poi => poi.Sub_Category === activeSubCategoryFilter);
         }
 
-        if (currentRadius > 0) {
-            filteredPOIs = filteredPOIs.filter(poi => {
-                return Object.values(plants).some(plant => {
-                    const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                    return distance <= currentRadius;
-                });
-            });
-        }
+        // Store filtered POIs for export
+        currentViewPOIs = filteredPOIs;
+        currentViewStats.filtered = filteredPOIs.length;
 
+        // Update UI with current stats
+        updateCurrentViewStats();
+
+        // Display POIs on map (sample for performance)
         const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
 
         displayPOIs.forEach(poi => {
@@ -916,10 +945,80 @@ function updateMap() {
             
             mapMarkers.push(marker);
         });
+    } else {
+        updateCurrentViewStats();
     }
     
     // Draw distance lines
     drawPlantDistributorLines();
+}
+function updateCurrentViewStats() {
+    document.getElementById('currentRadiusPOIs').textContent = currentViewStats.totalInRadius.toLocaleString();
+    document.getElementById('filteredPOIs').textContent = currentViewStats.filtered.toLocaleString();
+    
+    // Update active radius display
+    if (currentViewStats.radius > 0) {
+        document.getElementById('activeRadiusDisplay').textContent = currentViewStats.radius + ' KM';
+    } else {
+        document.getElementById('activeRadiusDisplay').textContent = 'None (All POIs)';
+    }
+    
+    // Update active filter display
+    let filterText = currentViewStats.category === 'all' ? 'All Categories' : currentViewStats.category;
+    if (currentViewStats.category === 'Distribution' && currentViewStats.subCategory !== 'all') {
+        filterText += ` > ${currentViewStats.subCategory}`;
+    }
+    document.getElementById('activeFilterDisplay').textContent = filterText;
+}
+
+// NEW: Export current view POIs
+function exportCurrentViewPOIs() {
+    if (currentViewPOIs.length === 0) {
+        if (pois.length === 0) {
+            alert('No POI data available. Please wait for data to load.');
+        } else {
+            alert('No POIs match the current filters and radius. Please adjust your filters or radius.');
+        }
+        return;
+    }
+
+    // Create descriptive filename
+    const radiusText = currentViewStats.radius > 0 ? `${currentViewStats.radius}KM` : 'AllRadius';
+    const categoryText = currentViewStats.category === 'all' ? 'AllCategories' : currentViewStats.category.replace(/\s+/g, '_');
+    const subCategoryText = currentViewStats.subCategory !== 'all' ? `_${currentViewStats.subCategory.replace(/\s+/g, '_')}` : '';
+    const date = new Date().toISOString().split('T')[0];
+    
+    const filename = `POIs_${radiusText}_${categoryText}${subCategoryText}_${date}.csv`;
+    
+    // Add export metadata to POIs
+    const enrichedPOIs = currentViewPOIs.map(poi => {
+        // Find nearest plant for each POI
+        const nearestPlant = findNearestPlant(poi.Latitude, poi.Longitude);
+        
+        return {
+            Export_Date: new Date().toISOString(),
+            Export_Radius_KM: currentViewStats.radius || 'All',
+            Export_Category_Filter: currentViewStats.category,
+            Export_SubCategory_Filter: currentViewStats.subCategory !== 'all' ? currentViewStats.subCategory : 'All',
+            Nearest_Plant_Name: nearestPlant.name,
+            Distance_To_Plant_KM: nearestPlant.distance.toFixed(2),
+            ...poi
+        };
+    });
+    
+    exportPOIsToCSV(enrichedPOIs, filename);
+    
+    // Show detailed export confirmation
+    const categoryInfo = currentViewStats.category === 'all' ? 'All Categories' : 
+                        currentViewStats.subCategory !== 'all' ? 
+                        `${currentViewStats.category} > ${currentViewStats.subCategory}` : 
+                        currentViewStats.category;
+    
+    alert(`✅ Export Successful!\n\n` +
+          `POIs Exported: ${currentViewPOIs.length.toLocaleString()}\n` +
+          `Radius: ${currentViewStats.radius > 0 ? currentViewStats.radius + ' KM' : 'All POIs'}\n` +
+          `Filter: ${categoryInfo}\n\n` +
+          `File: ${filename}`);
 }
 
 function getMarkerColor(category) {
@@ -976,29 +1075,16 @@ function filterDistributors() {
 }
 
 // NEW: Filter POIs by Category
-function filterPOIsByCategory(category, element) {
+function filterPOIsBySubCategory(subCategory, element) {
     // Update active filter chip
-    document.querySelectorAll('#expansion-tab .filter-chip').forEach(chip => {
-        if (!chip.parentElement.classList.contains('sub-category-filters')) {
-            chip.classList.remove('active');
-        }
+    document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
+        chip.classList.remove('active');
     });
     element.classList.add('active');
     
-    activeCategoryFilter = category;
-    
-    // Show/hide sub-category filters for Distribution
-    const subFilters = document.getElementById('distributionSubFilters');
-    if (category === 'Distribution') {
-        subFilters.classList.add('active');
-    } else {
-        subFilters.classList.remove('active');
-        activeSubCategoryFilter = 'all';
-    }
-    
+    activeSubCategoryFilter = subCategory;
     updateMap();
 }
-
 // NEW: Filter POIs by Sub-Category (Distribution only)
 function filterPOIsBySubCategory(subCategory, element) {
     // Update active filter chip
