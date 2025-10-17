@@ -93,6 +93,7 @@ let currentViewStats = {
     category: 'all',
     subCategory: 'all'
 };
+
 // Robust CSV Parser that handles quoted fields
 function parseCSVLine(line, delimiter = ',') {
     const result = [];
@@ -952,6 +953,7 @@ function updateMap() {
     // Draw distance lines
     drawPlantDistributorLines();
 }
+
 function updateCurrentViewStats() {
     document.getElementById('currentRadiusPOIs').textContent = currentViewStats.totalInRadius.toLocaleString();
     document.getElementById('filteredPOIs').textContent = currentViewStats.filtered.toLocaleString();
@@ -971,7 +973,6 @@ function updateCurrentViewStats() {
     document.getElementById('activeFilterDisplay').textContent = filterText;
 }
 
-// NEW: Export current view POIs
 function exportCurrentViewPOIs() {
     if (currentViewPOIs.length === 0) {
         if (pois.length === 0) {
@@ -1079,12 +1080,9 @@ function filterPOIsByCategory(category, element) {
     console.log('Filtering by category:', category);
     
     // Remove active class from ALL category filter chips (not sub-category)
-    const categoryChips = document.querySelectorAll('#expansion-tab > .control-section .filter-chip');
-    categoryChips.forEach(chip => {
-        // Only remove active from main category chips, not sub-category chips
-        if (!chip.parentElement.classList.contains('sub-category-filters')) {
-            chip.classList.remove('active');
-        }
+    const allChips = document.querySelectorAll('#expansion-tab .control-section:first-child .filter-chip');
+    allChips.forEach(chip => {
+        chip.classList.remove('active');
     });
     
     // Add active class to clicked element
@@ -1134,6 +1132,7 @@ function filterPOIsBySubCategory(subCategory, element) {
     // Update the map with new filters
     updateMap();
 }
+
 function showPerformanceReport() {
     const modal = document.getElementById('reportModal');
     const content = document.getElementById('modalContent');
@@ -1195,7 +1194,6 @@ function closeModal() {
     document.getElementById('reportModal').classList.remove('active');
 }
 
-// Export POIs by plant - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsByPlant() {
     if (pois.length === 0) {
         alert('No POI data available. Please wait for data to load.');
@@ -1225,12 +1223,10 @@ function exportPOIsByPlant() {
     alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs from ${plant.name} within ${radiusKM} KM radius`);
 }
 
-// Select distributor for POI export
 function selectDistributorForPOIExport(index) {
     selectedDistributorForExport = index;
     const dist = distributors[index];
     
-    // Show modal for radius selection
     const modal = document.getElementById('reportModal');
     const content = document.getElementById('modalContent');
     
@@ -1259,7 +1255,6 @@ function selectDistributorForPOIExport(index) {
     modal.classList.add('active');
 }
 
-// Export POIs around distributor - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsByDistributor(index, radiusKM) {
     if (pois.length === 0) {
         alert('No POI data available. Please wait for data to load.');
@@ -1278,7 +1273,6 @@ function exportPOIsByDistributor(index, radiusKM) {
         return;
     }
     
-    // Add distributor info to each POI
     const enrichedPOIs = filteredPOIs.map(poi => {
         const distance = calculateDistance(poi.Latitude, poi.Longitude, dist.lat, dist.lng);
         return {
@@ -1295,7 +1289,6 @@ function exportPOIsByDistributor(index, radiusKM) {
     alert(`✅ Exported ${filteredPOIs.length.toLocaleString()} POIs within ${radiusKM} KM of ${dist.name}`);
 }
 
-// Export POIs with custom radius
 function exportPOIsByDistributorCustom(index) {
     const radiusInput = document.getElementById('distCustomRadius');
     const radiusKM = parseInt(radiusInput.value);
@@ -1317,19 +1310,15 @@ function exportDistributors() {
     downloadCSV(csv, 'distributors_with_classification.csv');
 }
 
-// NEW: Populate distributor dropdown
 function populateDistributorDropdown() {
     const select = document.getElementById('distributorSelect');
     
-    // Clear existing options except first
     while (select.options.length > 1) {
         select.remove(1);
     }
     
-    // Sort distributors by name
     const sortedDistributors = [...distributors].sort((a, b) => a.name.localeCompare(b.name));
     
-    // Add distributor options
     sortedDistributors.forEach((dist, originalIndex) => {
         const option = document.createElement('option');
         option.value = dist.index;
@@ -1338,7 +1327,6 @@ function populateDistributorDropdown() {
     });
 }
 
-// NEW: Update distributor export info display
 function updateDistributorExportInfo() {
     const select = document.getElementById('distributorSelect');
     const infoDiv = document.getElementById('distExportInfo');
@@ -1359,7 +1347,6 @@ function updateDistributorExportInfo() {
     }
 }
 
-// NEW: Export POIs by selected distributor from dropdown - FIXED TO ONLY EXPORT SELECTED AREA
 function exportPOIsBySelectedDistributor() {
     const select = document.getElementById('distributorSelect');
     
@@ -1376,30 +1363,25 @@ function exportPOIsBySelectedDistributor() {
     const distIndex = parseInt(select.value);
     const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
     
-    // Use the existing export function
     exportPOIsByDistributor(distIndex, coverageRadius);
 }
 
-// Export ALL POIs - REMOVED THE LIMIT, NOW EXPORTS ALL POIS
 function exportPOIs() {
     if (pois.length === 0) {
         alert('No POI data available to export. Please wait for data to load.');
         return;
     }
     
-    // Export all POIs (removed the 10,000 limit)
     exportPOIsToCSV(pois, `all_pois_export_${new Date().toISOString().split('T')[0]}.csv`);
     alert(`✅ Exported all ${pois.length.toLocaleString()} POIs`);
 }
 
-// NEW: Comprehensive POI export function with ALL details
 function exportPOIsToCSV(poisArray, filename) {
     if (poisArray.length === 0) {
         alert('No POIs to export');
         return;
     }
     
-    // Get all unique headers from all POIs
     const allHeaders = new Set();
     poisArray.forEach(poi => {
         Object.keys(poi).forEach(key => allHeaders.add(key));
@@ -1407,14 +1389,11 @@ function exportPOIsToCSV(poisArray, filename) {
     
     const headers = Array.from(allHeaders);
     
-    // Create CSV with all headers
     let csv = headers.map(h => `"${h}"`).join(',') + '\n';
     
-    // Add all POI data
     poisArray.forEach(poi => {
         const row = headers.map(h => {
             const val = poi[h] !== undefined ? poi[h] : '';
-            // Escape quotes and wrap in quotes if contains comma, quote, or newline
             const strVal = String(val);
             if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
                 return `"${strVal.replace(/"/g, '""')}"`;
