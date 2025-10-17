@@ -1074,29 +1074,66 @@ function filterDistributors() {
     });
 }
 
-// NEW: Filter POIs by Category
-function filterPOIsBySubCategory(subCategory, element) {
-    // Update active filter chip
-    document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
-        chip.classList.remove('active');
+// Filter POIs by Category
+function filterPOIsByCategory(category, element) {
+    console.log('Filtering by category:', category);
+    
+    // Remove active class from ALL category filter chips (not sub-category)
+    const categoryChips = document.querySelectorAll('#expansion-tab > .control-section .filter-chip');
+    categoryChips.forEach(chip => {
+        // Only remove active from main category chips, not sub-category chips
+        if (!chip.parentElement.classList.contains('sub-category-filters')) {
+            chip.classList.remove('active');
+        }
     });
+    
+    // Add active class to clicked element
     element.classList.add('active');
     
-    activeSubCategoryFilter = subCategory;
-    updateMap();
-}
-// NEW: Filter POIs by Sub-Category (Distribution only)
-function filterPOIsBySubCategory(subCategory, element) {
-    // Update active filter chip
-    document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
-        chip.classList.remove('active');
-    });
-    element.classList.add('active');
+    // Update the active filter
+    activeCategoryFilter = category;
     
-    activeSubCategoryFilter = subCategory;
+    // Show/hide sub-category filters for Distribution
+    const subFilters = document.getElementById('distributionSubFilters');
+    if (category === 'Distribution') {
+        subFilters.classList.add('active');
+        // Reset sub-category filter to 'all'
+        activeSubCategoryFilter = 'all';
+        // Reset sub-category chips to show 'All Distribution' as active
+        document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+        });
+        document.querySelector('.sub-category-filters .filter-chip').classList.add('active');
+    } else {
+        subFilters.classList.remove('active');
+        activeSubCategoryFilter = 'all';
+    }
+    
+    console.log('Active category:', activeCategoryFilter);
+    console.log('Active sub-category:', activeSubCategoryFilter);
+    
+    // Update the map with new filters
     updateMap();
 }
 
+// Filter POIs by Sub-Category (Distribution only)
+function filterPOIsBySubCategory(subCategory, element) {
+    console.log('Filtering by sub-category:', subCategory);
+    
+    // Update active filter chip for sub-categories only
+    document.querySelectorAll('.sub-category-filters .filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    element.classList.add('active');
+    
+    // Update the active sub-category filter
+    activeSubCategoryFilter = subCategory;
+    
+    console.log('Active sub-category:', activeSubCategoryFilter);
+    
+    // Update the map with new filters
+    updateMap();
+}
 function showPerformanceReport() {
     const modal = document.getElementById('reportModal');
     const content = document.getElementById('modalContent');
