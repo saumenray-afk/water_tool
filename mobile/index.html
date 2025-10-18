@@ -1,1 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="RTM Mobile - Route to Market Sales Tool">
+    
+    <title>RTM Mobile - Sales App</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Install Prompt Banner -->
+    <div id="installPrompt" class="install-prompt hidden">
+        <div class="install-content">
+            <div class="install-icon">📱</div>
+            <div class="install-text">
+                <strong>Install RTM Mobile</strong>
+                <p>Get the app experience!</p>
+            </div>
+            <button id="installButton" class="install-btn-small">Install</button>
+            <button id="installClose" class="install-close">✕</button>
+        </div>
+    </div>
 
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="app-logo">🚀</div>
+                <h1>RTM Mobile</h1>
+                <p>Route to Market Sales Tool</p>
+            </div>
+            
+            <div class="error-message" id="loginError"></div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required autocomplete="username">
+                </div>
+                
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required autocomplete="current-password">
+                </div>
+                
+                <div class="input-group">
+                    <label>Role</label>
+                    <select id="userRole" required>
+                        <option value="">Select your role</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Sales Manager</option>
+                        <option value="sales">Sales Person</option>
+                        <option value="distributor">Distributor</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-loader hidden">●●●</span>
+                </button>
+            </form>
+            
+            <div class="demo-info">
+                <details>
+                    <summary>Demo Credentials</summary>
+                    <div class="demo-list">
+                        <p><strong>Admin:</strong> admin / admin2024!</p>
+                        <p><strong>Manager:</strong> manager / manager123</p>
+                        <p><strong>Sales:</strong> soumen / soumen123</p>
+                    </div>
+                </details>
+            </div>
+
+            <div class="login-footer">
+                <p>📱 Works offline • 🔄 Auto-sync • 📍 GPS tracking</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app hidden">
+        <!-- Top Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="menu-btn" id="menuBtn">☰</button>
+                <div class="header-title">
+                    <h1 id="viewTitle">Dashboard</h1>
+                    <p class="header-subtitle" id="headerSubtitle"></p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="notificationBtn">
+                    <span class="badge" id="notificationBadge">3</span>
+                    🔔
+                </button>
+                <button class="icon-btn" id="syncBtn" title="Sync">
+                    <span class="sync-icon">🔄</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Side Menu Drawer -->
+        <div class="side-drawer" id="sideDrawer">
+            <div class="drawer-header">
+                <div class="user-profile-large">
+                    <div class="user-avatar-large" id="drawerAvatar">AD</div>
+                    <div class="user-info-large">
+                        <div class="user-name-large" id="drawerUserName">Admin User</div>
+                        <div class="user-role-large" id="drawerUserRole">Administrator</div>
+                        <div class="user-status online">● Online</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="drawer-menu">
+                <a href="#" class="menu-item active" data-view="dashboard">
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+                <a href="#" class="menu-item" data-view="map">
+                    <span class="menu-icon">🗺️</span>
+                    <span class="menu-text">Map View</span>
+                </a>
+                <a href="#" class="menu-item" data-view="distributors">
+                    <span class="menu-icon">🏪</span>
+                    <span class="menu-text">Distributors</span>
+                    <span class="menu-badge">48</span>
+                </a>
+                <a href="#" class="menu-item" data-view="retailers">
+                    <span class="menu-icon">🛒</span>
+                    <span class="menu-text">Retailers</span>
+                </a>
+                <a href="#" class="menu-item" data-view="visits">
+                    <span class="menu-icon">📍</span>
+                    <span class="menu-text">My Visits</span>
+                    <span class="menu-badge badge-warning">5</span>
+                </a>
+                <a href="#" class="menu-item" data-view="orders">
+                    <span class="menu-icon">📦</span>
+                    <span class="menu-text">Orders</span>
+                </a>
+                <a href="#" class="menu-item" data-view="expansion">
+                    <span class="menu-icon">⭐</span>
+                    <span class="menu-text">Expansion</span>
+                </a>
+                <a href="#" class="menu-item" data-view="reports">
+                    <span class="menu-icon">📈</span>
+                    <span class="menu-text">Reports</span>
+                </a>
+                <a href="#" class="menu-item manager-only" data-view="team">
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">Team</span>
+                </a>
+                <a href="#" class="menu-item" data-view="settings">
+                    <span class="menu-icon">⚙️</span>
+                    <span class="menu-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="drawer-footer">
+                <button class="logout-btn-drawer" id="logoutBtn">
+                    <span>🚪</span> Logout
+                </button>
+                <div class="app-version">v1.0.0 • PWA</div>
+            </div>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay" id="overlay"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            
+            <!-- DASHBOARD VIEW -->
+            <div class="view active" id="dashboardView">
+                <!-- Quick Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card primary">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="todaySales">₹0</div>
+                            <div class="stat-label">Today's Sales</div>
+                            <div class="stat-trend positive">+12.5%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="todayOrders">0</div>
+                            <div class="stat-label">Orders</div>
+                            <div class="stat-trend">8 today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card warning">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="todayVisits">0</div>
+                            <div class="stat-label">Visits</div>
+                            <div class="stat-trend">5 pending</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="targetPercent">65%</div>
+                            <div class="stat-label">Target</div>
+                            <div class="stat-trend">₹3.25L / ₹5L</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Progress Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Monthly Progress</h3>
+                        <span class="card-action" id="monthlyTarget">Oct 2025</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress-container">
+                            <div class="progress-info">
+                                <span class="progress-label">Achievement</span>
+                                <span class="progress-percent" id="progressPercent">65%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBar" style="width: 65%"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span>₹3,25,000 achieved</span>
+                                <span>₹5,00,000 target</span>
+                            </div>
+                        </div>
+                        <div class="target-insights">
+                            <div class="insight-item">
+                                <span class="insight-label">Daily Avg:</span>
+                                <span class="insight-value">₹18,125</span>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-label">Required Daily:</span>
+                                <span class="insight-value">₹12,500</span>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-label">Days Left:</span>
+                                <span class="insight-value">14 days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions-grid">
+                            <button class="action-btn" onclick="startNewVisit()">
+                                <span class="action-icon">📍</span>
+                                <span>New Visit</span>
+                            </button>
+                            <button class="action-btn" onclick="createNewOrder()">
+                                <span class="action-icon">📦</span>
+                                <span>New Order</span>
+                            </button>
+                            <button class="action-btn" onclick="addNewRetailer()">
+                                <span class="action-icon">➕</span>
+                                <span>Add Outlet</span>
+                            </button>
+                            <button class="action-btn" onclick="addExpense()">
+                                <span class="action-icon">💵</span>
+                                <span>Expense</span>
+                            </button>
+                            <button class="action-btn" onclick="viewNearbyPOIs()">
+                                <span class="action-icon">📡</span>
+                                <span>Nearby</span>
+                            </button>
+                            <button class="action-btn" onclick="viewMyRoute()">
+                                <span class="action-icon">🛣️</span>
+                                <span>My Route</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Schedule -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Today's Schedule</h3>
+                        <span class="card-action">5 visits</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-list" id="scheduleList">
+                            <!-- Schedule items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Activities</h3>
+                        <button class="text-link" onclick="viewAllActivities()">View All</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-timeline" id="activityTimeline">
+                            <!-- Activities will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Leaderboard (Manager View) -->
+                <div class="card manager-only">
+                    <div class="card-header">
+                        <h3>Team Leaderboard</h3>
+                        <span class="card-action">This Month</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="leaderboard-list" id="leaderboardList">
+                            <!-- Leaderboard will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAP VIEW -->
+            <div class="view" id="mapView">
+                <div class="map-wrapper">
+                    <div id="map" class="map-container"></div>
+                    
+                    <!-- Map Controls -->
+                    <div class="map-controls">
+                        <button class="map-control-btn" id="myLocationBtn" title="My Location">
+                            <span>📍</span>
+                        </button>
+                        <button class="map-control-btn" id="filterBtn" title="Filters">
+                            <span>🔍</span>
+                        </button>
+                        <button class="map-control-btn" id="layersBtn" title="Layers">
+                            <span>📊</span>
+                        </button>
+                        <button class="map-control-btn" id="routeBtn" title="Route">
+                            <span>🛣️</span>
+                        </button>
+                    </div>
+
+                    <!-- Map Legend -->
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot distributor"></span>
+                            <span>Distributors</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot retailer"></span>
+                            <span>Retailers</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot poi"></span>
+                            <span>POIs</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot plant"></span>
+                            <span>Plants</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot mylocation"></span>
+                            <span>You</span>
+                        </div>
+                    </div>
+
+                    <!-- Map Info Panel -->
+                    <div class="map-info-panel hidden" id="mapInfoPanel">
+                        <button class="close-panel" onclick="closeMapInfo()">✕</button>
+                        <div id="mapInfoContent"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISTRIBUTORS VIEW -->
+            <div class="view" id="distributorsView">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input type="text" class="search-input" id="distributorSearch" placeholder="Search distributors...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <!-- Filter Chips -->
+                <div class="filter-chips-container">
+                    <button class="filter-chip active" data-filter="all">All</button>
+                    <button class="filter-chip" data-filter="excellent">⭐ Excellent</button>
+                    <button class="filter-chip" data-filter="good">✅ Good</button>
+                    <button class="filter-chip" data-filter="average">⚠️ Average</button>
+                    <button class="filter-chip" data-filter="below">❌ Below</button>
+                </div>
+
+                <!-- Distributors List -->
+                <div class="list-container" id="distributorsList">
+                    <!-- Distributors will be populated here -->
+                </div>
+            </div>
+
+            <!-- RETAILERS VIEW -->
+            <div class="view" id="retailersView">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="retailerSearch" placeholder="Search retailers...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="retailers-stats">
+                    <div class="retailer-stat">
+                        <span class="stat-num">156</span>
+                        <span class="stat-text">Active</span>
+                    </div>
+                    <div class="retailer-stat">
+                        <span class="stat-num">23</span>
+                        <span class="stat-text">New</span>
+                    </div>
+                    <div class="retailer-stat">
+                        <span class="stat-num">12</span>
+                        <span class="stat-text">Pending</span>
+                    </div>
+                </div>
+
+                <div class="list-container" id="retailersList">
+                    <!-- Retailers will be populated here -->
+                </div>
+
+                <!-- FAB Button -->
+                <button class="fab" onclick="addNewRetailer()">
+                    <span>➕</span>
+                </button>
+            </div>
+
+            <!-- VISITS VIEW -->
+            <div class="view" id="visitsView">
+                <!-- Visit Tabs -->
+                <div class="tabs-container">
+                    <button class="tab active" data-tab="today">Today</button>
+                    <button class="tab" data-tab="planned">Planned</button>
+                    <button class="tab" data-tab="completed">Completed</button>
+                </div>
+
+                <!-- Visit Summary -->
+                <div class="visit-summary">
+                    <div class="visit-summary-item">
+                        <span class="summary-icon">✅</span>
+                        <div class="summary-content">
+                            <span class="summary-value">3</span>
+                            <span class="summary-label">Completed</span>
+                        </div>
+                    </div>
+                    <div class="visit-summary-item">
+                        <span class="summary-icon">⏳</span>
+                        <div class="summary-content">
+                            <span class="summary-value">5</span>
+                            <span class="summary-label">Pending</span>
+                        </div>
+                    </div>
+                    <div class="visit-summary-item">
+                        <span class="summary-icon">📍</span>
+                        <div class="summary-content">
+                            <span class="summary-value">45 km</span>
+                            <span class="summary-label">Distance</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-container" id="visitsList">
+                    <!-- Visits will be populated here -->
+                </div>
+
+                <button class="fab" onclick="startNewVisit()">
+                    <span>📍</span>
+                </button>
+            </div>
+
+            <!-- ORDERS VIEW -->
+            <div class="view" id="ordersView">
+                <!-- Order Stats -->
+                <div class="order-stats-row">
+                    <div class="order-stat-card pending">
+                        <div class="stat-number">23</div>
+                        <div class="stat-title">Pending</div>
+                    </div>
+                    <div class="order-stat-card processing">
+                        <div class="stat-number">45</div>
+                        <div class="stat-title">Processing</div>
+                    </div>
+                    <div class="order-stat-card delivered">
+                        <div class="stat-number">156</div>
+                        <div class="stat-title">Delivered</div>
+                    </div>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="tabs-container">
+                    <button class="tab active" data-tab="all">All</button>
+                    <button class="tab" data-tab="pending">Pending</button>
+                    <button class="tab" data-tab="delivered">Delivered</button>
+                </div>
+
+                <div class="list-container" id="ordersList">
+                    <!-- Orders will be populated here -->
+                </div>
+
+                <button class="fab" onclick="createNewOrder()">
+                    <span>📦</span>
+                </button>
+            </div>
+
+            <!-- EXPANSION VIEW -->
+            <div class="view" id="expansionView">
+                <!-- Expansion Opportunity Cards -->
+                <div class="expansion-header-card">
+                    <h3>Market Expansion Opportunities</h3>
+                    <p>Identify and capture new market areas</p>
+                </div>
+
+                <div class="expansion-stats-grid">
+                    <div class="exp-stat-card">
+                        <div class="exp-icon">🎯</div>
+                        <div class="exp-value">145</div>
+                        <div class="exp-label">Potential POIs</div>
+                    </div>
+                    <div class="exp-stat-card">
+                        <div class="exp-icon">💰</div>
+                        <div class="exp-value">₹45L</div>
+                        <div class="exp-label">Est. Revenue</div>
+                    </div>
+                    <div class="exp-stat-card">
+                        <div class="exp-icon">📍</div>
+                        <div class="exp-value">12</div>
+                        <div class="exp-label">New Areas</div>
+                    </div>
+                    <div class="exp-stat-card">
+                        <div class="exp-icon">⏱️</div>
+                        <div class="exp-value">6 mo</div>
+                        <div class="exp-label">ROI Period</div>
+                    </div>
+                </div>
+
+                <!-- Coverage Gap Analysis -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Coverage Gap Analysis</h3>
+                        <button class="text-link" onclick="viewOnMap('coverage')">View Map</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="coverage-list" id="coverageGapList">
+                            <!-- Coverage gaps will be populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POI Categories -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Target Categories</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="category-list">
+                            <div class="category-item" onclick="filterPOICategory('distribution')">
+                                <span class="cat-icon">🏪</span>
+                                <div class="cat-info">
+                                    <span class="cat-name">Distribution</span>
+                                    <span class="cat-desc">Wholesalers, Distributors</span>
+                                </div>
+                                <span class="cat-count">45</span>
+                            </div>
+                            <div class="category-item" onclick="filterPOICategory('retail')">
+                                <span class="cat-icon">🛒</span>
+                                <div class="cat-info">
+                                    <span class="cat-name">Retail</span>
+                                    <span class="cat-desc">Supermarkets, Stores</span>
+                                </div>
+                                <span class="cat-count">78</span>
+                            </div>
+                            <div class="category-item" onclick="filterPOICategory('fb')">
+                                <span class="cat-icon">🍽️</span>
+                                <div class="cat-info">
+                                    <span class="cat-name">F&B</span>
+                                    <span class="cat-desc">Restaurants, Cafes</span>
+                                </div>
+                                <span class="cat-count">34</span>
+                            </div>
+                            <div class="category-item" onclick="filterPOICategory('hospitality')">
+                                <span class="cat-icon">🏨</span>
+                                <div class="cat-info">
+                                    <span class="cat-name">Hospitality</span>
+                                    <span class="cat-desc">Hotels, Resorts</span>
+                                </div>
+                                <span class="cat-count">22</span>
+                            </div>
+                            <div class="category-item" onclick="filterPOICategory('corporate')">
+                                <span class="cat-icon">🏢</span>
+                                <div class="cat-info">
+                                    <span class="cat-name">Corporate</span>
+                                    <span class="cat-desc">Offices, IT Parks</span>
+                                </div>
+                                <span class="cat-count">18</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Export Data</h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="export-btn" onclick="exportPOIsByRadius()">
+                            <span>📥</span> Export POIs by Radius
+                        </button>
+                        <button class="export-btn" onclick="exportCoverageReport()">
+                            <span>📊</span> Coverage Report
+                        </button>
+                        <button class="export-btn" onclick="exportExpansionPlan()">
+                            <span>📋</span> Expansion Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTS VIEW -->
+            <div class="view" id="reportsView">
+                <div class="report-cards-grid">
+                    <div class="report-card" onclick="generateDailySalesReport()">
+                        <div class="report-icon">📊</div>
+                        <div class="report-info">
+                            <h4>Sales Report</h4>
+                            <p>Daily, Weekly, Monthly</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+
+                    <div class="report-card" onclick="generateVisitReport()">
+                        <div class="report-icon">📍</div>
+                        <div class="report-info">
+                            <h4>Visit Report</h4>
+                            <p>Track your visits</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+
+                    <div class="report-card" onclick="generatePerformanceReport()">
+                        <div class="report-icon">🎯</div>
+                        <div class="report-info">
+                            <h4>Performance</h4>
+                            <p>Target vs Achievement</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+
+                    <div class="report-card" onclick="generateDistributorAnalysis()">
+                        <div class="report-icon">🏪</div>
+                        <div class="report-info">
+                            <h4>Distributor Analysis</h4>
+                            <p>Performance metrics</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+
+                    <div class="report-card" onclick="generateExpansionReport()">
+                        <div class="report-icon">⭐</div>
+                        <div class="report-info">
+                            <h4>Expansion Report</h4>
+                            <p>New opportunities</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+
+                    <div class="report-card manager-only" onclick="generateTeamReport()">
+                        <div class="report-icon">👥</div>
+                        <div class="report-info">
+                            <h4>Team Report</h4>
+                            <p>Team performance</p>
+                        </div>
+                        <span class="report-arrow">›</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEAM VIEW (Manager Only) -->
+            <div class="view manager-only" id="teamView">
+                <div class="team-stats-row">
+                    <div class="team-stat-box">
+                        <div class="team-stat-value">12</div>
+                        <div class="team-stat-label">Members</div>
+                    </div>
+                    <div class="team-stat-box">
+                        <div class="team-stat-value">₹45L</div>
+                        <div class="team-stat-label">Team Sales</div>
+                    </div>
+                    <div class="team-stat-box">
+                        <div class="team-stat-value">85%</div>
+                        <div class="team-stat-label">Avg Target</div>
+                    </div>
+                </div>
+
+                <div class="list-container" id="teamMembersList">
+                    <!-- Team members will be populated here -->
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div class="view" id="settingsView">
+                <!-- Profile Section -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3>Profile</h3>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-avatar-large">AD</div>
+                        <div class="profile-info">
+                            <h4 id="profileName">Admin User</h4>
+                            <p id="profileRole">Administrator</p>
+                            <p id="profileEmail">admin@rtm.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- General Settings -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3>General</h3>
+                    </div>
+                    <div class="settings-list">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">Offline Mode</div>
+                                <div class="setting-desc">Work without internet</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="offlineMode">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">Auto Sync</div>
+                                <div class="setting-desc">Sync data automatically</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoSync" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">GPS Tracking</div>
+                                <div class="setting-desc">Track visit locations</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="gpsTracking" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3>Notifications</h3>
+                    </div>
+                    <div class="settings-list">
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">Push Notifications</div>
+                                <div class="setting-desc">Receive alerts</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="pushNotifications" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <div class="setting-title">Daily Summary</div>
+                                <div class="setting-desc">Morning report</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dailySummary" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3>Data</h3>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-button" onclick="syncDataNow()">
+                            <span>🔄</span> Sync Now
+                        </button>
+                        <button class="action-button" onclick="clearLocalCache()">
+                            <span>🗑️</span> Clear Cache
+                        </button>
+                        <button class="action-button" onclick="exportAllData()">
+                            <span>📥</span> Export Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="settings-section">
+                    <div class="settings-header">
+                        <h3>About</h3>
+                    </div>
+                    <div class="about-info-list">
+                        <div class="about-row">
+                            <span>Version</span>
+                            <span>1.0.0</span>
+                        </div>
+                        <div class="about-row">
+                            <span>Build</span>
+                            <span>PWA-2025.10</span>
+                        </div>
+                        <div class="about-row">
+                            <span>Last Updated</span>
+                            <span>Oct 18, 2025</span>
+                        </div>
+                        <div class="about-row">
+                            <span>Server Status</span>
+                            <span class="status-dot online">● Online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-view="dashboard">
+                <span class="nav-icon-bottom">📊</span>
+                <span class="nav-label-bottom">Home</span>
+            </a>
+            <a href="#" class="nav-item" data-view="map">
+                <span class="nav-icon-bottom">🗺️</span>
+                <span class="nav-label-bottom">Map</span>
+            </a>
+            <a href="#" class="nav-item-fab" onclick="openFABMenu()">
+                <span class="fab-button">➕</span>
+            </a>
+            <a href="#" class="nav-item" data-view="visits">
+                <span class="nav-icon-bottom">📍</span>
+                <span class="nav-label-bottom">Visits</span>
+            </a>
+            <a href="#" class="nav-item" data-view="reports">
+                <span class="nav-icon-bottom">📈</span>
+                <span class="nav-label-bottom">More</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- FAB Action Menu -->
+    <div class="fab-menu hidden" id="fabMenu">
+        <div class="fab-overlay" onclick="closeFABMenu()"></div>
+        <div class="fab-actions">
+            <button class="fab-action" onclick="startNewVisit()">
+                <span class="fab-action-icon">📍</span>
+                <span class="fab-action-label">New Visit</span>
+            </button>
+            <button class="fab-action" onclick="createNewOrder()">
+                <span class="fab-action-icon">📦</span>
+                <span class="fab-action-label">New Order</span>
+            </button>
+            <button class="fab-action" onclick="addNewRetailer()">
+                <span class="fab-action-icon">➕</span>
+                <span class="fab-action-label">Add Retailer</span>
+            </button>
+            <button class="fab-action" onclick="addExpense()">
+                <span class="fab-action-icon">💵</span>
+                <span class="fab-action-label">Add Expense</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-screen hidden" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script src="pwa.js"></script>
+</body>
+</html>
