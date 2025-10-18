@@ -980,14 +980,127 @@ function populateRetailers() {
 }
 
 function addNewRetailer() {
-    showToast('info', 'Coming Soon', 'Add retailer form will open here');
-    // TODO: Implement retailer form modal
+    closeFABMenu();
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">Add New Retailer</h3>
+            <form id="newRetailerForm">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Retailer Name *</label>
+                    <input type="text" id="retailerName" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" placeholder="Store/Outlet name" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Contact Person</label>
+                    <input type="text" id="retailerContact" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" placeholder="Owner name">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Phone Number *</label>
+                    <input type="tel" id="retailerPhone" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" placeholder="10-digit mobile" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Address *</label>
+                    <textarea id="retailerAddress" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; min-height: 60px;" placeholder="Complete address" required></textarea>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">City</label>
+                    <input type="text" id="retailerCity" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" value="Bangalore">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Type</label>
+                    <select id="retailerType" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                        <option>Retail Store</option>
+                        <option>Supermarket</option>
+                        <option>Kirana Store</option>
+                        <option>Hotel/Restaurant</option>
+                        <option>Office/Corporate</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600;">Cancel</button>
+                    <button type="submit" style="flex: 1; padding: 14px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600;">Add Retailer</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    showModal(formHTML);
+    
+    document.getElementById('newRetailerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const retailer = {
+            id: 'R' + Date.now(),
+            name: document.getElementById('retailerName').value,
+            contact: document.getElementById('retailerContact').value,
+            phone: document.getElementById('retailerPhone').value,
+            address: document.getElementById('retailerAddress').value,
+            city: document.getElementById('retailerCity').value,
+            type: document.getElementById('retailerType').value,
+            status: 'active',
+            addedDate: new Date().toISOString().split('T')[0],
+            lastVisit: 'Never'
+        };
+        
+        AppState.retailers.unshift(retailer);
+        localStorage.setItem(APP_CONFIG.storageKeys.retailers, JSON.stringify(AppState.retailers));
+        
+        closeModal();
+        showToast('success', 'Retailer Added', `${retailer.name} added successfully`);
+        
+        if (AppState.currentView === 'retailers') {
+            populateRetailers();
+        }
+    });
 }
 
 function viewRetailer(index) {
     const retailer = AppState.retailers[index];
     if (!retailer) return;
-    showToast('info', retailer.name, retailer.address);
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">${retailer.name}</h3>
+            <div style="margin-bottom: 12px;"><strong>Contact:</strong> ${retailer.contact || 'N/A'}</div>
+            <div style="margin-bottom: 12px;"><strong>Phone:</strong> ${retailer.phone || 'N/A'}</div>
+            <div style="margin-bottom: 12px;"><strong>Address:</strong> ${retailer.address}</div>
+            <div style="margin-bottom: 12px;"><strong>City:</strong> ${retailer.city || 'N/A'}</div>
+            <div style="margin-bottom: 12px;"><strong>Type:</strong> ${retailer.type || 'Retail'}</div>
+            <div style="margin-bottom: 12px;"><strong>Status:</strong> <span style="color: #28a745">${retailer.status || 'Active'}</span></div>
+            <div style="margin-bottom: 12px;"><strong>Added:</strong> ${retailer.addedDate || 'N/A'}</div>
+            <div style="margin-bottom: 12px;"><strong>Last Visit:</strong> ${retailer.lastVisit || 'Never'}</div>
+            <button onclick="closeModal()" style="width: 100%; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600; margin-top: 16px;">Close</button>
+        </div>
+    `;
+    
+    showModal(formHTML);
+}
+
+// Modal System
+function showModal(content) {
+    let modal = document.getElementById('appModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'appModal';
+        modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+        modal.innerHTML = `<div id="modalContent" style="background: white; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;"></div>`;
+        document.body.appendChild(modal);
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+    
+    document.getElementById('modalContent').innerHTML = content;
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('appModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // ===== VISITS =====
@@ -1019,14 +1132,120 @@ function populateVisits() {
 }
 
 function startNewVisit() {
-    showToast('info', 'New Visit', 'Starting new visit...');
-    // TODO: Implement visit form with GPS check-in
+    closeFABMenu();
+    
+    const distributorOptions = AppState.distributors
+        .map(d => `<option value="${d.index}">${d.name} - ${d.city}</option>`)
+        .join('');
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">New Visit</h3>
+            <form id="newVisitForm">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Select Distributor/Retailer</label>
+                    <select id="visitLocation" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" required>
+                        <option value="">Choose location...</option>
+                        ${distributorOptions}
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Visit Purpose</label>
+                    <select id="visitPurpose" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                        <option>Sales Call</option>
+                        <option>Order Taking</option>
+                        <option>Payment Collection</option>
+                        <option>Stock Check</option>
+                        <option>Relationship Building</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Notes</label>
+                    <textarea id="visitNotes" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; min-height: 80px;" placeholder="Add any notes..."></textarea>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600;">Cancel</button>
+                    <button type="submit" style="flex: 1; padding: 14px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600;">Start Visit</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    showModal(formHTML);
+    
+    document.getElementById('newVisitForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const locIndex = document.getElementById('visitLocation').value;
+        const purpose = document.getElementById('visitPurpose').value;
+        const notes = document.getElementById('visitNotes').value;
+        
+        if (!locIndex) {
+            showToast('warning', 'Required', 'Please select a location');
+            return;
+        }
+        
+        const dist = AppState.distributors[parseInt(locIndex)];
+        const visit = {
+            id: 'V' + Date.now(),
+            name: dist.name,
+            location: dist.city,
+            purpose: purpose,
+            notes: notes,
+            date: new Date().toISOString().split('T')[0],
+            time: new Date().toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'}),
+            status: 'in-progress',
+            gps: AppState.userLocation
+        };
+        
+        AppState.visits.unshift(visit);
+        localStorage.setItem(APP_CONFIG.storageKeys.visits, JSON.stringify(AppState.visits));
+        
+        closeModal();
+        showToast('success', 'Visit Started', `Visit to ${dist.name} started`);
+        
+        if (AppState.currentView === 'visits') {
+            populateVisits();
+        }
+    });
 }
 
 function viewVisit(visitId) {
     const visit = AppState.visits.find(v => v.id === visitId);
     if (!visit) return;
-    showToast('info', 'Visit Details', visit.name);
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">Visit Details</h3>
+            <div style="margin-bottom: 12px;"><strong>Location:</strong> ${visit.name}</div>
+            <div style="margin-bottom: 12px;"><strong>City:</strong> ${visit.location}</div>
+            <div style="margin-bottom: 12px;"><strong>Purpose:</strong> ${visit.purpose || 'Sales Call'}</div>
+            <div style="margin-bottom: 12px;"><strong>Date:</strong> ${visit.date}</div>
+            <div style="margin-bottom: 12px;"><strong>Time:</strong> ${visit.time}</div>
+            <div style="margin-bottom: 12px;"><strong>Status:</strong> <span style="color: ${visit.status === 'completed' ? '#28a745' : '#ffc107'}">${visit.status}</span></div>
+            ${visit.notes ? `<div style="margin-bottom: 12px;"><strong>Notes:</strong> ${visit.notes}</div>` : ''}
+            ${visit.status !== 'completed' ? `
+                <button onclick="completeVisit('${visit.id}')" style="width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; margin-top: 16px;">Complete Visit</button>
+            ` : ''}
+            <button onclick="closeModal()" style="width: 100%; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600; margin-top: 12px;">Close</button>
+        </div>
+    `;
+    
+    showModal(formHTML);
+}
+
+function completeVisit(visitId) {
+    const visit = AppState.visits.find(v => v.id === visitId);
+    if (visit) {
+        visit.status = 'completed';
+        localStorage.setItem(APP_CONFIG.storageKeys.visits, JSON.stringify(AppState.visits));
+        showToast('success', 'Visit Completed', `Visit to ${visit.name} marked complete`);
+        closeModal();
+        if (AppState.currentView === 'visits') {
+            populateVisits();
+        }
+        updateDashboardStats();
+    }
 }
 
 // ===== ORDERS =====
@@ -1069,14 +1288,117 @@ function populateOrders() {
 }
 
 function createNewOrder() {
-    showToast('info', 'New Order', 'Order form will open here');
-    // TODO: Implement order form
+    closeFABMenu();
+    
+    const distributorOptions = AppState.distributors
+        .map(d => `<option value="${d.index}">${d.name} - ${d.city}</option>`)
+        .join('');
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">New Order</h3>
+            <form id="newOrderForm">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Customer</label>
+                    <select id="orderCustomer" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" required>
+                        <option value="">Choose customer...</option>
+                        ${distributorOptions}
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Product Type</label>
+                    <select id="orderProduct" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                        <option>Packaged Water - 20L</option>
+                        <option>Packaged Water - 1L</option>
+                        <option>Packaged Water - 500ml</option>
+                        <option>Mixed Order</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Quantity</label>
+                    <input type="number" id="orderQuantity" min="1" value="100" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Amount (₹)</label>
+                    <input type="number" id="orderAmount" min="1" value="5000" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Payment Terms</label>
+                    <select id="orderPayment" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                        <option>Cash on Delivery</option>
+                        <option>Credit - 7 days</option>
+                        <option>Credit - 15 days</option>
+                        <option>Credit - 30 days</option>
+                        <option>Advance Payment</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600;">Cancel</button>
+                    <button type="submit" style="flex: 1; padding: 14px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600;">Create Order</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    showModal(formHTML);
+    
+    document.getElementById('newOrderForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const custIndex = document.getElementById('orderCustomer').value;
+        const product = document.getElementById('orderProduct').value;
+        const quantity = document.getElementById('orderQuantity').value;
+        const amount = document.getElementById('orderAmount').value;
+        const payment = document.getElementById('orderPayment').value;
+        
+        if (!custIndex) {
+            showToast('warning', 'Required', 'Please select a customer');
+            return;
+        }
+        
+        const dist = AppState.distributors[parseInt(custIndex)];
+        const order = {
+            id: 'ORD' + Date.now(),
+            customer: dist.name,
+            product: product,
+            items: parseInt(quantity),
+            amount: parseInt(amount),
+            payment: payment,
+            date: new Date().toISOString().split('T')[0],
+            status: 'pending'
+        };
+        
+        AppState.orders.unshift(order);
+        localStorage.setItem(APP_CONFIG.storageKeys.orders, JSON.stringify(AppState.orders));
+        
+        closeModal();
+        showToast('success', 'Order Created', `Order #${order.id} created successfully`);
+        
+        if (AppState.currentView === 'orders') {
+            populateOrders();
+        }
+        updateDashboardStats();
+    });
 }
 
 function viewOrder(orderId) {
     const order = AppState.orders.find(o => o.id === orderId);
     if (!order) return;
-    showToast('info', 'Order Details', `Order #${order.id}`);
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">Order #${order.id}</h3>
+            <div style="margin-bottom: 12px;"><strong>Customer:</strong> ${order.customer}</div>
+            <div style="margin-bottom: 12px;"><strong>Product:</strong> ${order.product || 'Water Products'}</div>
+            <div style="margin-bottom: 12px;"><strong>Quantity:</strong> ${order.items} units</div>
+            <div style="margin-bottom: 12px;"><strong>Amount:</strong> ${formatCurrency(order.amount)}</div>
+            <div style="margin-bottom: 12px;"><strong>Payment:</strong> ${order.payment}</div>
+            <div style="margin-bottom: 12px;"><strong>Date:</strong> ${order.date}</div>
+            <div style="margin-bottom: 12px;"><strong>Status:</strong> <span style="color: ${order.status === 'delivered' ? '#28a745' : '#ffc107'}">${order.status}</span></div>
+            <button onclick="closeModal()" style="width: 100%; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600; margin-top: 16px;">Close</button>
+        </div>
+    `;
+    
+    showModal(formHTML);
 }
 
 // ===== EXPANSION =====
@@ -1217,7 +1539,63 @@ function closeFABMenu() {
 // Quick action functions
 function addExpense() {
     closeFABMenu();
-    showToast('info', 'Add Expense', 'Expense form will open here');
+    
+    const formHTML = `
+        <div style="padding: 20px;">
+            <h3 style="margin-bottom: 16px;">Add Expense</h3>
+            <form id="newExpenseForm">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Expense Type</label>
+                    <select id="expenseType" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                        <option>Travel</option>
+                        <option>Food & Accommodation</option>
+                        <option>Fuel</option>
+                        <option>Client Entertainment</option>
+                        <option>Phone & Internet</option>
+                        <option>Office Supplies</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Amount (₹)</label>
+                    <input type="number" id="expenseAmount" min="1" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;" placeholder="Enter amount" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Description</label>
+                    <textarea id="expenseDesc" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; min-height: 60px;" placeholder="Expense details..."></textarea>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Date</label>
+                    <input type="date" id="expenseDate" value="${new Date().toISOString().split('T')[0]}" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px;">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeModal()" style="flex: 1; padding: 14px; background: #f0f0f0; border: none; border-radius: 6px; font-weight: 600;">Cancel</button>
+                    <button type="submit" style="flex: 1; padding: 14px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600;">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    showModal(formHTML);
+    
+    document.getElementById('newExpenseForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const expense = {
+            id: 'EXP' + Date.now(),
+            type: document.getElementById('expenseType').value,
+            amount: parseFloat(document.getElementById('expenseAmount').value),
+            description: document.getElementById('expenseDesc').value,
+            date: document.getElementById('expenseDate').value,
+            status: 'pending'
+        };
+        
+        AppState.expenses.unshift(expense);
+        localStorage.setItem(APP_CONFIG.storageKeys.expenses, JSON.stringify(AppState.expenses));
+        
+        closeModal();
+        showToast('success', 'Expense Added', `${formatCurrency(expense.amount)} expense recorded`);
+    });
 }
 
 function viewNearbyPOIs() {
