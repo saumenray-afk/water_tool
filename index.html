@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Business Expansion Tool - Secure Access</title>
+    <title>Water Business Expansion Tool</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -26,39 +27,13 @@
             width: 90%;
         }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 { font-size: 24px; color: #333; margin-bottom: 8px; }
+        .login-header p { color: #666; font-size: 14px; }
+        .login-icon { font-size: 60px; margin-bottom: 20px; }
 
-        .login-header h1 {
-            font-size: 24px;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .login-header p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .login-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px; }
         .input-group input {
             width: 100%;
             padding: 12px 15px;
@@ -67,7 +42,6 @@
             font-size: 14px;
             transition: all 0.3s;
         }
-
         .input-group input:focus {
             outline: none;
             border-color: #667eea;
@@ -86,11 +60,7 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
 
         .error-message {
             background: #fee;
@@ -101,21 +71,10 @@
             margin-bottom: 15px;
             display: none;
         }
+        .error-message.show { display: block; }
 
-        .error-message.show {
-            display: block;
-        }
-
-        #app {
-            display: none;
-            width: 100%;
-            height: 100%;
-            background: #f5f7fa;
-        }
-
-        #app.active {
-            display: block;
-        }
+        #app { display: none; width: 100%; height: 100%; background: #f5f7fa; }
+        #app.active { display: block; }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -126,7 +85,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .header-left h1 { font-size: 20px; margin-bottom: 3px; }
         .header-left p { opacity: 0.9; font-size: 12px; }
 
@@ -141,10 +99,7 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
 
         .container { display: flex; height: calc(100vh - 65px); }
 
@@ -174,7 +129,6 @@
             border-bottom: 3px solid transparent;
             font-size: 13px;
         }
-
         .tab:hover { color: #667eea; }
         .tab.active { color: #667eea; border-bottom-color: #667eea; }
 
@@ -214,7 +168,6 @@
             display: flex;
             align-items: center;
         }
-
         .section-title::before {
             content: '';
             width: 4px;
@@ -240,7 +193,6 @@
             font-size: 14px;
             font-weight: 600;
         }
-
         .radius-btn:hover { border-color: #667eea; background: #f8f9ff; }
         .radius-btn.active { background: #667eea; color: white; border-color: #667eea; }
 
@@ -257,66 +209,11 @@
             transition: all 0.3s;
             margin-bottom: 10px;
         }
-
         .action-btn:hover {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
-
-        .distributor-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        .distributor-item {
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #f8f9ff;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-        }
-
-        .distributor-item:hover {
-            background: #e8ebff;
-            border-left-color: #667eea;
-        }
-
-        .distributor-item.selected {
-            background: #667eea;
-            color: white;
-            border-left-color: #4a56c9;
-        }
-
-        .distributor-name {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .distributor-meta {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        .performance-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-
-        .badge-excellent { background: #28a745; color: white; }
-        .badge-good { background: #ffc107; color: #333; }
-        .badge-average { background: #ff9800; color: white; }
-        .badge-below { background: #dc3545; color: white; }
 
         .filter-chip {
             padding: 6px 12px;
@@ -329,91 +226,17 @@
             display: inline-block;
             margin: 4px;
         }
-
         .filter-chip:hover { border-color: #667eea; }
         .filter-chip.active { background: #667eea; color: white; border-color: #667eea; }
 
-        .territory-item {
+        .info-banner {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
             padding: 12px;
-            margin-bottom: 10px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .territory-item:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
-        .territory-item.selected {
-            background: #667eea;
-            color: white;
-            border-color: #5568d3;
-        }
-
-        .territory-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .territory-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .territory-stats {
-            font-size: 11px;
-            opacity: 0.8;
-        }
-
-        .delete-btn {
-            padding: 4px 8px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .delete-btn:hover {
-            background: #c82333;
-        }
-
-        .draw-controls {
-            background: #f8f9ff;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .draw-btn {
-            padding: 10px;
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
             border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            width: 100%;
-            margin-bottom: 8px;
-            transition: all 0.3s;
-        }
-
-        .draw-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .draw-btn.active {
-            background: #667eea;
-            color: white;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #1565c0;
         }
 
         #map { flex: 1; height: 100%; }
@@ -430,7 +253,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .modal.active { display: flex; }
 
         .modal-content {
@@ -457,54 +279,12 @@
             cursor: pointer;
             color: #999;
         }
-
         .modal-close:hover { color: #333; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-top: 15px;
-        }
-
-        th {
-            background: #667eea;
-            color: white;
-            padding: 10px;
-            text-align: left;
-            font-size: 11px;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
+        th { background: #667eea; color: white; padding: 10px; text-align: left; font-size: 11px; }
+        td { padding: 8px; border-bottom: 1px solid #e0e0e0; }
         tr:hover { background: #f8f9ff; }
-
-        .report-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .report-title {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .info-banner {
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #1565c0;
-        }
     </style>
 </head>
 <body>
@@ -516,234 +296,134 @@
         </div>
 
         <div class="error-message" id="errorMessage">
-            Invalid username or password. Please try again.
+            Invalid username or password.
         </div>
 
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="input-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required autocomplete="username">
+                <input type="text" id="username" placeholder="admin" required>
             </div>
-
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                <input type="password" id="password" placeholder="admin123" required>
             </div>
-
             <button type="submit" class="login-btn">🔐 Login</button>
         </form>
-
-        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #999;">
-            Demo: admin/admin123 or test/test123
-        </div>
     </div>
 
     <div id="app">
         <div class="header">
             <div class="header-left">
-                <h1>🚰 Water Business Expansion & Territory Planning Tool</h1>
-                <p><span id="poiCountHeader">Loading...</span> POIs • <span id="distCountHeader">23</span> Distributors • Real-time Analysis</p>
+                <h1>🚰 Water Business Expansion Tool</h1>
+                <p><span id="poiCount">0</span> POIs • <span id="distCount">46</span> Distributors</p>
             </div>
             <div>
-                <span style="margin-right: 15px; font-size: 13px;" id="userDisplay"></span>
-                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+                <span id="userName" style="margin-right: 15px;"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
 
         <div class="container">
             <div class="sidebar">
                 <div class="tabs">
-                    <button class="tab active" data-tab="overview">📊 Overview</button>
-                    <button class="tab" data-tab="distributors">📦 Distributors</button>
-                    <button class="tab" data-tab="expansion">🎯 Expansion</button>
+                    <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+                    <button class="tab" onclick="switchTab('expansion')">🎯 Expansion</button>
                 </div>
 
                 <div class="tab-content active" id="overview-tab">
                     <div class="info-banner">
-                        ✅ <strong>POI Database</strong><br>
-                        <span id="poiStatusText">Ready to load POI data from GitHub</span>
+                        ✅ <strong>Status:</strong> <span id="poiStatus">Ready</span>
                     </div>
 
                     <div class="stats-panel">
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Metrics</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="totalDist">23</span>
-                                <span class="stat-label">Active Distributors</span>
+                                <span class="stat-value" id="statDist">46</span>
+                                <span class="stat-label">Distributors</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="totalRetailers">7,000+</span>
-                                <span class="stat-label">Current Retailers</span>
+                                <span class="stat-value" id="statRetailers">0</span>
+                                <span class="stat-label">Retailers</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="totalPOIs">...</span>
+                                <span class="stat-value" id="statPOIs">0</span>
                                 <span class="stat-label">Total POIs</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="coverage">...</span>
-                                <span class="stat-label">Market Coverage</span>
+                                <span class="stat-value" id="statCoverage">0%</span>
+                                <span class="stat-label">Coverage</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">Expansion Simulation</div>
+                        <div class="section-title">Radius Simulation</div>
                         <div class="radius-buttons">
-                            <button class="radius-btn" data-radius="25">25 KM</button>
-                            <button class="radius-btn active" data-radius="50">50 KM</button>
-                            <button class="radius-btn" data-radius="75">75 KM</button>
-                            <button class="radius-btn" data-radius="100">100 KM</button>
-                            <button class="radius-btn" data-radius="125">125 KM</button>
-                            <button class="radius-btn" data-radius="0">Clear</button>
+                            <button class="radius-btn" onclick="setRadius(25)">25 KM</button>
+                            <button class="radius-btn active" onclick="setRadius(50)">50 KM</button>
+                            <button class="radius-btn" onclick="setRadius(75)">75 KM</button>
+                            <button class="radius-btn" onclick="setRadius(100)">100 KM</button>
+                            <button class="radius-btn" onclick="setRadius(125)">125 KM</button>
+                            <button class="radius-btn" onclick="setRadius(0)">Clear</button>
                         </div>
                     </div>
 
                     <div class="control-section">
                         <div class="section-title">Map Layers</div>
-                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                        <label style="display: block; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showPlants" onchange="updateMap()">
                             <span style="margin-left: 10px;">🏭 Plants (2)</span>
                         </label>
-                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" checked id="showDistributors" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📦 Distributors (<span id="distCountLabel">23</span>)</span>
+                        <label style="display: block; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" checked id="showDist" onchange="updateMap()">
+                            <span style="margin-left: 10px;">📦 Distributors (46)</span>
                         </label>
-                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                        <label style="display: block; cursor: pointer;">
                             <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
                             <span style="margin-left: 10px;">📍 POIs</span>
                         </label>
-                        <label style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="showCoverage" onchange="updateMap()">
-                            <span style="margin-left: 10px;">🎯 25KM Coverage Circles</span>
-                        </label>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">Quick Reports</div>
-                        <button class="action-btn" onclick="showPerformanceReport()">
-                            📊 Distributor Performance
-                        </button>
-                        <button class="action-btn" onclick="showCoverageGaps()">
-                            🎯 Coverage Gap Analysis
-                        </button>
-                        <button class="action-btn" onclick="showNewWSPlan()">
-                            ⭐ New WS Opportunities
-                        </button>
-                    </div>
-                </div>
-
-                <div class="tab-content" id="distributors-tab">
-                    <div class="control-section">
-                        <div class="section-title">Filter Distributors</div>
-                        <select id="perfFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
-                            <option value="all">All Performance Levels</option>
-                            <option value="Excellent">Excellent (90%+)</option>
-                            <option value="Good">Good (75-90%)</option>
-                            <option value="Average">Average (60-75%)</option>
-                            <option value="Below Average">Below Average (<60%)</option>
-                        </select>
-                        <select id="cityFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0;">
-                            <option value="all">All Cities</option>
-                            <option value="Bangalore">Bangalore</option>
-                            <option value="Mysuru">Mysuru</option>
-                            <option value="Bengaluru">Bengaluru</option>
-                        </select>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">Distributor List</div>
-                        <div class="distributor-list" id="distributorList"></div>
                     </div>
                 </div>
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">🎯 Territory Assignment</div>
-                        <div class="draw-controls">
-                            <button class="draw-btn" id="drawCircleBtn" onclick="startDrawing('circle')">
-                                ⭕ Draw Circle Territory
-                            </button>
-                            <button class="draw-btn" id="drawPolygonBtn" onclick="startDrawing('polygon')">
-                                📐 Draw Custom Territory
-                            </button>
-                            <button class="draw-btn" onclick="clearDrawing()">
-                                🗑️ Clear Drawing
-                            </button>
-                        </div>
-                        <div id="territoryList"></div>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">🏷️ POI Category Filters</div>
-                        <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
-                            Select multiple categories to analyze
-                        </div>
-                        <div>
-                            <button class="filter-chip active" onclick="togglePOIFilter('all', this)">All</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Distribution', this)">Distribution</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Retail', this)">Retail</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Food & Beverage', this)">F&B</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Hospitality', this)">Hospitality</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Corporate', this)">Corporate</button>
-                            <button class="filter-chip" onclick="togglePOIFilter('Healthcare', this)">Healthcare</button>
-                        </div>
+                        <div class="section-title">POI Categories</div>
+                        <div style="margin-bottom: 10px; font-size: 11px; color: #666;">Select multiple categories</div>
+                        <button class="filter-chip active" onclick="toggleCategory('all', this)">All</button>
+                        <button class="filter-chip" onclick="toggleCategory('Retail', this)">Retail</button>
+                        <button class="filter-chip" onclick="toggleCategory('Food & Beverage', this)">F&B</button>
+                        <button class="filter-chip" onclick="toggleCategory('Hospitality', this)">Hospitality</button>
+                        <button class="filter-chip" onclick="toggleCategory('Corporate', this)">Corporate</button>
+                        <button class="filter-chip" onclick="toggleCategory('Healthcare', this)">Healthcare</button>
                     </div>
 
                     <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Selected Territory Analysis</div>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Filtered Analysis</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="selectedPOIs">0</span>
-                                <span class="stat-label">POIs in Territory</span>
+                                <span class="stat-value" id="filteredCount">0</span>
+                                <span class="stat-label">Filtered POIs</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="selectedWSNeeded">0</span>
+                                <span class="stat-value" id="wsNeeded">0</span>
                                 <span class="stat-label">WS Needed</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="selectedInvestment">₹0</span>
+                                <span class="stat-value" id="investment">₹0Cr</span>
                                 <span class="stat-label">Investment</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="selectedRevenue">₹0Cr</span>
-                                <span class="stat-label">Monthly Revenue</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stats-panel" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Overall Expansion Opportunity</div>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <span class="stat-value" id="newWSNeeded">...</span>
-                                <span class="stat-label">New WS Needed</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="investment">...</span>
-                                <span class="stat-label">Investment</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="monthlyRev">...</span>
-                                <span class="stat-label">Monthly Revenue</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="roi">6 mo</span>
-                                <span class="stat-label">ROI Period</span>
+                                <span class="stat-value" id="revenue">₹0Cr</span>
+                                <span class="stat-label">Revenue/Month</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">Export Options</div>
-                        <button class="action-btn" onclick="exportDistributors()">
-                            📥 Export Distributors (CSV)
-                        </button>
-                        <button class="action-btn" onclick="exportPOIs()">
-                            📥 Export All POIs (CSV)
-                        </button>
-                        <button class="action-btn" onclick="exportSelectedTerritory()">
-                            📥 Export Selected Territory
-                        </button>
+                        <div class="section-title">Export</div>
+                        <button class="action-btn" onclick="exportData()">📥 Export POIs (CSV)</button>
                     </div>
                 </div>
             </div>
@@ -752,7 +432,7 @@
         </div>
     </div>
 
-    <div class="modal" id="reportModal">
+    <div class="modal" id="modal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
             <div id="modalContent"></div>
@@ -762,674 +442,343 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <script>
-        const VALID_USERS = {
-            'admin': 'admin123',
-            'manager': 'manager123',
-            'soumen': 'soumen123',
-            'client': 'client123',
-            'test': 'test123'
-        };
-        
-        const SESSION_TIMEOUT = 120;
+        // Configuration
+        const USERS = { 'admin': 'admin123', 'test': 'test123', 'manager': 'manager123' };
+        const GITHUB_USER = 'saumenray-afk';
+        const GITHUB_REPO = 'water_tool';
+        const POI_FILE = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
+        const POI_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${POI_FILE}`;
 
-        const distributorsData = [
-            {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC'},
-            {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC'},
-            {name: 'AMOGH TRADERS', city: 'Tumakuru', retailers: 19, lat: 13.7416, lng: 76.9042, target: 1800000, sales: 81768, tsm: 'Shivakumar HC'},
-            {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant'},
-            {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC'},
-            {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3580126, tsm: 'Vacant'},
-            {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant'},
-            {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN'},
-            {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC'},
-            {name: 'JUBILANT FOODWORKS LTD', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 0, sales: 529836, tsm: 'Vacant'},
-            {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC'},
-            {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 3205870, tsm: 'Shivakumar HC'},
-            {name: 'PADMAVATU TRADERS', city: 'Belagavi', retailers: 42, lat: 15.8497, lng: 74.4977, target: 1800000, sales: 1767040, tsm: 'Shivakumar HC'},
-            {name: 'POORNAPRAJNA ENTERPRISES', city: 'Shivamogga', retailers: 63, lat: 13.8485, lng: 75.705, target: 900000, sales: 976093, tsm: 'Shivakumar HC'},
-            {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 2000000, sales: 1168169, tsm: 'Vacant'},
-            {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant'},
-            {name: 'S S AGENCIES (BANGALORE)', city: 'Varthur', retailers: 188, lat: 13.0056, lng: 77.4982, target: 8000000, sales: 7538482, tsm: 'Vacant'},
-            {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4971709, tsm: 'Vacant'},
-            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'},
-            {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 630115, tsm: 'Shivakumar HC'},
-            {name: 'SHREE LAKSHMI ENTERPRISES', city: 'Ballari', retailers: 24, lat: 15.1394, lng: 76.9214, target: 1000000, sales: 1072265, tsm: 'Shivakumar HC'},
-            {name: 'SLN ENTERPRISES', city: 'Chikkaballapur', retailers: 37, lat: 13.4356, lng: 77.7311, target: 2000000, sales: 1924755, tsm: 'Srikanth BN'},
-            {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2414450, tsm: 'Shivakumar HC'}
+        // Data
+        const distributors = [
+            {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418},
+            {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819},
+            {name: 'AKSHAYA AURA', city: 'Bangalore', retailers: 1, lat: 12.9762, lng: 77.5735, target: 0, sales: 10169},
+            {name: 'AURA ENTERPRISES (Bengaluru)', city: 'Bengaluru', retailers: 55, lat: 13.0382, lng: 77.5156, target: 100000, sales: 239293},
+            {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502},
+            {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3806435},
+            {name: 'BHASKAR-GOWRIBIDNUR', city: 'Tumkur', retailers: 38, lat: 13.522, lng: 77.2373, target: 120000, sales: 460946},
+            {name: 'DINESH KUMAR (BENGALURU)', city: 'Bengaluru', retailers: 21, lat: 12.7981, lng: 77.6846, target: 90000, sales: 159636},
+            {name: 'EPOCH FILMING', city: 'Bangalore', retailers: 20, lat: 13.0382, lng: 77.5156, target: 90000, sales: 86796},
+            {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238},
+            {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530},
+            {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637},
+            {name: 'HANVIK CREATIONS', city: 'Bangalore', retailers: 38, lat: 12.9917, lng: 77.5073, target: 100000, sales: 167667},
+            {name: 'HIMESH FOODS PRIVATE LIMITED(BANGALORE)', city: 'Bangalore', retailers: 11, lat: 13.0096, lng: 77.556, target: 48000, sales: 50000},
+            {name: 'JUBILANT FOODWORKS LTD (BANGALORE)', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 50000, sales: 529836},
+            {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798},
+            {name: 'KUSH ENTERPRISES', city: 'Bengaluru', retailers: 18, lat: 13.0714, lng: 77.6783, target: 320000, sales: 154189},
+            {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 2755869},
+            {name: 'PNS ENTERPRISES (Vijayapura)', city: 'Bengaluru', retailers: 22, lat: 13.0916, lng: 77.6866, target: 100000, sales: 278531},
+            {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 200000, sales: 1069068},
+            {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423},
+            {name: 'RAVI KH', city: 'Bengaluru', retailers: 24, lat: 12.9181, lng: 77.5442, target: 100000, sales: 103670},
+            {name: 'S L V enterprises (Bengaluru)', city: 'Bengaluru', retailers: 22, lat: 12.9181, lng: 77.5442, target: 120000, sales: 627077},
+            {name: 'SAANVI ENTERPRISES', city: 'Bengaluru', retailers: 21, lat: 12.9568, lng: 77.7286, target: 90000, sales: 92376},
+            {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4371139},
+            {name: 'SAKSHI ENTERPRISES(BENGALURU)', city: 'Bengaluru', retailers: 22, lat: 12.9846, lng: 77.5362, target: 100000, sales: 414261},
+            {name: 'SANGVI AGRO PULSES', city: 'Bangalore', retailers: 107, lat: 13.0112, lng: 77.5192, target: 10000000, sales: 1019460},
+            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953},
+            {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 621439},
+            {name: 'Shashank Enterprises', city: 'Bengaluru', retailers: 134, lat: 12.8826, lng: 77.6412, target: 5000000, sales: 953899},
+            {name: 'SM ELIXIR', city: 'Bengaluru', retailers: 4, lat: 12.9352, lng: 77.5838, target: 160000, sales: 372438},
+            {name: 'SM INFRA ELECTRADE', city: 'Bangalore', retailers: 6, lat: 12.9352, lng: 77.5838, target: 300000, sales: 189238},
+            {name: 'SRI BASAVESHWARA ENTERPRISES', city: 'Bangalore', retailers: 40, lat: 13.0916, lng: 77.6866, target: 3000000, sales: 544236},
+            {name: 'SRI DEVIRAMMA FOODS AND BEVERAGES', city: 'Bangalore', retailers: 13, lat: 12.9582, lng: 77.5116, target: 0, sales: 56946},
+            {name: 'Sri Lakshmi Narasimha Swamy Enterprises', city: 'Bangalore', retailers: 41, lat: 13.0714, lng: 77.6783, target: 10000000, sales: 178303},
+            {name: 'Sri Lakshmi Narasimha Swamy Enterprises (BANGALORE)', city: 'Bangalore', retailers: 5, lat: 13.0714, lng: 77.6783, target: 4000000, sales: 2543899},
+            {name: 'Sri Lakshmi Venkateshwra Enterprises Pure Water Supply', city: 'Bangalore', retailers: 43, lat: 12.9496, lng: 77.6226, target: 2000000, sales: 744752},
+            {name: 'Sri Mangala Agencies', city: 'Tumkur', retailers: 138, lat: 13.3409, lng: 77.101, target: 90000, sales: 225081},
+            {name: 'SRI MANJUNATHA ENTERPRISES', city: 'Tumkur', retailers: 22, lat: 13.3409, lng: 77.101, target: 2000000, sales: 911792},
+            {name: 'Sri Manjunatha Enterprises(NELAMANGALA)', city: 'Bengaluru', retailers: 46, lat: 12.7981, lng: 77.6846, target: 90000, sales: 476985},
+            {name: 'SRI VEERABHADRASWAMY AGENCIES', city: 'Bengaluru', retailers: 38, lat: 13.3326, lng: 77.5376, target: 160000, sales: 165928},
+            {name: 'Sri Vinayaka Enterprises (Banglore)', city: 'Bangalore', retailers: 42, lat: 13.0714, lng: 77.6783, target: 3200000, sales: 683462},
+            {name: 'VENNA VENKATARAMA (Nagabhushan)', city: 'Bangalore', retailers: 19, lat: 13.2186, lng: 77.2062, target: 90000, sales: 83832},
+            {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2217457},
+            {name: 'OYO HOTELS AND HOMES PRIVATE LIMITED (Karnataka)', city: 'Bengaluru', retailers: 16, lat: 13.0086, lng: 77.6956, target: 0, sales: 70272},
+            {name: 'JAI MARUTHI ENTERPRISES (BANGLORE)', city: 'Bangalore', retailers: 47, lat: 13.0056, lng: 77.5562, target: 0, sales: 204901}
         ];
 
-        const plants = {
-            plant1: {name: 'Bangalore Plant (Main)', lat: 12.996663, lng: 76.982185},
-            plant2: {name: 'Secondary Plant', lat: 12.9386, lng: 77.5441}
-        };
+        const plants = [
+            {name: 'Bangalore Plant', lat: 12.996663, lng: 76.982185},
+            {name: 'Secondary Plant', lat: 12.9386, lng: 77.5441}
+        ];
 
-        let map, currentRadius = 50, activeFilter = 'all';
-        let mapMarkers = [], coverageCircles = [], distributors = [];
-        let pois = [], poisLoaded = false;
-        let drawnItems, drawControl, isDrawing = false;
-        let territories = [];
-        let selectedCategories = ['all'];
-        let currentTerritory = null;
+        // Global state
+        let map, pois = [], currentRadius = 50, selectedCategories = ['all'];
+        let markers = [], circles = [];
 
-        // GitHub Configuration
-        const GITHUB_USERNAME = 'saumenray-afk';
-        const GITHUB_REPO = 'water_tool';
-        const GITHUB_BRANCH = 'main';
-        const POI_ZIP_FILENAME = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
-        
-        const POI_ZIP_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/${POI_ZIP_FILENAME}`;
-        
-        console.log('🔗 POI Data URL:', POI_ZIP_URL);
-
-        async function loadFromFile() {
-            const fileInput = document.getElementById('poiFileInput');
-            const file = fileInput.files[0];
+        // Login
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
             
-            if (!file) {
-                alert('⚠️ Please select a ZIP file first');
-                return;
-            }
-            
-            console.log('📁 Loading file:', file.name, 'Size:', file.size, 'Type:', file.type);
-            document.getElementById('poiStatusText').textContent = `Loading ${file.name}...`;
-            
-            try {
-                await loadPOIDataFromBlob(file);
-            } catch (error) {
-                console.error('❌ Error loading file:', error);
-                alert(`Error loading file: ${error.message}`);
-            }
-        }
-
-        async function loadPOIDataFromBlob(blob) {
-            try {
-                console.log('📦 Processing file, size:', blob.size, 'bytes');
-                
-                if (blob.size === 0) {
-                    throw new Error('File is empty (0 bytes)');
-                }
-                
-                console.log('📦 Extracting ZIP...');
-                const zip = await JSZip.loadAsync(blob);
-                
-                const fileNames = Object.keys(zip.files);
-                console.log('📁 Files in ZIP:', fileNames);
-                
-                if (fileNames.length === 0) {
-                    throw new Error('ZIP file contains no files');
-                }
-                
-                const csvFileName = fileNames.find(name => 
-                    name.endsWith('.csv') || name.endsWith('.txt') || name.endsWith('.tsv')
-                ) || fileNames[0];
-                console.log(`📄 Extracting file: ${csvFileName}`);
-                
-                document.getElementById('poiStatusText').textContent = `Extracting ${csvFileName}...`;
-                
-                const csvText = await zip.files[csvFileName].async('text');
-                const textLength = csvText.length;
-                console.log(`✅ CSV extracted: ${textLength.toLocaleString()} characters`);
-                
-                if (textLength === 0) {
-                    throw new Error('CSV file is empty');
-                }
-                
-                console.log('📝 First 300 chars:', csvText.substring(0, 300));
-                
-                await parsePOIData(csvText, csvFileName);
-                
-            } catch (error) {
-                console.error('❌ ERROR:', error);
-                document.getElementById('poiStatusText').innerHTML = 
-                    `<span style="color: #dc3545;">⚠️ Error: ${error.message}</span>`;
-                throw error;
-            }
-        }
-
-        async function parsePOIData(csvText, fileName) {
-            console.log('🔍 Parsing CSV data...');
-            document.getElementById('poiStatusText').textContent = 'Parsing CSV data...';
-            
-            const lines = csvText.trim().split('\n');
-            console.log(`📊 Total lines: ${lines.length.toLocaleString()}`);
-            
-            if (lines.length < 2) {
-                throw new Error('CSV has no data rows');
-            }
-            
-            // CSV Parser that handles quoted fields with commas
-            function parseCSVLine(line) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    const nextChar = line[i + 1];
-                    
-                    if (char === '"') {
-                        if (inQuotes && nextChar === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = !inQuotes;
-                        }
-                    } else if (char === ',' && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
-                }
-                result.push(current.trim());
-                return result;
-            }
-            
-            const headers = parseCSVLine(lines[0]);
-            console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 15));
-            
-            // Debug: show location-related columns
-            headers.forEach((h, i) => {
-                if (h.toLowerCase().includes('lat') || h.toLowerCase().includes('lon') || 
-                    h.toLowerCase().includes('address') || h.toLowerCase().includes('landmark')) {
-                    console.log(`  Column ${i}: "${h}"`);
-                }
-            });
-            
-            // Find lat/lng columns by exact name match
-            let latCol = headers.findIndex(h => h === 'Latitude' || h === 'latitude' || h === 'lat' || h === 'LAT');
-            let lngCol = headers.findIndex(h => h === 'Longitude' || h === 'longitude' || h === 'lng' || h === 'LON' || h === 'Long');
-            
-            console.log(`📍 Found columns - Latitude: ${latCol} ("${headers[latCol]}"), Longitude: ${lngCol} ("${headers[lngCol]}")`);
-            
-            // Sample first data row
-            if (lines.length > 1) {
-                const sampleValues = parseCSVLine(lines[1]);
-                console.log('📊 Sample row (first 20 columns):');
-                for (let i = 0; i < Math.min(20, sampleValues.length); i++) {
-                    console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
-                }
-                
-                // Verify the lat/lng values are actually numeric
-                const sampleLat = parseFloat(sampleValues[latCol]);
-                const sampleLng = parseFloat(sampleValues[lngCol]);
-                
-                console.log(`🔍 Sample coordinates: lat=${sampleLat}, lng=${sampleLng}`);
-                
-                if (isNaN(sampleLat) || isNaN(sampleLng)) {
-                    console.warn('⚠️ Lat/Lng columns contain non-numeric data. Searching for correct columns...');
-                    
-                    // FORCE search for columns with valid coordinates
-                    latCol = -1;
-                    lngCol = -1;
-                    
-                    for (let i = 0; i < sampleValues.length; i++) {
-                        const val = parseFloat(sampleValues[i]);
-                        if (!isNaN(val)) {
-                            // Latitude range: 8-22 for Karnataka
-                            if (val >= 8 && val <= 22 && latCol === -1) {
-                                console.log(`  ✅ Setting Latitude to column ${i} (${headers[i]}): ${val}`);
-                                latCol = i;
-                            }
-                            // Longitude range: 74-80 for Karnataka
-                            if (val >= 74 && val <= 80 && lngCol === -1) {
-                                console.log(`  ✅ Setting Longitude to column ${i} (${headers[i]}): ${val}`);
-                                lngCol = i;
-                            }
-                        }
-                    }
-                    
-                    if (latCol === -1 || lngCol === -1) {
-                        throw new Error(`Could not auto-detect valid coordinate columns`);
-                    }
-                }
-            }
-            
-            console.log(`📍 FINAL - Using columns: Latitude=${latCol} ("${headers[latCol]}"), Longitude=${lngCol} ("${headers[lngCol]}")`);
-            
-            if (latCol === -1 || lngCol === -1) {
-                throw new Error(`Could not find valid lat/lng columns`);
-            }
-            
-            // Verify with sample
-            if (lines.length > 1) {
-                const testValues = parseCSVLine(lines[1]);
-                const testLat = parseFloat(testValues[latCol]);
-                const testLng = parseFloat(testValues[lngCol]);
-                console.log(`✅ Verification - Will use: lat[${latCol}]=${testLat}, lng[${lngCol}]=${testLng}`);
-                
-                if (isNaN(testLat) || isNaN(testLng)) {
-                    throw new Error(`Selected columns still contain non-numeric data: lat="${testValues[latCol]}", lng="${testValues[lngCol]}"`);
-                }
-            }
-            
-            // Clear existing POIs
-            pois = [];
-            let validCount = 0;
-            let invalidCount = 0;
-            
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const values = parseCSVLine(line);
-                
-                if (values.length < 10) {
-                    continue;
-                }
-                
-                const poi = {};
-                headers.forEach((header, index) => {
-                    poi[header] = values[index] ? values[index].trim() : '';
-                });
-                
-                const lat = parseFloat(values[latCol]);
-                const lng = parseFloat(values[lngCol]);
-                
-                if (lat && lng && !isNaN(lat) && !isNaN(lng) && 
-                    Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
-                    lat !== 0 && lng !== 0) {
-                    poi.Latitude = lat;
-                    poi.Longitude = lng;
-                    pois.push(poi);
-                    validCount++;
-                } else {
-                    invalidCount++;
-                    if (invalidCount <= 5) {
-                        console.log(`❌ Invalid row ${i}: lat="${values[latCol]}" (${lat}), lng="${values[lngCol]}" (${lng})`);
-                    }
-                }
-                
-                if (i % 10000 === 0) {
-                    console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)...`);
-                    document.getElementById('poiStatusText').textContent = 
-                        `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
-            }
-            
-            poisLoaded = true;
-            console.log(`✅ SUCCESS! Loaded ${validCount.toLocaleString()} valid POIs (${invalidCount.toLocaleString()} invalid)`);
-            
-            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
-            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString();
-            document.getElementById('poiStatusText').textContent = 
-                `✅ ${pois.length.toLocaleString()} POIs loaded from ${fileName}`;
-            
-            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
-            const coverage = (totalRetailers / pois.length * 100);
-            document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
-            
-            const wsNeeded = Math.ceil(pois.length / 150);
-            document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
-            document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
-            document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
-            
-            updateMap();
-        }
-
-        async function loadPOIData() {
-            try {
-                console.log('📥 Loading POI data from GitHub...');
-                console.log('📍 GitHub URL:', POI_ZIP_URL);
-                document.getElementById('poiStatusText').textContent = 'Loading from GitHub...';
-                
-                const response = await fetch(POI_ZIP_URL);
-                console.log('📡 Response status:', response.status, response.statusText);
-                console.log('📡 Content-Type:', response.headers.get('content-type'));
-                console.log('📡 Content-Length:', response.headers.get('content-length'));
-                
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error(`File not found (404). Please verify:\n- File exists at: ${POI_ZIP_URL}\n- File name is exactly: ${POI_ZIP_FILENAME}`);
-                    }
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const blob = await response.blob();
-                console.log('📦 Downloaded:', blob.size.toLocaleString(), 'bytes');
-                
-                if (blob.size === 0) {
-                    throw new Error('Downloaded file is empty (0 bytes)');
-                }
-                
-                // Check if it's actually a ZIP file
-                const firstBytes = await blob.slice(0, 4).arrayBuffer();
-                const uint8Array = new Uint8Array(firstBytes);
-                const isZip = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B; // PK signature
-                
-                if (!isZip) {
-                    console.warn('⚠️ File may not be a valid ZIP. First bytes:', Array.from(uint8Array).map(b => b.toString(16)));
-                }
-                
-                await loadPOIDataFromBlob(blob);
-                
-            } catch (error) {
-                console.error('❌ Error loading from GitHub:', error);
-                console.error('Stack:', error.stack);
-                document.getElementById('poiStatusText').innerHTML = 
-                    `<span style="color: #dc3545;">⚠️ ${error.message}</span><br>
-                    <span style="font-size: 11px;">Check browser console (F12) for details</span>`;
-            }
-        }
-
-        function generateSamplePOIs() {
-            console.log('📋 Generating sample POI data as fallback...');
-            const categories = ['Distribution', 'Retail', 'Food & Beverage', 'Hospitality', 'Corporate', 'Healthcare'];
-            const centerLat = 12.9716;
-            const centerLng = 77.5946;
-            
-            for (let i = 0; i < 1000; i++) {
-                const angle = Math.random() * 2 * Math.PI;
-                const radius = Math.random() * 1.5;
-                
-                pois.push({
-                    POI_ID: `POI${String(i).padStart(6, '0')}`,
-                    Business_Name: `Business ${i}`,
-                    Category: categories[Math.floor(Math.random() * categories.length)],
-                    Sub_Category: 'General',
-                    Area: 'Bangalore',
-                    Latitude: centerLat + (radius * Math.cos(angle)),
-                    Longitude: centerLng + (radius * Math.sin(angle)),
-                    Monthly_Requirement_Liters: Math.floor(Math.random() * 50000) + 5000,
-                    Priority: Math.random() > 0.7 ? 'High' : 'Medium'
-                });
-            }
-            
-            poisLoaded = true;
-            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString() + ' (Sample)';
-            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString() + ' (Sample)';
-            
-            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
-            const coverage = (totalRetailers / pois.length * 100);
-            document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
-            
-            const wsNeeded = Math.ceil(pois.length / 150);
-            document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
-            document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
-            document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
-            
-            updateMap();
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMessage');
-            
-            if (VALID_USERS[username] && VALID_USERS[username] === password) {
-                errorMsg.classList.remove('show');
+            if (USERS[user] === pass) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('app').classList.add('active');
-                document.getElementById('userDisplay').textContent = `👤 ${username}`;
-                
-                const loginTime = new Date().getTime();
-                sessionStorage.setItem('loggedIn', 'true');
-                sessionStorage.setItem('username', username);
-                sessionStorage.setItem('loginTime', loginTime);
-                
-                initializeApp();
+                document.getElementById('userName').textContent = user;
+                initApp();
             } else {
-                errorMsg.classList.add('show');
-                document.getElementById('password').value = '';
-                document.getElementById('username').focus();
+                document.getElementById('errorMessage').classList.add('show');
             }
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                sessionStorage.clear();
-                location.reload();
-            }
+            if (confirm('Logout?')) location.reload();
         }
 
-        function checkSessionTimeout() {
-            const loginTime = sessionStorage.getItem('loginTime');
-            if (loginTime) {
-                const currentTime = new Date().getTime();
-                const elapsed = (currentTime - loginTime) / 1000 / 60;
-                
-                if (elapsed > SESSION_TIMEOUT) {
-                    alert('⏰ Session expired. Please login again.');
-                    sessionStorage.clear();
-                    location.reload();
-                }
-            }
-        }
-
-        window.addEventListener('load', function() {
-            if (sessionStorage.getItem('loggedIn') === 'true') {
-                checkSessionTimeout();
-                
-                if (sessionStorage.getItem('loggedIn') === 'true') {
-                    const username = sessionStorage.getItem('username');
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('app').classList.add('active');
-                    document.getElementById('userDisplay').textContent = `👤 ${username}`;
-                    initializeApp();
-                }
-            }
-        });
-
-        setInterval(checkSessionTimeout, 5 * 60 * 1000);
-
-        function initializeApp() {
-            distributorsData.forEach(d => {
-                const achievement = d.target > 0 ? (d.sales / d.target * 100) : 0;
-                let rating = 'Below Average';
-                if (achievement >= 90) rating = 'Excellent';
-                else if (achievement >= 75) rating = 'Good';
-                else if (achievement >= 60) rating = 'Average';
-
-                distributors.push({...d, achievement, rating});
-            });
-
+        // Initialize
+        async function initApp() {
+            console.log('🚀 Initializing app...');
+            
+            // Setup map
             map = L.map('map').setView([12.9716, 77.5946], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
                 maxZoom: 18
             }).addTo(map);
 
-            // Initialize drawing layer
-            drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
+            // Update stats
+            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
+            document.getElementById('statRetailers').textContent = totalRetailers.toLocaleString();
 
-            // Map events for drawing
-            map.on(L.Draw.Event.CREATED, function (e) {
-                const layer = e.layer;
-                drawnItems.addLayer(layer);
+            // Load POI data
+            await loadPOIData();
+            
+            // Initial render
+            updateMap();
+        }
+
+        // Load POI data from GitHub
+        async function loadPOIData() {
+            try {
+                console.log('📥 Loading POI data...');
+                document.getElementById('poiStatus').textContent = 'Loading...';
                 
-                // Prompt for territory name
-                const territoryName = prompt('Enter territory name:', `Territory ${territories.length + 1}`);
-                if (!territoryName) {
-                    drawnItems.removeLayer(layer);
-                    return;
+                const response = await fetch(POI_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const blob = await response.blob();
+                console.log('📦 Downloaded:', blob.size, 'bytes');
+                
+                const zip = await JSZip.loadAsync(blob);
+                const csvFile = Object.keys(zip.files)[0];
+                const csvText = await zip.files[csvFile].async('text');
+                
+                console.log('📄 Parsing CSV...');
+                const lines = csvText.trim().split('\n');
+                
+                // Parse CSV with proper quote handling
+                function parseCSVLine(line) {
+                    const result = [];
+                    let current = '';
+                    let inQuotes = false;
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            inQuotes = !inQuotes;
+                        } else if (char === ',' && !inQuotes) {
+                            result.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    result.push(current.trim());
+                    return result;
                 }
                 
-                // Calculate POIs in this territory
-                const poisInTerritory = getPOIsInTerritory(layer);
+                const headers = parseCSVLine(lines[0]);
+                console.log('📋 Headers:', headers.slice(0, 15));
                 
-                // Store territory
-                const territory = {
-                    id: Date.now(),
-                    name: territoryName,
-                    layer: layer,
-                    type: e.layerType,
-                    poisCount: poisInTerritory.length,
-                    pois: poisInTerritory
-                };
+                // Find coordinate columns
+                let latCol = headers.findIndex(h => h === 'Latitude');
+                let lngCol = headers.findIndex(h => h === 'Longitude');
                 
-                territories.push(territory);
-                updateTerritoryList();
-                updateSelectedTerritoryStats(poisInTerritory);
+                // Parse first row to verify
+                const testRow = parseCSVLine(lines[1]);
+                const testLat = parseFloat(testRow[latCol]);
+                const testLng = parseFloat(testRow[lngCol]);
                 
-                // Add popup to layer
-                layer.bindPopup(`<b>${territoryName}</b><br>POIs: ${poisInTerritory.length}`);
+                console.log(`📍 Test coordinates: lat=${testLat}, lng=${testLng}`);
                 
-                isDrawing = false;
-                updateDrawButtons();
-            });
-
-            const plantIcon = L.divIcon({
-                html: '<div style="background: #FF6B6B; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏭</div>',
-                className: '',
-                iconSize: [30, 30]
-            });
-
-            Object.values(plants).forEach(plant => {
-                L.marker([plant.lat, plant.lng], {icon: plantIcon})
-                    .bindPopup(`<b>${plant.name}</b><br>Water Production Facility`)
-                    .addTo(map);
-            });
-
-            setupEventListeners();
-            updateDistributorList();
-            updateMap();
-            
-            // Try to load from URL first (will fail gracefully if file not found)
-            loadPOIData();
-
-            console.log(`✅ App Initialized: ${distributors.length} Distributors`);
-            
-            // Update distributor count in header
-            document.getElementById('distCountHeader').textContent = distributors.length;
-            document.getElementById('distCountLabel').textContent = distributors.length;
-            document.getElementById('totalDist').textContent = distributors.length;
+                // If not valid numbers, search for valid columns
+                if (isNaN(testLat) || isNaN(testLng)) {
+                    console.log('⚠️ Invalid coordinates, searching...');
+                    for (let i = 0; i < testRow.length; i++) {
+                        const val = parseFloat(testRow[i]);
+                        if (!isNaN(val)) {
+                            if (val >= 8 && val <= 22) {
+                                latCol = i;
+                                console.log(`✅ Found Latitude at column ${i}: ${val}`);
+                            }
+                            if (val >= 74 && val <= 80) {
+                                lngCol = i;
+                                console.log(`✅ Found Longitude at column ${i}: ${val}`);
+                            }
+                        }
+                    }
+                }
+                
+                console.log(`📍 Using columns: lat=${latCol}, lng=${lngCol}`);
+                
+                // Parse all rows
+                for (let i = 1; i < lines.length; i++) {
+                    if (i % 10000 === 0) {
+                        console.log(`⏳ Processing ${i}/${lines.length}...`);
+                        document.getElementById('poiStatus').textContent = `Loading ${i}/${lines.length}...`;
+                    }
+                    
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length < 10) continue;
+                    
+                    const lat = parseFloat(values[latCol]);
+                    const lng = parseFloat(values[lngCol]);
+                    
+                    if (lat && lng && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                        const poi = {};
+                        headers.forEach((h, idx) => {
+                            poi[h] = values[idx] || '';
+                        });
+                        poi.Latitude = lat;
+                        poi.Longitude = lng;
+                        pois.push(poi);
+                    }
+                }
+                
+                console.log(`✅ Loaded ${pois.length.toLocaleString()} POIs`);
+                document.getElementById('poiStatus').textContent = `${pois.length.toLocaleString()} POIs loaded`;
+                document.getElementById('poiCount').textContent = pois.length.toLocaleString();
+                document.getElementById('statPOIs').textContent = pois.length.toLocaleString();
+                
+                const coverage = (distributors.reduce((s, d) => s + d.retailers, 0) / pois.length * 100);
+                document.getElementById('statCoverage').textContent = coverage.toFixed(1) + '%';
+                
+                updateMap();
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('poiStatus').textContent = 'Error loading data';
+            }
         }
 
-        function setupEventListeners() {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById(this.dataset.tab + '-tab').classList.add('active');
-                });
-            });
-
-            document.querySelectorAll('.radius-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    currentRadius = parseInt(this.dataset.radius);
-                    updateMap();
-                });
-            });
-        }
-
-        function updateDistributorList() {
-            const list = document.getElementById('distributorList');
-            list.innerHTML = '';
-            
-            distributors.forEach((dist, index) => {
-                const item = document.createElement('div');
-                item.className = 'distributor-item';
-                item.onclick = () => focusOnDistributor(index);
-                
-                const badgeClass = 
-                    dist.rating === 'Excellent' ? 'badge-excellent' :
-                    dist.rating === 'Good' ? 'badge-good' :
-                    dist.rating === 'Average' ? 'badge-average' : 'badge-below';
-                
-                item.innerHTML = `
-                    <div class="distributor-name">
-                        ${dist.name}
-                        <span class="performance-badge ${badgeClass}">
-                            ${dist.achievement.toFixed(1)}%
-                        </span>
-                    </div>
-                    <div class="distributor-meta">
-                        ${dist.city} • ${dist.retailers} retailers
-                    </div>
-                `;
-                
-                list.appendChild(item);
-            });
-        }
-
-        function focusOnDistributor(index) {
-            const dist = distributors[index];
-            map.setView([dist.lat, dist.lng], 13);
-            
-            document.querySelectorAll('.distributor-item').forEach((item, i) => {
-                item.classList.toggle('selected', i === index);
-            });
-        }
-
+        // Update map
         function updateMap() {
-            mapMarkers.forEach(marker => map.removeLayer(marker));
-            mapMarkers = [];
-            coverageCircles.forEach(circle => map.removeLayer(circle));
-            coverageCircles = [];
-
+            console.log('🗺️ Updating map...');
+            
+            // Clear existing markers
+            markers.forEach(m => map.removeLayer(m));
+            circles.forEach(c => map.removeLayer(c));
+            markers = [];
+            circles = [];
+            
+            // Draw radius circles
             if (currentRadius > 0) {
-                Object.values(plants).forEach(plant => {
+                console.log(`⭕ Drawing ${currentRadius}km circles`);
+                plants.forEach(plant => {
+                    // Count POIs in circle
+                    let count = 0;
+                    pois.forEach(poi => {
+                        const dist = getDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                        if (dist <= currentRadius) count++;
+                    });
+                    
                     const circle = L.circle([plant.lat, plant.lng], {
                         radius: currentRadius * 1000,
                         color: '#667eea',
                         fillColor: '#667eea',
-                        fillOpacity: 0.15,
-                        weight: 2
+                        fillOpacity: 0.2,
+                        weight: 4,
+                        dashArray: '10, 10'
                     }).addTo(map);
-                    coverageCircles.push(circle);
-                });
-            }
-
-            if (document.getElementById('showDistributors').checked) {
-                distributors.forEach(dist => {
-                    const color = dist.achievement >= 75 ? '#28a745' : dist.achievement >= 60 ? '#ffc107' : '#dc3545';
-                    const distIcon = L.divIcon({
-                        html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
-                        className: '',
-                        iconSize: [20, 20]
-                    });
-
-                    const marker = L.marker([dist.lat, dist.lng], {icon: distIcon})
-                        .bindPopup(`<b>${dist.name}</b><br>Achievement: ${dist.achievement.toFixed(1)}%<br>Retailers: ${dist.retailers}<br>City: ${dist.city}`)
-                        .addTo(map);
                     
-                    mapMarkers.push(marker);
+                    circle.bindPopup(`<div style="padding:5px;">
+                        <b style="color:#667eea;">${plant.name}</b><br>
+                        <span style="font-size:12px;">📏 Radius: ${currentRadius} KM</span><br>
+                        <span style="font-size:12px;">📍 POIs: <b>${count.toLocaleString()}</b></span>
+                    </div>`);
+                    
+                    circle.on('mouseover', function() { this.openPopup(); });
+                    circle.on('mouseout', function() { this.closePopup(); });
+                    
+                    circles.push(circle);
                 });
             }
-
-            if (document.getElementById('showCoverage').checked) {
+            
+            // Draw plants
+            if (document.getElementById('showPlants').checked) {
+                plants.forEach(plant => {
+                    const icon = L.divIcon({
+                        html: '<div style="background:#FF6B6B;width:30px;height:30px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;">🏭</div>',
+                        className: '',
+                        iconSize: [30, 30]
+                    });
+                    const marker = L.marker([plant.lat, plant.lng], {icon}).bindPopup(`<b>${plant.name}</b>`).addTo(map);
+                    markers.push(marker);
+                });
+            }
+            
+            // Draw distributors
+            if (document.getElementById('showDist').checked) {
                 distributors.forEach(dist => {
-                    const circle = L.circle([dist.lat, dist.lng], {
-                        radius: 25000,
-                        color: '#28a745',
-                        fillColor: '#28a745',
-                        fillOpacity: 0.08,
-                        weight: 1
-                    }).addTo(map);
-                    coverageCircles.push(circle);
+                    const achievement = dist.target > 0 ? (dist.sales / dist.target * 100) : 0;
+                    const color = achievement >= 75 ? '#28a745' : achievement >= 60 ? '#ffc107' : '#dc3545';
+                    
+                    const icon = L.divIcon({
+                        html: `<div style="background:${color};width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                        className: '',
+                        iconSize: [16, 16]
+                    });
+                    
+                    const marker = L.marker([dist.lat, dist.lng], {icon})
+                        .bindPopup(`<b>${dist.name}</b><br>City: ${dist.city}<br>Retailers: ${dist.retailers}<br>Achievement: ${achievement.toFixed(1)}%`)
+                        .addTo(map);
+                    markers.push(marker);
                 });
             }
-
+            
+            // Draw POIs
             if (document.getElementById('showPOIs').checked && pois.length > 0) {
-                let filteredPOIs = pois;
-
-                if (activeFilter !== 'all') {
-                    filteredPOIs = pois.filter(poi => poi.Category === activeFilter);
+                let filtered = pois;
+                
+                // Filter by categories
+                if (!selectedCategories.includes('all')) {
+                    filtered = pois.filter(poi => selectedCategories.includes(poi.Category));
+                    console.log(`🏷️ Categories:`, selectedCategories);
+                    console.log(`📊 Filtered: ${filtered.length.toLocaleString()} POIs`);
                 }
-
+                
+                // Filter by radius
                 if (currentRadius > 0) {
-                    filteredPOIs = filteredPOIs.filter(poi => {
-                        return Object.values(plants).some(plant => {
-                            const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                            return distance <= currentRadius;
+                    const before = filtered.length;
+                    filtered = filtered.filter(poi => {
+                        return plants.some(plant => {
+                            const dist = getDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                            return dist <= currentRadius;
                         });
                     });
+                    console.log(`📍 Radius filter: ${filtered.length.toLocaleString()} of ${before.toLocaleString()}`);
                 }
-
-                const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
-
-                displayPOIs.forEach(poi => {
-                    const color = getMarkerColor(poi.Category);
-                    const size = poi.Priority === 'High' ? 8 : 5;
+                
+                // Update stats
+                document.getElementById('filteredCount').textContent = filtered.length.toLocaleString();
+                const ws = Math.ceil(filtered.length / 150);
+                document.getElementById('wsNeeded').textContent = ws;
+                document.getElementById('investment').textContent = '₹' + (ws * 0.6).toFixed(1) + 'Cr';
+                document.getElementById('revenue').textContent = '₹' + (ws * 0.3).toFixed(1) + 'Cr';
+                
+                // Display POIs (sample for performance)
+                const skipRate = filtered.length > 10000 ? 50 : filtered.length > 1000 ? 10 : 1;
+                const display = filtered.filter((_, i) => i % skipRate === 0);
+                
+                console.log(`🗺️ Displaying ${display.length.toLocaleString()} of ${filtered.length.toLocaleString()} POIs`);
+                
+                display.forEach(poi => {
+                    const color = getCategoryColor(poi.Category);
+                    const size = (poi.Priority || '').toLowerCase() === 'high' ? 7 : 4;
                     
                     const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
                         radius: size,
@@ -1437,278 +786,18 @@
                         color: 'white',
                         weight: 1,
                         fillOpacity: 0.7
-                    }).bindPopup(`<b>${poi.Business_Name}</b><br>Category: ${poi.Category}<br>Monthly: ${poi.Monthly_Requirement_Liters}L`)
+                    }).bindPopup(`<b>${poi.Business_Name || 'N/A'}</b><br>Category: ${poi.Category}<br>Monthly: ${poi.Monthly_Requirement_Liters || 'N/A'}L`)
                     .addTo(map);
                     
-                    mapMarkers.push(marker);
+                    markers.push(marker);
                 });
+                
+                console.log(`✅ Added ${markers.length} markers`);
             }
         }
 
-        function getMarkerColor(category) {
-            const colors = {
-                'Distribution': '#4ECDC4',
-                'Retail': '#FFD93D',
-                'Food & Beverage': '#6BCB77',
-                'Hospitality': '#FF6B6B',
-                'Corporate': '#9D84B7',
-                'Healthcare': '#E74C3C'
-            };
-            return colors[category] || '#95A5A6';
-        }
-
-        function filterDistributors() {
-            const perfFilter = document.getElementById('perfFilter').value;
-            const cityFilter = document.getElementById('cityFilter').value;
-            
-            const filtered = distributors.filter(d => {
-                const perfMatch = perfFilter === 'all' || d.rating === perfFilter;
-                const cityMatch = cityFilter === 'all' || d.city === cityFilter;
-                return perfMatch && cityMatch;
-            });
-            
-            const list = document.getElementById('distributorList');
-            list.innerHTML = '';
-            
-            filtered.forEach((dist) => {
-                const item = document.createElement('div');
-                item.className = 'distributor-item';
-                item.onclick = () => focusOnDistributor(distributors.indexOf(dist));
-                
-                const badgeClass = 
-                    dist.rating === 'Excellent' ? 'badge-excellent' :
-                    dist.rating === 'Good' ? 'badge-good' :
-                    dist.rating === 'Average' ? 'badge-average' : 'badge-below';
-                
-                item.innerHTML = `
-                    <div class="distributor-name">
-                        ${dist.name}
-                        <span class="performance-badge ${badgeClass}">
-                            ${dist.achievement.toFixed(1)}%
-                        </span>
-                    </div>
-                    <div class="distributor-meta">
-                        ${dist.city} • ${dist.retailers} retailers
-                    </div>
-                `;
-                
-                list.appendChild(item);
-            });
-        }
-
-        function filterPOIs(category, element) {
-            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-            element.classList.add('active');
-            activeFilter = category;
-            selectedCategories = [category];
-            updateMap();
-        }
-
-        function togglePOIFilter(category, element) {
-            if (category === 'all') {
-                selectedCategories = ['all'];
-                document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
-                element.classList.add('active');
-            } else {
-                // Remove 'all' if selecting specific category
-                const allIndex = selectedCategories.indexOf('all');
-                if (allIndex > -1) {
-                    selectedCategories.splice(allIndex, 1);
-                    document.querySelector('.filter-chip').classList.remove('active');
-                }
-                
-                // Toggle category
-                const index = selectedCategories.indexOf(category);
-                if (index > -1) {
-                    selectedCategories.splice(index, 1);
-                    element.classList.remove('active');
-                } else {
-                    selectedCategories.push(category);
-                    element.classList.add('active');
-                }
-                
-                // If nothing selected, revert to all
-                if (selectedCategories.length === 0) {
-                    selectedCategories = ['all'];
-                    document.querySelector('.filter-chip').classList.add('active');
-                }
-            }
-            
-            console.log('🏷️ Selected categories:', selectedCategories);
-            activeFilter = selectedCategories.includes('all') ? 'all' : selectedCategories.join(',');
-            updateMap();
-            
-            // Update filtered count in console
-            if (!selectedCategories.includes('all')) {
-                const filteredCount = pois.filter(poi => selectedCategories.includes(poi.Category)).length;
-                console.log(`📊 Filtered POIs: ${filteredCount.toLocaleString()} POIs match selected categories`);
-            }
-        }
-
-        function startDrawing(type) {
-            if (isDrawing) {
-                map.removeEventListener('click');
-                isDrawing = false;
-                updateDrawButtons();
-                return;
-            }
-            
-            isDrawing = true;
-            updateDrawButtons();
-            
-            if (type === 'circle') {
-                new L.Draw.Circle(map, {
-                    shapeOptions: {
-                        color: '#667eea',
-                        fillOpacity: 0.2
-                    }
-                }).enable();
-            } else if (type === 'polygon') {
-                new L.Draw.Polygon(map, {
-                    shapeOptions: {
-                        color: '#667eea',
-                        fillOpacity: 0.2
-                    }
-                }).enable();
-            }
-        }
-
-        function updateDrawButtons() {
-            document.getElementById('drawCircleBtn').classList.toggle('active', isDrawing);
-            document.getElementById('drawPolygonBtn').classList.toggle('active', isDrawing);
-        }
-
-        function clearDrawing() {
-            if (confirm('Clear all drawn territories?')) {
-                drawnItems.clearLayers();
-                territories = [];
-                currentTerritory = null;
-                updateTerritoryList();
-                updateSelectedTerritoryStats([]);
-            }
-        }
-
-        function getPOIsInTerritory(layer) {
-            const filtered = [];
-            
-            pois.forEach(poi => {
-                const point = L.latLng(poi.Latitude, poi.Longitude);
-                
-                // Check if category matches selected filters
-                if (!selectedCategories.includes('all') && !selectedCategories.includes(poi.Category)) {
-                    return;
-                }
-                
-                let isInside = false;
-                
-                if (layer instanceof L.Circle) {
-                    const distance = map.distance(layer.getLatLng(), point);
-                    isInside = distance <= layer.getRadius();
-                } else if (layer instanceof L.Polygon) {
-                    isInside = layer.getBounds().contains(point);
-                }
-                
-                if (isInside) {
-                    filtered.push(poi);
-                }
-            });
-            
-            return filtered;
-        }
-
-        function updateTerritoryList() {
-            const list = document.getElementById('territoryList');
-            
-            if (territories.length === 0) {
-                list.innerHTML = '<div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">No territories drawn yet.<br>Use the buttons above to create territories.</div>';
-                return;
-            }
-            
-            list.innerHTML = '';
-            
-            territories.forEach((territory, index) => {
-                const item = document.createElement('div');
-                item.className = 'territory-item';
-                if (currentTerritory && currentTerritory.id === territory.id) {
-                    item.classList.add('selected');
-                }
-                
-                item.onclick = () => selectTerritory(territory);
-                
-                const wsNeeded = Math.ceil(territory.poisCount / 150);
-                const investment = (wsNeeded * 0.6).toFixed(1);
-                
-                item.innerHTML = `
-                    <div class="territory-header">
-                        <div class="territory-name">📍 ${territory.name}</div>
-                        <button class="delete-btn" onclick="deleteTerritory(${territory.id}, event)">Delete</button>
-                    </div>
-                    <div class="territory-stats">
-                        POIs: ${territory.poisCount} | WS Needed: ${wsNeeded} | Investment: ₹${investment}Cr
-                    </div>
-                `;
-                
-                list.appendChild(item);
-            });
-        }
-
-        function selectTerritory(territory) {
-            currentTerritory = territory;
-            updateTerritoryList();
-            updateSelectedTerritoryStats(territory.pois);
-            
-            // Zoom to territory
-            map.fitBounds(territory.layer.getBounds(), { padding: [50, 50] });
-        }
-
-        function deleteTerritory(territoryId, event) {
-            event.stopPropagation();
-            
-            if (!confirm('Delete this territory?')) return;
-            
-            const index = territories.findIndex(t => t.id === territoryId);
-            if (index > -1) {
-                const territory = territories[index];
-                drawnItems.removeLayer(territory.layer);
-                territories.splice(index, 1);
-                
-                if (currentTerritory && currentTerritory.id === territoryId) {
-                    currentTerritory = null;
-                    updateSelectedTerritoryStats([]);
-                }
-                
-                updateTerritoryList();
-            }
-        }
-
-        function updateSelectedTerritoryStats(poisInTerritory) {
-            const count = poisInTerritory.length;
-            const wsNeeded = Math.ceil(count / 150);
-            const investment = wsNeeded * 0.6;
-            const revenue = wsNeeded * 0.3;
-            
-            document.getElementById('selectedPOIs').textContent = count.toLocaleString();
-            document.getElementById('selectedWSNeeded').textContent = wsNeeded;
-            document.getElementById('selectedInvestment').textContent = '₹' + investment.toFixed(1) + 'Cr';
-            document.getElementById('selectedRevenue').textContent = '₹' + revenue.toFixed(1) + 'Cr';
-        }
-
-        function exportSelectedTerritory() {
-            if (!currentTerritory) {
-                alert('⚠️ Please select a territory first by clicking on it in the list.');
-                return;
-            }
-            
-            let csv = 'Territory_Name,POI_ID,Business_Name,Category,Sub_Category,Area,City,Latitude,Longitude,Monthly_Requirement,Priority,Revenue_Potential\n';
-            
-            currentTerritory.pois.forEach(p => {
-                csv += `${currentTerritory.name},${p.POI_ID || ''},${p.Business_Name || ''},${p.Category || ''},${p.Sub_Category || ''},${p.Area || ''},${p.City || ''},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters || ''},${p.Priority || ''},${p.Revenue_Potential || ''}\n`;
-            });
-            
-            downloadCSV(csv, `territory_${currentTerritory.name.replace(/[^a-z0-9]/gi, '_')}.csv`);
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
+        // Helpers
+        function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -1719,67 +808,85 @@
             return R * c;
         }
 
-        function showPerformanceReport() {
-            const modal = document.getElementById('reportModal');
-            const content = document.getElementById('modalContent');
-            
-            const excellent = distributors.filter(d => d.rating === 'Excellent');
-            const good = distributors.filter(d => d.rating === 'Good');
-            const average = distributors.filter(d => d.rating === 'Average');
-            const below = distributors.filter(d => d.rating === 'Below Average');
-            
-            content.innerHTML = `
-                <div class="modal-header">📊 Distributor Performance Report</div>
-                <div class="report-section">
-                    <div class="report-title">Performance Summary</div>
-                    <table>
-                        <tr><th>Level</th><th>Count</th><th>%</th><th>Sales</th></tr>
-                        <tr><td>🌟 Excellent (90%+)</td><td>${excellent.length}</td><td>${(excellent.length/distributors.length*100).toFixed(1)}%</td><td>₹${(excellent.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
-                        <tr><td>✅ Good (75-90%)</td><td>${good.length}</td><td>${(good.length/distributors.length*100).toFixed(1)}%</td><td>₹${(good.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
-                        <tr><td>⚠️ Average (60-75%)</td><td>${average.length}</td><td>${(average.length/distributors.length*100).toFixed(1)}%</td><td>₹${(average.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
-                        <tr><td>❌ Below (<60%)</td><td>${below.length}</td><td>${(below.length/distributors.length*100).toFixed(1)}%</td><td>₹${(below.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
-                    </table>
-                </div>
-            `;
-            modal.classList.add('active');
+        function getCategoryColor(category) {
+            const colors = {
+                'Retail': '#FFD93D',
+                'Food & Beverage': '#6BCB77',
+                'Hospitality': '#FF6B6B',
+                'Corporate': '#9D84B7',
+                'Healthcare': '#E74C3C',
+                'Distribution': '#4ECDC4'
+            };
+            return colors[category] || '#95A5A6';
         }
 
-        function showCoverageGaps() {
-            alert('🎯 Coverage Gap Analysis\n\nBased on POI data:\n\n• 500+ new distributors needed\n• Investment: ₹300-350 Crores\n• Expected ROI: 6-8 months\n\nTop priority areas identified for expansion.');
+        function setRadius(km) {
+            currentRadius = km;
+            document.querySelectorAll('.radius-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateMap();
         }
 
-        function showNewWSPlan() {
-            alert('⭐ New WS Appointment Plan\n\n• High Priority: 50 locations\n• Medium Priority: 150 locations\n• Low Priority: 300 locations\n\nTotal investment: ₹300Cr\nProjected revenue: ₹150Cr/month');
+        function toggleCategory(cat, element) {
+            if (cat === 'all') {
+                selectedCategories = ['all'];
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                element.classList.add('active');
+            } else {
+                const allBtn = document.querySelector('.filter-chip');
+                if (selectedCategories.includes('all')) {
+                    selectedCategories = [];
+                    allBtn.classList.remove('active');
+                }
+                
+                const idx = selectedCategories.indexOf(cat);
+                if (idx > -1) {
+                    selectedCategories.splice(idx, 1);
+                    element.classList.remove('active');
+                } else {
+                    selectedCategories.push(cat);
+                    element.classList.add('active');
+                }
+                
+                if (selectedCategories.length === 0) {
+                    selectedCategories = ['all'];
+                    allBtn.classList.add('active');
+                }
+            }
+            
+            console.log('Selected categories:', selectedCategories);
+            updateMap();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        function exportData() {
+            let filtered = pois;
+            if (!selectedCategories.includes('all')) {
+                filtered = pois.filter(poi => selectedCategories.includes(poi.Category));
+            }
+            
+            let csv = 'POI_ID,Business_Name,Category,City,Latitude,Longitude,Monthly_Requirement\n';
+            filtered.slice(0, 5000).forEach(p => {
+                csv += `${p.POI_ID || ''},${p.Business_Name || ''},${p.Category || ''},${p.City || ''},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters || ''}\n`;
+            });
+            
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pois_export.csv';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function closeModal() {
-            document.getElementById('reportModal').classList.remove('active');
-        }
-
-        function exportDistributors() {
-            let csv = 'Name,City,Retailers,Achievement_%,Rating,Sales,Target\n';
-            distributors.forEach(d => {
-                csv += `${d.name},${d.city},${d.retailers},${d.achievement.toFixed(2)},${d.rating},${d.sales},${d.target}\n`;
-            });
-            downloadCSV(csv, 'distributors.csv');
-        }
-
-        function exportPOIs() {
-            let csv = 'POI_ID,Business_Name,Category,Sub_Category,Area,Latitude,Longitude,Monthly_Requirement\n';
-            pois.slice(0, 1000).forEach(p => {
-                csv += `${p.POI_ID},${p.Business_Name},${p.Category},${p.Sub_Category},${p.Area},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters}\n`;
-            });
-            downloadCSV(csv, 'pois_sample.csv');
-        }
-
-        function downloadCSV(csv, filename) {
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            window.URL.revokeObjectURL(url);
+            document.getElementById('modal').classList.remove('active');
         }
     </script>
 </body>
