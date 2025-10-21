@@ -1516,8 +1516,15 @@
                 }
             }
             
-            activeFilter = selectedCategories.includes('all') ? 'all' : selectedCategories[0];
+            console.log('🏷️ Selected categories:', selectedCategories);
+            activeFilter = selectedCategories.includes('all') ? 'all' : selectedCategories.join(',');
             updateMap();
+            
+            // Update filtered count in console
+            if (!selectedCategories.includes('all')) {
+                const filteredCount = pois.filter(poi => selectedCategories.includes(poi.Category)).length;
+                console.log(`📊 Filtered POIs: ${filteredCount.toLocaleString()} POIs match selected categories`);
+            }
         }
 
         function startDrawing(type) {
