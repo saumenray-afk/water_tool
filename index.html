@@ -333,24 +333,87 @@
         .filter-chip:hover { border-color: #667eea; }
         .filter-chip.active { background: #667eea; color: white; border-color: #667eea; }
 
-        .sub-category-filters {
-            display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9ff;
+        .territory-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .sub-category-filters.active {
-            display: block;
+        .territory-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
         }
 
-        .sub-category-title {
+        .territory-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5568d3;
+        }
+
+        .territory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .territory-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .territory-stats {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .delete-btn {
+            padding: 4px 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .draw-controls {
+            background: #f8f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .draw-btn {
+            padding: 10px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 13px;
             font-weight: 600;
-            color: #667eea;
-            margin-bottom: 10px;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .draw-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .draw-btn.active {
+            background: #667eea;
+            color: white;
         }
 
         #map { flex: 1; height: 100%; }
@@ -442,15 +505,6 @@
             font-size: 12px;
             color: #1565c0;
         }
-
-        select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 2px solid #e0e0e0;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
     </style>
 </head>
 <body>
@@ -480,7 +534,7 @@
         </form>
 
         <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #999;">
-            Demo: admin/admin2024! or test/test2024!
+            Demo: admin/admin123 or test/test123
         </div>
     </div>
 
@@ -488,7 +542,7 @@
         <div class="header">
             <div class="header-left">
                 <h1>🚰 Water Business Expansion & Territory Planning Tool</h1>
-                <p><span id="poiCountHeader">Loading...</span> POIs • 46 Distributors • Real-time Analysis</p>
+                <p><span id="poiCountHeader">Loading...</span> POIs • 70 Distributors • Real-time Analysis</p>
             </div>
             <div>
                 <span style="margin-right: 15px; font-size: 13px;" id="userDisplay"></span>
@@ -507,18 +561,18 @@
                 <div class="tab-content active" id="overview-tab">
                     <div class="info-banner">
                         ✅ <strong>POI Database</strong><br>
-                        <span id="poiStatusText">Loading POI data from GitHub...</span>
+                        <span id="poiStatusText">Ready to load POI data from GitHub</span>
                     </div>
 
                     <div class="stats-panel">
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Metrics</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="totalDist">46</span>
+                                <span class="stat-value" id="totalDist">70</span>
                                 <span class="stat-label">Active Distributors</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="totalRetailers">5,000+</span>
+                                <span class="stat-value" id="totalRetailers">7,000+</span>
                                 <span class="stat-label">Current Retailers</span>
                             </div>
                             <div class="stat-item">
@@ -542,16 +596,6 @@
                             <button class="radius-btn" data-radius="125">125 KM</button>
                             <button class="radius-btn" data-radius="0">Clear</button>
                         </div>
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
-                            <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
-                                <input type="checkbox" id="useCustomRadius" onchange="toggleCustomRadius()">
-                                <span style="margin-left: 10px; font-weight: 600; font-size: 13px;">🎯 Use Custom Radius</span>
-                            </label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="number" id="customRadiusInput" min="1" max="500" placeholder="Enter KM (1-500)" disabled style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px;">
-                                <button onclick="applyCustomRadius()" style="padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Apply</button>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="control-section">
@@ -562,50 +606,16 @@
                         </label>
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showDistributors" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📦 Distributors (46)</span>
+                            <span style="margin-left: 10px;">📦 Distributors (70)</span>
                         </label>
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
                             <span style="margin-left: 10px;">📍 POIs</span>
                         </label>
-                        <label style="display: flex; align-items: center; margin-bottom: 5px; cursor: pointer;">
-                            <input type="checkbox" id="showCoverage" onchange="updateMap()">
-                            <span style="margin-left: 10px;">🎯 Distributor Coverage Circles</span>
-                        </label>
-                        <div style="margin-left: 30px; margin-bottom: 10px;">
-                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Coverage Radius (KM):</label>
-                            <input type="number" id="coverageRadius" min="1" max="200" value="25" placeholder="25" 
-                                   onchange="updateMap()" 
-                                   style="width: 100px; padding: 6px 8px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 12px;">
-                        </div>
                         <label style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" id="showDistLines" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📏 Plant-Distributor Distance Lines</span>
+                            <input type="checkbox" id="showCoverage" onchange="updateMap()">
+                            <span style="margin-left: 10px;">🎯 25KM Coverage Circles</span>
                         </label>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">📊 Current View Statistics</div>
-                        <div style="background: #f8f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">POIs in Current Radius:</div>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="currentRadiusPOIs">0</div>
-                                    <div style="font-size: 10px; color: #666;">Total POIs</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 20px; font-weight: 700; color: #28a745;" id="filteredPOIs">0</div>
-                                    <div style="font-size: 10px; color: #666;">Filtered POIs</div>
-                                </div>
-                            </div>
-                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Active Radius: <strong id="activeRadiusDisplay">None</strong></div>
-                                <div style="font-size: 11px; color: #666;">Active Filter: <strong id="activeFilterDisplay">All Categories</strong></div>
-                            </div>
-                            <button class="action-btn" onclick="exportCurrentViewPOIs()" style="margin-top: 10px;">
-                                📥 Export Current View POIs
-                            </button>
-                        </div>
                     </div>
 
                     <div class="control-section">
@@ -625,23 +635,18 @@
                 <div class="tab-content" id="distributors-tab">
                     <div class="control-section">
                         <div class="section-title">Filter Distributors</div>
-                        <select id="perfFilter" onchange="filterDistributors()">
+                        <select id="perfFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
                             <option value="all">All Performance Levels</option>
                             <option value="Excellent">Excellent (90%+)</option>
                             <option value="Good">Good (75-90%)</option>
                             <option value="Average">Average (60-75%)</option>
                             <option value="Below Average">Below Average (<60%)</option>
                         </select>
-                        <select id="cityFilter" onchange="filterDistributors()">
+                        <select id="cityFilter" onchange="filterDistributors()" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #e0e0e0;">
                             <option value="all">All Cities</option>
                             <option value="Bangalore">Bangalore</option>
+                            <option value="Mysuru">Mysuru</option>
                             <option value="Bengaluru">Bengaluru</option>
-                            <option value="Tumkur">Tumkur</option>
-                        </select>
-                        <select id="classFilter" onchange="filterDistributors()">
-                            <option value="all">All Classifications</option>
-                            <option value="Distributor">Distributor</option>
-                            <option value="Retailer">Retailer</option>
                         </select>
                     </div>
 
@@ -653,31 +658,61 @@
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">POI Category Filters</div>
-                        <div>
-                            <button class="filter-chip active" onclick="filterPOIsByCategory('all', this)">All Categories</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Distribution', this)">Distribution</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Retail', this)">Retail</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Food & Beverage', this)">F&B</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Hospitality', this)">Hospitality</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Corporate', this)">Corporate</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Healthcare', this)">Healthcare</button>
+                        <div class="section-title">🎯 Territory Assignment</div>
+                        <div class="draw-controls">
+                            <button class="draw-btn" id="drawCircleBtn" onclick="startDrawing('circle')">
+                                ⭕ Draw Circle Territory
+                            </button>
+                            <button class="draw-btn" id="drawPolygonBtn" onclick="startDrawing('polygon')">
+                                📐 Draw Custom Territory
+                            </button>
+                            <button class="draw-btn" onclick="clearDrawing()">
+                                🗑️ Clear Drawing
+                            </button>
                         </div>
-                        
-                        <!-- Sub-category filters for Distribution -->
-                        <div class="sub-category-filters" id="distributionSubFilters">
-                            <div class="sub-category-title">📦 Distribution Sub-Categories</div>
-                            <button class="filter-chip active" onclick="filterPOIsBySubCategory('all', this)">All Distribution</button>
-                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Bulk Supplier', this)">Bulk Supplier</button>
-                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Cash & Carry', this)">Cash & Carry</button>
-                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Distributor', this)">Distributor</button>
-                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Stockist', this)">Stockist</button>
-                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Wholesaler', this)">Wholesaler</button>
+                        <div id="territoryList"></div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">🏷️ POI Category Filters</div>
+                        <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                            Select multiple categories to analyze
+                        </div>
+                        <div>
+                            <button class="filter-chip active" onclick="togglePOIFilter('all', this)">All</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Distribution', this)">Distribution</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Retail', this)">Retail</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Food & Beverage', this)">F&B</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Hospitality', this)">Hospitality</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Corporate', this)">Corporate</button>
+                            <button class="filter-chip" onclick="togglePOIFilter('Healthcare', this)">Healthcare</button>
                         </div>
                     </div>
 
                     <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Selected Territory Analysis</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value" id="selectedPOIs">0</span>
+                                <span class="stat-label">POIs in Territory</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="selectedWSNeeded">0</span>
+                                <span class="stat-label">WS Needed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="selectedInvestment">₹0</span>
+                                <span class="stat-label">Investment</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="selectedRevenue">₹0Cr</span>
+                                <span class="stat-label">Monthly Revenue</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-panel" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Overall Expansion Opportunity</div>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <span class="stat-value" id="newWSNeeded">...</span>
@@ -699,38 +734,6 @@
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">🏭 Export POIs by Plant</div>
-                        <select id="plantSelect">
-                            <option value="">Select a plant...</option>
-                            <option value="plant1">Bangalore Plant (Main)</option>
-                            <option value="plant2">Secondary Plant</option>
-                        </select>
-                        <button class="action-btn" onclick="exportPOIsByPlant()">
-                            📥 Export POIs from Selected Plant
-                        </button>
-                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
-                            💡 Export will use current radius setting or 150 KM if no radius selected
-                        </p>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">📦 Export POIs by Distributor</div>
-                        <select id="distributorSelect" onchange="updateDistributorExportInfo()">
-                            <option value="">Select a distributor...</option>
-                        </select>
-                        <div style="margin: 10px 0; padding: 8px; background: #f8f9ff; border-radius: 6px; border-left: 3px solid #667eea; display: none;" id="distExportInfo">
-                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Selected Distributor Info:</div>
-                            <div style="font-size: 12px; font-weight: 600;" id="distInfoText"></div>
-                        </div>
-                        <button class="action-btn" onclick="exportPOIsBySelectedDistributor()">
-                            📥 Export POIs from Selected Distributor
-                        </button>
-                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
-                            💡 Export will use coverage radius setting (default 25 KM)
-                        </p>
-                    </div>
-
-                    <div class="control-section">
                         <div class="section-title">Export Options</div>
                         <button class="action-btn" onclick="exportDistributors()">
                             📥 Export Distributors (CSV)
@@ -738,9 +741,9 @@
                         <button class="action-btn" onclick="exportPOIs()">
                             📥 Export All POIs (CSV)
                         </button>
-                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
-                            💡 To export POIs around a specific distributor, click on the distributor marker on the map
-                        </p>
+                        <button class="action-btn" onclick="exportSelectedTerritory()">
+                            📥 Export Selected Territory
+                        </button>
                     </div>
                 </div>
             </div>
@@ -758,6 +761,953 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="app.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <script>
+        const VALID_USERS = {
+            'admin': 'admin123',
+            'manager': 'manager123',
+            'soumen': 'soumen123',
+            'client': 'client123',
+            'test': 'test123'
+        };
+        
+        const SESSION_TIMEOUT = 120;
+
+        const distributorsData = [
+            {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC'},
+            {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC'},
+            {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant'},
+            {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC'},
+            {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant'},
+            {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN'},
+            {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC'},
+            {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC'},
+            {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant'},
+            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'}
+        ];
+
+        const plants = {
+            plant1: {name: 'Bangalore Plant (Main)', lat: 12.996663, lng: 76.982185},
+            plant2: {name: 'Secondary Plant', lat: 12.9386, lng: 77.5441}
+        };
+
+        let map, currentRadius = 50, activeFilter = 'all';
+        let mapMarkers = [], coverageCircles = [], distributors = [];
+        let pois = [], poisLoaded = false;
+        let drawnItems, drawControl, isDrawing = false;
+        let territories = [];
+        let selectedCategories = ['all'];
+        let currentTerritory = null;
+
+        // GitHub Configuration
+        const GITHUB_USERNAME = 'saumenray-afk';
+        const GITHUB_REPO = 'water_tool';
+        const GITHUB_BRANCH = 'main';
+        const POI_ZIP_FILENAME = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
+        
+        const POI_ZIP_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/${POI_ZIP_FILENAME}`;
+        
+        console.log('🔗 POI Data URL:', POI_ZIP_URL);
+
+        async function loadFromFile() {
+            const fileInput = document.getElementById('poiFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('⚠️ Please select a ZIP file first');
+                return;
+            }
+            
+            console.log('📁 Loading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+            document.getElementById('poiStatusText').textContent = `Loading ${file.name}...`;
+            
+            try {
+                await loadPOIDataFromBlob(file);
+            } catch (error) {
+                console.error('❌ Error loading file:', error);
+                alert(`Error loading file: ${error.message}`);
+            }
+        }
+
+        async function loadPOIDataFromBlob(blob) {
+            try {
+                console.log('📦 Processing file, size:', blob.size, 'bytes');
+                
+                if (blob.size === 0) {
+                    throw new Error('File is empty (0 bytes)');
+                }
+                
+                console.log('📦 Extracting ZIP...');
+                const zip = await JSZip.loadAsync(blob);
+                
+                const fileNames = Object.keys(zip.files);
+                console.log('📁 Files in ZIP:', fileNames);
+                
+                if (fileNames.length === 0) {
+                    throw new Error('ZIP file contains no files');
+                }
+                
+                const csvFileName = fileNames.find(name => 
+                    name.endsWith('.csv') || name.endsWith('.txt') || name.endsWith('.tsv')
+                ) || fileNames[0];
+                console.log(`📄 Extracting file: ${csvFileName}`);
+                
+                document.getElementById('poiStatusText').textContent = `Extracting ${csvFileName}...`;
+                
+                const csvText = await zip.files[csvFileName].async('text');
+                const textLength = csvText.length;
+                console.log(`✅ CSV extracted: ${textLength.toLocaleString()} characters`);
+                
+                if (textLength === 0) {
+                    throw new Error('CSV file is empty');
+                }
+                
+                console.log('📝 First 300 chars:', csvText.substring(0, 300));
+                
+                await parsePOIData(csvText, csvFileName);
+                
+            } catch (error) {
+                console.error('❌ ERROR:', error);
+                document.getElementById('poiStatusText').innerHTML = 
+                    `<span style="color: #dc3545;">⚠️ Error: ${error.message}</span>`;
+                throw error;
+            }
+        }
+
+        async function parsePOIData(csvText, fileName) {
+            console.log('🔍 Parsing CSV data...');
+            document.getElementById('poiStatusText').textContent = 'Parsing CSV data...';
+            
+            const lines = csvText.trim().split('\n');
+            console.log(`📊 Total lines: ${lines.length.toLocaleString()}`);
+            
+            if (lines.length < 2) {
+                throw new Error('CSV has no data rows');
+            }
+            
+            // Detect delimiter
+            let delimiter = '\t';
+            const firstLine = lines[0];
+            const tabCount = (firstLine.match(/\t/g) || []).length;
+            const commaCount = (firstLine.match(/,/g) || []).length;
+            
+            if (commaCount > tabCount) {
+                delimiter = ',';
+            }
+            console.log('🔧 Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA', `(tabs: ${tabCount}, commas: ${commaCount})`);
+            
+            const headers = firstLine.split(delimiter).map(h => h.trim());
+            console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 15));
+            
+            // Debug: show where each column is
+            headers.forEach((h, i) => {
+                if (h.toLowerCase().includes('lat') || h.toLowerCase().includes('lon') || 
+                    h.toLowerCase().includes('address') || h.toLowerCase().includes('landmark')) {
+                    console.log(`  Column ${i}: "${h}"`);
+                }
+            });
+            
+            // Find lat/lng columns - must be exact matches
+            let latCol = headers.findIndex(h => h === 'Latitude' || h === 'latitude' || h === 'lat' || h === 'LAT');
+            let lngCol = headers.findIndex(h => h === 'Longitude' || h === 'longitude' || h === 'lng' || h === 'LON' || h === 'Long');
+            
+            console.log(`📍 Initial - Latitude column: ${latCol} ("${headers[latCol]}")`);
+            console.log(`📍 Initial - Longitude column: ${lngCol} ("${headers[lngCol]}")`);
+            
+            // Sample first data row to verify
+            if (lines.length > 1) {
+                const sampleValues = lines[1].split(delimiter);
+                console.log('📊 Full sample row (first 20 columns):');
+                for (let i = 0; i < Math.min(20, sampleValues.length); i++) {
+                    console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
+                }
+                
+                // Find the actual numeric lat/lng columns by checking values
+                console.log('🔍 Searching for numeric lat/lng values...');
+                for (let i = 0; i < sampleValues.length; i++) {
+                    const val = parseFloat(sampleValues[i]);
+                    if (!isNaN(val)) {
+                        // Latitude range: roughly 8-22 for Karnataka region
+                        if (val >= 8 && val <= 22) {
+                            console.log(`  🎯 Possible Latitude at column ${i} (${headers[i]}): ${val}`);
+                            if (latCol === -1 || headers[latCol].toLowerCase().includes('address') || headers[latCol].toLowerCase().includes('landmark')) {
+                                latCol = i;
+                            }
+                        }
+                        // Longitude range: roughly 74-78 for Karnataka region
+                        if (val >= 74 && val <= 78) {
+                            console.log(`  🎯 Possible Longitude at column ${i} (${headers[i]}): ${val}`);
+                            if (lngCol === -1 || headers[lngCol].toLowerCase().includes('address') || headers[lngCol].toLowerCase().includes('landmark')) {
+                                lngCol = i;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            console.log(`📍 FINAL - Latitude column: ${latCol} ("${headers[latCol]}")`);
+            console.log(`📍 FINAL - Longitude column: ${lngCol} ("${headers[lngCol]}")`);
+            
+            if (latCol === -1 || lngCol === -1) {
+                throw new Error(`Could not find valid lat/lng columns. Found lat=${latCol}, lng=${lngCol}`);
+            }
+            
+            // Clear existing POIs
+            pois = [];
+            let validCount = 0;
+            let invalidCount = 0;
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(delimiter);
+                
+                if (values.length < Math.min(headers.length - 5, 3)) {
+                    continue; // Skip malformed rows
+                }
+                
+                const poi = {};
+                headers.forEach((header, index) => {
+                    poi[header] = values[index] ? values[index].trim() : '';
+                });
+                
+                const lat = parseFloat(values[latCol]);
+                const lng = parseFloat(values[lngCol]);
+                
+                if (lat && lng && !isNaN(lat) && !isNaN(lng) && 
+                    Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
+                    lat !== 0 && lng !== 0) {
+                    poi.Latitude = lat;
+                    poi.Longitude = lng;
+                    pois.push(poi);
+                    validCount++;
+                } else {
+                    invalidCount++;
+                    if (invalidCount <= 3) {
+                        console.log(`❌ Invalid row ${i}: lat="${values[latCol]}", lng="${values[lngCol]}"`);
+                    }
+                }
+                
+                // Progress updates
+                if (i % 10000 === 0) {
+                    console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)...`);
+                    document.getElementById('poiStatusText').textContent = 
+                        `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
+                    
+                    // Allow UI to update
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+            
+            poisLoaded = true;
+            console.log(`✅ SUCCESS! Loaded ${validCount.toLocaleString()} valid POIs (${invalidCount.toLocaleString()} invalid)`);
+            
+            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString();
+            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString();
+            document.getElementById('poiStatusText').textContent = 
+                `✅ ${pois.length.toLocaleString()} POIs loaded from ${fileName}`;
+            
+            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
+            const coverage = (totalRetailers / pois.length * 100);
+            document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
+            
+            const wsNeeded = Math.ceil(pois.length / 150);
+            document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
+            document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
+            document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
+            
+            updateMap();
+        }
+
+        async function loadPOIData() {
+            try {
+                console.log('📥 Loading POI data from GitHub...');
+                console.log('📍 GitHub URL:', POI_ZIP_URL);
+                document.getElementById('poiStatusText').textContent = 'Loading from GitHub...';
+                
+                const response = await fetch(POI_ZIP_URL);
+                console.log('📡 Response status:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`File not found (404). Please check:\n1. GitHub username: ${GITHUB_USERNAME}\n2. Repository name: ${GITHUB_REPO}\n3. Branch name: ${GITHUB_BRANCH}\n4. File exists in repository root`);
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                console.log('📦 Downloaded:', blob.size.toLocaleString(), 'bytes');
+                
+                if (blob.size === 0) {
+                    throw new Error('Downloaded file is empty');
+                }
+                
+                await loadPOIDataFromBlob(blob);
+                
+            } catch (error) {
+                console.error('❌ Error loading from GitHub:', error);
+                document.getElementById('poiStatusText').innerHTML = 
+                    `<span style="color: #dc3545;">⚠️ ${error.message}</span><br>
+                    <span style="font-size: 11px;">Update GITHUB_USERNAME and GITHUB_REPO in the code (lines 447-449)</span>`;
+            }
+        }
+
+        function generateSamplePOIs() {
+            console.log('📋 Generating sample POI data as fallback...');
+            const categories = ['Distribution', 'Retail', 'Food & Beverage', 'Hospitality', 'Corporate', 'Healthcare'];
+            const centerLat = 12.9716;
+            const centerLng = 77.5946;
+            
+            for (let i = 0; i < 1000; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = Math.random() * 1.5;
+                
+                pois.push({
+                    POI_ID: `POI${String(i).padStart(6, '0')}`,
+                    Business_Name: `Business ${i}`,
+                    Category: categories[Math.floor(Math.random() * categories.length)],
+                    Sub_Category: 'General',
+                    Area: 'Bangalore',
+                    Latitude: centerLat + (radius * Math.cos(angle)),
+                    Longitude: centerLng + (radius * Math.sin(angle)),
+                    Monthly_Requirement_Liters: Math.floor(Math.random() * 50000) + 5000,
+                    Priority: Math.random() > 0.7 ? 'High' : 'Medium'
+                });
+            }
+            
+            poisLoaded = true;
+            document.getElementById('totalPOIs').textContent = pois.length.toLocaleString() + ' (Sample)';
+            document.getElementById('poiCountHeader').textContent = pois.length.toLocaleString() + ' (Sample)';
+            
+            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
+            const coverage = (totalRetailers / pois.length * 100);
+            document.getElementById('coverage').textContent = coverage.toFixed(1) + '%';
+            
+            const wsNeeded = Math.ceil(pois.length / 150);
+            document.getElementById('newWSNeeded').textContent = wsNeeded + '+';
+            document.getElementById('investment').textContent = '₹' + Math.ceil(wsNeeded * 0.6) + 'Cr';
+            document.getElementById('monthlyRev').textContent = '₹' + Math.ceil(wsNeeded * 0.3) + 'Cr';
+            
+            updateMap();
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (VALID_USERS[username] && VALID_USERS[username] === password) {
+                errorMsg.classList.remove('show');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').classList.add('active');
+                document.getElementById('userDisplay').textContent = `👤 ${username}`;
+                
+                const loginTime = new Date().getTime();
+                sessionStorage.setItem('loggedIn', 'true');
+                sessionStorage.setItem('username', username);
+                sessionStorage.setItem('loginTime', loginTime);
+                
+                initializeApp();
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('password').value = '';
+                document.getElementById('username').focus();
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.clear();
+                location.reload();
+            }
+        }
+
+        function checkSessionTimeout() {
+            const loginTime = sessionStorage.getItem('loginTime');
+            if (loginTime) {
+                const currentTime = new Date().getTime();
+                const elapsed = (currentTime - loginTime) / 1000 / 60;
+                
+                if (elapsed > SESSION_TIMEOUT) {
+                    alert('⏰ Session expired. Please login again.');
+                    sessionStorage.clear();
+                    location.reload();
+                }
+            }
+        }
+
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                checkSessionTimeout();
+                
+                if (sessionStorage.getItem('loggedIn') === 'true') {
+                    const username = sessionStorage.getItem('username');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('app').classList.add('active');
+                    document.getElementById('userDisplay').textContent = `👤 ${username}`;
+                    initializeApp();
+                }
+            }
+        });
+
+        setInterval(checkSessionTimeout, 5 * 60 * 1000);
+
+        function initializeApp() {
+            distributorsData.forEach(d => {
+                const achievement = d.target > 0 ? (d.sales / d.target * 100) : 0;
+                let rating = 'Below Average';
+                if (achievement >= 90) rating = 'Excellent';
+                else if (achievement >= 75) rating = 'Good';
+                else if (achievement >= 60) rating = 'Average';
+
+                distributors.push({...d, achievement, rating});
+            });
+
+            map = L.map('map').setView([12.9716, 77.5946], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Initialize drawing layer
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            // Map events for drawing
+            map.on(L.Draw.Event.CREATED, function (e) {
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                
+                // Prompt for territory name
+                const territoryName = prompt('Enter territory name:', `Territory ${territories.length + 1}`);
+                if (!territoryName) {
+                    drawnItems.removeLayer(layer);
+                    return;
+                }
+                
+                // Calculate POIs in this territory
+                const poisInTerritory = getPOIsInTerritory(layer);
+                
+                // Store territory
+                const territory = {
+                    id: Date.now(),
+                    name: territoryName,
+                    layer: layer,
+                    type: e.layerType,
+                    poisCount: poisInTerritory.length,
+                    pois: poisInTerritory
+                };
+                
+                territories.push(territory);
+                updateTerritoryList();
+                updateSelectedTerritoryStats(poisInTerritory);
+                
+                // Add popup to layer
+                layer.bindPopup(`<b>${territoryName}</b><br>POIs: ${poisInTerritory.length}`);
+                
+                isDrawing = false;
+                updateDrawButtons();
+            });
+
+            const plantIcon = L.divIcon({
+                html: '<div style="background: #FF6B6B; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏭</div>',
+                className: '',
+                iconSize: [30, 30]
+            });
+
+            Object.values(plants).forEach(plant => {
+                L.marker([plant.lat, plant.lng], {icon: plantIcon})
+                    .bindPopup(`<b>${plant.name}</b><br>Water Production Facility`)
+                    .addTo(map);
+            });
+
+            setupEventListeners();
+            updateDistributorList();
+            updateMap();
+            
+            // Try to load from URL first (will fail gracefully if file not found)
+            loadPOIData();
+
+            console.log(`✅ App Initialized: ${distributors.length} Distributors`);
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab + '-tab').classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('.radius-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentRadius = parseInt(this.dataset.radius);
+                    updateMap();
+                });
+            });
+        }
+
+        function updateDistributorList() {
+            const list = document.getElementById('distributorList');
+            list.innerHTML = '';
+            
+            distributors.forEach((dist, index) => {
+                const item = document.createElement('div');
+                item.className = 'distributor-item';
+                item.onclick = () => focusOnDistributor(index);
+                
+                const badgeClass = 
+                    dist.rating === 'Excellent' ? 'badge-excellent' :
+                    dist.rating === 'Good' ? 'badge-good' :
+                    dist.rating === 'Average' ? 'badge-average' : 'badge-below';
+                
+                item.innerHTML = `
+                    <div class="distributor-name">
+                        ${dist.name}
+                        <span class="performance-badge ${badgeClass}">
+                            ${dist.achievement.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="distributor-meta">
+                        ${dist.city} • ${dist.retailers} retailers
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        function focusOnDistributor(index) {
+            const dist = distributors[index];
+            map.setView([dist.lat, dist.lng], 13);
+            
+            document.querySelectorAll('.distributor-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+        }
+
+        function updateMap() {
+            mapMarkers.forEach(marker => map.removeLayer(marker));
+            mapMarkers = [];
+            coverageCircles.forEach(circle => map.removeLayer(circle));
+            coverageCircles = [];
+
+            if (currentRadius > 0) {
+                Object.values(plants).forEach(plant => {
+                    const circle = L.circle([plant.lat, plant.lng], {
+                        radius: currentRadius * 1000,
+                        color: '#667eea',
+                        fillColor: '#667eea',
+                        fillOpacity: 0.15,
+                        weight: 2
+                    }).addTo(map);
+                    coverageCircles.push(circle);
+                });
+            }
+
+            if (document.getElementById('showDistributors').checked) {
+                distributors.forEach(dist => {
+                    const color = dist.achievement >= 75 ? '#28a745' : dist.achievement >= 60 ? '#ffc107' : '#dc3545';
+                    const distIcon = L.divIcon({
+                        html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                        className: '',
+                        iconSize: [20, 20]
+                    });
+
+                    const marker = L.marker([dist.lat, dist.lng], {icon: distIcon})
+                        .bindPopup(`<b>${dist.name}</b><br>Achievement: ${dist.achievement.toFixed(1)}%<br>Retailers: ${dist.retailers}<br>City: ${dist.city}`)
+                        .addTo(map);
+                    
+                    mapMarkers.push(marker);
+                });
+            }
+
+            if (document.getElementById('showCoverage').checked) {
+                distributors.forEach(dist => {
+                    const circle = L.circle([dist.lat, dist.lng], {
+                        radius: 25000,
+                        color: '#28a745',
+                        fillColor: '#28a745',
+                        fillOpacity: 0.08,
+                        weight: 1
+                    }).addTo(map);
+                    coverageCircles.push(circle);
+                });
+            }
+
+            if (document.getElementById('showPOIs').checked && pois.length > 0) {
+                let filteredPOIs = pois;
+
+                if (activeFilter !== 'all') {
+                    filteredPOIs = pois.filter(poi => poi.Category === activeFilter);
+                }
+
+                if (currentRadius > 0) {
+                    filteredPOIs = filteredPOIs.filter(poi => {
+                        return Object.values(plants).some(plant => {
+                            const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                            return distance <= currentRadius;
+                        });
+                    });
+                }
+
+                const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
+
+                displayPOIs.forEach(poi => {
+                    const color = getMarkerColor(poi.Category);
+                    const size = poi.Priority === 'High' ? 8 : 5;
+                    
+                    const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
+                        radius: size,
+                        fillColor: color,
+                        color: 'white',
+                        weight: 1,
+                        fillOpacity: 0.7
+                    }).bindPopup(`<b>${poi.Business_Name}</b><br>Category: ${poi.Category}<br>Monthly: ${poi.Monthly_Requirement_Liters}L`)
+                    .addTo(map);
+                    
+                    mapMarkers.push(marker);
+                });
+            }
+        }
+
+        function getMarkerColor(category) {
+            const colors = {
+                'Distribution': '#4ECDC4',
+                'Retail': '#FFD93D',
+                'Food & Beverage': '#6BCB77',
+                'Hospitality': '#FF6B6B',
+                'Corporate': '#9D84B7',
+                'Healthcare': '#E74C3C'
+            };
+            return colors[category] || '#95A5A6';
+        }
+
+        function filterDistributors() {
+            const perfFilter = document.getElementById('perfFilter').value;
+            const cityFilter = document.getElementById('cityFilter').value;
+            
+            const filtered = distributors.filter(d => {
+                const perfMatch = perfFilter === 'all' || d.rating === perfFilter;
+                const cityMatch = cityFilter === 'all' || d.city === cityFilter;
+                return perfMatch && cityMatch;
+            });
+            
+            const list = document.getElementById('distributorList');
+            list.innerHTML = '';
+            
+            filtered.forEach((dist) => {
+                const item = document.createElement('div');
+                item.className = 'distributor-item';
+                item.onclick = () => focusOnDistributor(distributors.indexOf(dist));
+                
+                const badgeClass = 
+                    dist.rating === 'Excellent' ? 'badge-excellent' :
+                    dist.rating === 'Good' ? 'badge-good' :
+                    dist.rating === 'Average' ? 'badge-average' : 'badge-below';
+                
+                item.innerHTML = `
+                    <div class="distributor-name">
+                        ${dist.name}
+                        <span class="performance-badge ${badgeClass}">
+                            ${dist.achievement.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="distributor-meta">
+                        ${dist.city} • ${dist.retailers} retailers
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        function filterPOIs(category, element) {
+            document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            element.classList.add('active');
+            activeFilter = category;
+            selectedCategories = [category];
+            updateMap();
+        }
+
+        function togglePOIFilter(category, element) {
+            if (category === 'all') {
+                selectedCategories = ['all'];
+                document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+                element.classList.add('active');
+            } else {
+                // Remove 'all' if selecting specific category
+                const allIndex = selectedCategories.indexOf('all');
+                if (allIndex > -1) {
+                    selectedCategories.splice(allIndex, 1);
+                    document.querySelector('.filter-chip').classList.remove('active');
+                }
+                
+                // Toggle category
+                const index = selectedCategories.indexOf(category);
+                if (index > -1) {
+                    selectedCategories.splice(index, 1);
+                    element.classList.remove('active');
+                } else {
+                    selectedCategories.push(category);
+                    element.classList.add('active');
+                }
+                
+                // If nothing selected, revert to all
+                if (selectedCategories.length === 0) {
+                    selectedCategories = ['all'];
+                    document.querySelector('.filter-chip').classList.add('active');
+                }
+            }
+            
+            activeFilter = selectedCategories.includes('all') ? 'all' : selectedCategories[0];
+            updateMap();
+        }
+
+        function startDrawing(type) {
+            if (isDrawing) {
+                map.removeEventListener('click');
+                isDrawing = false;
+                updateDrawButtons();
+                return;
+            }
+            
+            isDrawing = true;
+            updateDrawButtons();
+            
+            if (type === 'circle') {
+                new L.Draw.Circle(map, {
+                    shapeOptions: {
+                        color: '#667eea',
+                        fillOpacity: 0.2
+                    }
+                }).enable();
+            } else if (type === 'polygon') {
+                new L.Draw.Polygon(map, {
+                    shapeOptions: {
+                        color: '#667eea',
+                        fillOpacity: 0.2
+                    }
+                }).enable();
+            }
+        }
+
+        function updateDrawButtons() {
+            document.getElementById('drawCircleBtn').classList.toggle('active', isDrawing);
+            document.getElementById('drawPolygonBtn').classList.toggle('active', isDrawing);
+        }
+
+        function clearDrawing() {
+            if (confirm('Clear all drawn territories?')) {
+                drawnItems.clearLayers();
+                territories = [];
+                currentTerritory = null;
+                updateTerritoryList();
+                updateSelectedTerritoryStats([]);
+            }
+        }
+
+        function getPOIsInTerritory(layer) {
+            const filtered = [];
+            
+            pois.forEach(poi => {
+                const point = L.latLng(poi.Latitude, poi.Longitude);
+                
+                // Check if category matches selected filters
+                if (!selectedCategories.includes('all') && !selectedCategories.includes(poi.Category)) {
+                    return;
+                }
+                
+                let isInside = false;
+                
+                if (layer instanceof L.Circle) {
+                    const distance = map.distance(layer.getLatLng(), point);
+                    isInside = distance <= layer.getRadius();
+                } else if (layer instanceof L.Polygon) {
+                    isInside = layer.getBounds().contains(point);
+                }
+                
+                if (isInside) {
+                    filtered.push(poi);
+                }
+            });
+            
+            return filtered;
+        }
+
+        function updateTerritoryList() {
+            const list = document.getElementById('territoryList');
+            
+            if (territories.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">No territories drawn yet.<br>Use the buttons above to create territories.</div>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            
+            territories.forEach((territory, index) => {
+                const item = document.createElement('div');
+                item.className = 'territory-item';
+                if (currentTerritory && currentTerritory.id === territory.id) {
+                    item.classList.add('selected');
+                }
+                
+                item.onclick = () => selectTerritory(territory);
+                
+                const wsNeeded = Math.ceil(territory.poisCount / 150);
+                const investment = (wsNeeded * 0.6).toFixed(1);
+                
+                item.innerHTML = `
+                    <div class="territory-header">
+                        <div class="territory-name">📍 ${territory.name}</div>
+                        <button class="delete-btn" onclick="deleteTerritory(${territory.id}, event)">Delete</button>
+                    </div>
+                    <div class="territory-stats">
+                        POIs: ${territory.poisCount} | WS Needed: ${wsNeeded} | Investment: ₹${investment}Cr
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        function selectTerritory(territory) {
+            currentTerritory = territory;
+            updateTerritoryList();
+            updateSelectedTerritoryStats(territory.pois);
+            
+            // Zoom to territory
+            map.fitBounds(territory.layer.getBounds(), { padding: [50, 50] });
+        }
+
+        function deleteTerritory(territoryId, event) {
+            event.stopPropagation();
+            
+            if (!confirm('Delete this territory?')) return;
+            
+            const index = territories.findIndex(t => t.id === territoryId);
+            if (index > -1) {
+                const territory = territories[index];
+                drawnItems.removeLayer(territory.layer);
+                territories.splice(index, 1);
+                
+                if (currentTerritory && currentTerritory.id === territoryId) {
+                    currentTerritory = null;
+                    updateSelectedTerritoryStats([]);
+                }
+                
+                updateTerritoryList();
+            }
+        }
+
+        function updateSelectedTerritoryStats(poisInTerritory) {
+            const count = poisInTerritory.length;
+            const wsNeeded = Math.ceil(count / 150);
+            const investment = wsNeeded * 0.6;
+            const revenue = wsNeeded * 0.3;
+            
+            document.getElementById('selectedPOIs').textContent = count.toLocaleString();
+            document.getElementById('selectedWSNeeded').textContent = wsNeeded;
+            document.getElementById('selectedInvestment').textContent = '₹' + investment.toFixed(1) + 'Cr';
+            document.getElementById('selectedRevenue').textContent = '₹' + revenue.toFixed(1) + 'Cr';
+        }
+
+        function exportSelectedTerritory() {
+            if (!currentTerritory) {
+                alert('⚠️ Please select a territory first by clicking on it in the list.');
+                return;
+            }
+            
+            let csv = 'Territory_Name,POI_ID,Business_Name,Category,Sub_Category,Area,City,Latitude,Longitude,Monthly_Requirement,Priority,Revenue_Potential\n';
+            
+            currentTerritory.pois.forEach(p => {
+                csv += `${currentTerritory.name},${p.POI_ID || ''},${p.Business_Name || ''},${p.Category || ''},${p.Sub_Category || ''},${p.Area || ''},${p.City || ''},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters || ''},${p.Priority || ''},${p.Revenue_Potential || ''}\n`;
+            });
+            
+            downloadCSV(csv, `territory_${currentTerritory.name.replace(/[^a-z0-9]/gi, '_')}.csv`);
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function showPerformanceReport() {
+            const modal = document.getElementById('reportModal');
+            const content = document.getElementById('modalContent');
+            
+            const excellent = distributors.filter(d => d.rating === 'Excellent');
+            const good = distributors.filter(d => d.rating === 'Good');
+            const average = distributors.filter(d => d.rating === 'Average');
+            const below = distributors.filter(d => d.rating === 'Below Average');
+            
+            content.innerHTML = `
+                <div class="modal-header">📊 Distributor Performance Report</div>
+                <div class="report-section">
+                    <div class="report-title">Performance Summary</div>
+                    <table>
+                        <tr><th>Level</th><th>Count</th><th>%</th><th>Sales</th></tr>
+                        <tr><td>🌟 Excellent (90%+)</td><td>${excellent.length}</td><td>${(excellent.length/distributors.length*100).toFixed(1)}%</td><td>₹${(excellent.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
+                        <tr><td>✅ Good (75-90%)</td><td>${good.length}</td><td>${(good.length/distributors.length*100).toFixed(1)}%</td><td>₹${(good.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
+                        <tr><td>⚠️ Average (60-75%)</td><td>${average.length}</td><td>${(average.length/distributors.length*100).toFixed(1)}%</td><td>₹${(average.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
+                        <tr><td>❌ Below (<60%)</td><td>${below.length}</td><td>${(below.length/distributors.length*100).toFixed(1)}%</td><td>₹${(below.reduce((sum, d) => sum + d.sales, 0)/100000).toFixed(1)}L</td></tr>
+                    </table>
+                </div>
+            `;
+            modal.classList.add('active');
+        }
+
+        function showCoverageGaps() {
+            alert('🎯 Coverage Gap Analysis\n\nBased on POI data:\n\n• 500+ new distributors needed\n• Investment: ₹300-350 Crores\n• Expected ROI: 6-8 months\n\nTop priority areas identified for expansion.');
+        }
+
+        function showNewWSPlan() {
+            alert('⭐ New WS Appointment Plan\n\n• High Priority: 50 locations\n• Medium Priority: 150 locations\n• Low Priority: 300 locations\n\nTotal investment: ₹300Cr\nProjected revenue: ₹150Cr/month');
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function exportDistributors() {
+            let csv = 'Name,City,Retailers,Achievement_%,Rating,Sales,Target\n';
+            distributors.forEach(d => {
+                csv += `${d.name},${d.city},${d.retailers},${d.achievement.toFixed(2)},${d.rating},${d.sales},${d.target}\n`;
+            });
+            downloadCSV(csv, 'distributors.csv');
+        }
+
+        function exportPOIs() {
+            let csv = 'POI_ID,Business_Name,Category,Sub_Category,Area,Latitude,Longitude,Monthly_Requirement\n';
+            pois.slice(0, 1000).forEach(p => {
+                csv += `${p.POI_ID},${p.Business_Name},${p.Category},${p.Sub_Category},${p.Area},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters}\n`;
+            });
+            downloadCSV(csv, 'pois_sample.csv');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
 </body>
 </html>
