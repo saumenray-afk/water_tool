@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Business Expansion Tool</title>
+    <title>Water Business Expansion Tool - Enhanced</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <style>
@@ -27,13 +27,39 @@
             width: 90%;
         }
 
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header h1 { font-size: 24px; color: #333; margin-bottom: 8px; }
-        .login-header p { color: #666; font-size: 14px; }
-        .login-icon { font-size: 60px; margin-bottom: 20px; }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px; }
+        .login-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
         .input-group input {
             width: 100%;
             padding: 12px 15px;
@@ -42,6 +68,7 @@
             font-size: 14px;
             transition: all 0.3s;
         }
+
         .input-group input:focus {
             outline: none;
             border-color: #667eea;
@@ -60,7 +87,11 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
 
         .error-message {
             background: #fee;
@@ -71,10 +102,21 @@
             margin-bottom: 15px;
             display: none;
         }
-        .error-message.show { display: block; }
 
-        #app { display: none; width: 100%; height: 100%; background: #f5f7fa; }
-        #app.active { display: block; }
+        .error-message.show {
+            display: block;
+        }
+
+        #app {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: #f5f7fa;
+        }
+
+        #app.active {
+            display: block;
+        }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -85,6 +127,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .header-left h1 { font-size: 20px; margin-bottom: 3px; }
         .header-left p { opacity: 0.9; font-size: 12px; }
 
@@ -99,12 +142,15 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
 
         .container { display: flex; height: calc(100vh - 65px); }
 
         .sidebar {
-            width: 380px;
+            width: 400px;
             background: white;
             padding: 20px;
             overflow-y: auto;
@@ -129,117 +175,208 @@
             border-bottom: 3px solid transparent;
             font-size: 13px;
         }
-        .tab:hover { color: #667eea; }
-        .tab.active { color: #667eea; border-bottom-color: #667eea; }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .control-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .action-btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
 
         .stats-panel {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-top: 10px;
         }
 
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 24px; font-weight: 700; display: block; }
-        .stat-label { font-size: 11px; opacity: 0.9; margin-top: 5px; }
-
-        .control-section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
+        .stat-item {
+            text-align: center;
         }
 
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: #667eea;
-            margin-right: 10px;
-            border-radius: 2px;
+        .stat-value {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .radius-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .radius-btn {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .radius-btn:hover { border-color: #667eea; background: #f8f9ff; }
-        .radius-btn.active { background: #667eea; color: white; border-color: #667eea; }
-
-        .action-btn {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-        .action-btn:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        .stat-label {
+            display: block;
+            font-size: 11px;
+            opacity: 0.9;
         }
 
         .filter-chip {
-            padding: 6px 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
             display: inline-block;
+            padding: 6px 12px;
             margin: 4px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .filter-chip:hover { border-color: #667eea; }
-        .filter-chip.active { background: #667eea; color: white; border-color: #667eea; }
 
-        .info-banner {
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+        .filter-chip:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .filter-chip.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .sub-category-filters {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .sub-category-filters.active {
+            display: block;
+        }
+
+        .sub-category-title {
             font-size: 12px;
-            color: #1565c0;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
         }
 
-        #map { flex: 1; height: 100%; }
+        #map {
+            flex: 1;
+            position: relative;
+        }
+
+        .distributor-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .distributor-item {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .distributor-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .distributor-item.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
 
         .modal {
             display: none;
@@ -248,182 +385,427 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 10000;
             align-items: center;
             justify-content: center;
         }
-        .modal.active { display: flex; }
+
+        .modal.show {
+            display: flex;
+        }
 
         .modal-content {
             background: white;
             padding: 30px;
             border-radius: 12px;
-            max-width: 900px;
-            max-height: 80vh;
+            max-width: 90%;
+            max-height: 90%;
             overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #333;
+            position: relative;
         }
 
         .modal-close {
-            float: right;
+            position: absolute;
+            top: 15px;
+            right: 20px;
             font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
+            font-weight: 700;
             color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
         }
-        .modal-close:hover { color: #333; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
-        th { background: #667eea; color: white; padding: 10px; text-align: left; font-size: 11px; }
-        td { padding: 8px; border-bottom: 1px solid #e0e0e0; }
-        tr:hover { background: #f8f9ff; }
+        .modal-close:hover {
+            color: #333;
+        }
+
+        /* NEW: Selected POI Panel */
+        .selected-poi-panel {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .selected-poi-panel.active {
+            display: block;
+        }
+
+        .selected-poi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .selected-poi-count {
+            font-size: 14px;
+            font-weight: 700;
+            color: #856404;
+        }
+
+        .clear-selection-btn {
+            padding: 4px 10px;
+            background: #ffc107;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .selected-poi-list {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 11px;
+            color: #856404;
+        }
+
+        .selected-poi-item {
+            padding: 4px 8px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-poi-btn {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* NEW: Territory Drawing Panel */
+        .territory-panel {
+            background: #d1ecf1;
+            border: 2px solid #0dcaf0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .territory-status {
+            font-size: 12px;
+            color: #055160;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .territory-info {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #055160;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .territory-info.active {
+            display: block;
+        }
+
+        /* Leaflet Draw customization */
+        .leaflet-draw-toolbar a {
+            background-color: #667eea !important;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container" id="loginScreen">
+    <div class="login-container" id="loginForm">
         <div class="login-header">
-            <div class="login-icon">🚰</div>
+            <div class="login-icon">💧</div>
             <h1>Water Business Tool</h1>
             <p>Secure Access Portal</p>
         </div>
-
-        <div class="error-message" id="errorMessage">
-            Invalid username or password.
-        </div>
-
-        <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="error-message" id="errorMessage"></div>
+        <form onsubmit="handleLogin(event)">
             <div class="input-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" placeholder="admin" required>
+                <input type="text" id="username" required autocomplete="username">
             </div>
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="admin123" required>
+                <input type="password" id="password" required autocomplete="current-password">
             </div>
-            <button type="submit" class="login-btn">🔐 Login</button>
+            <button type="submit" class="login-btn">Login</button>
         </form>
     </div>
 
     <div id="app">
         <div class="header">
             <div class="header-left">
-                <h1>🚰 Water Business Expansion Tool</h1>
-                <p><span id="poiCount">0</span> POIs • <span id="distCount">46</span> Distributors</p>
+                <h1>Water Business Expansion Tool - Enhanced</h1>
+                <p>POI Selection & Territory Management | <span id="userDisplay"></span></p>
             </div>
-            <div>
-                <span id="userName" style="margin-right: 15px;"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
         <div class="container">
             <div class="sidebar">
                 <div class="tabs">
-                    <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
-                    <button class="tab" onclick="switchTab('expansion')">🎯 Expansion</button>
+                    <button class="tab active" onclick="switchTab('overview')">Overview</button>
+                    <button class="tab" onclick="switchTab('distributors')">Distributors</button>
+                    <button class="tab" onclick="switchTab('expansion')">Expansion</button>
+                    <button class="tab" onclick="switchTab('selection')">🎯 Selection</button>
                 </div>
 
                 <div class="tab-content active" id="overview-tab">
-                    <div class="info-banner">
-                        ✅ <strong>Status:</strong> <span id="poiStatus">Ready</span>
-                    </div>
-
                     <div class="stats-panel">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Metrics</div>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Overview</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="statDist">46</span>
+                                <span class="stat-value" id="totalDistributors">0</span>
                                 <span class="stat-label">Distributors</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="statRetailers">0</span>
+                                <span class="stat-value" id="totalRetailers">0</span>
                                 <span class="stat-label">Retailers</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="statPOIs">0</span>
-                                <span class="stat-label">Total POIs</span>
+                                <span class="stat-value" id="totalPOIs">0</span>
+                                <span class="stat-label">POIs</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="statCoverage">0%</span>
+                                <span class="stat-value" id="coverage">0%</span>
                                 <span class="stat-label">Coverage</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">Radius Simulation</div>
-                        <div class="radius-buttons">
-                            <button class="radius-btn" onclick="setRadius(25)">25 KM</button>
-                            <button class="radius-btn active" onclick="setRadius(50)">50 KM</button>
-                            <button class="radius-btn" onclick="setRadius(75)">75 KM</button>
-                            <button class="radius-btn" onclick="setRadius(100)">100 KM</button>
-                            <button class="radius-btn" onclick="setRadius(125)">125 KM</button>
-                            <button class="radius-btn" onclick="setRadius(0)">Clear</button>
+                        <div class="section-title">📊 POI Data Status</div>
+                        <div style="padding: 10px; background: white; border-radius: 6px; margin-bottom: 10px;">
+                            <div style="font-size: 12px; font-weight: 600; color: #667eea; margin-bottom: 6px;">
+                                <span id="poiCountHeader">0</span> POIs Loaded
+                            </div>
+                            <div style="font-size: 11px; color: #666;" id="poiStatusText">Initializing...</div>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">Map Layers</div>
-                        <label style="display: block; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" checked id="showPlants" onchange="updateMap()">
-                            <span style="margin-left: 10px;">🏭 Plants (2)</span>
-                        </label>
-                        <label style="display: block; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" checked id="showDist" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📦 Distributors (46)</span>
-                        </label>
-                        <label style="display: block; cursor: pointer;">
-                            <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📍 POIs</span>
-                        </label>
+                        <div class="section-title">🌍 Map Controls</div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showDistributors" checked onchange="updateMap()">
+                            <label for="showDistributors">Show Distributors</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showPOIs" checked onchange="updateMap()">
+                            <label for="showPOIs">Show POIs</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showCoverage" onchange="updateMap()">
+                            <label for="showCoverage">Show Coverage Areas</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showPlants" onchange="updateMap()">
+                            <label for="showPlants">Show Plant Radius</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showDistLines" onchange="drawPlantDistributorLines()">
+                            <label for="showDistLines">Plant-Distributor Lines</label>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📍 Radius Filter</div>
+                        <div class="control-group">
+                            <label for="radiusSelect">Select Radius from Plants</label>
+                            <select id="radiusSelect" onchange="setRadius()">
+                                <option value="0">All POIs (No Radius)</option>
+                                <option value="25">25 KM</option>
+                                <option value="50" selected>50 KM</option>
+                                <option value="75">75 KM</option>
+                                <option value="100">100 KM</option>
+                                <option value="150">150 KM</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="coverageRadius">Distributor Coverage Radius (KM)</label>
+                            <input type="number" id="coverageRadius" value="25" min="5" max="100" onchange="updateMap()">
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📊 Current View Statistics</div>
+                        <div style="padding: 10px; background: white; border-radius: 6px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">POIs in Current Radius:</div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="currentRadiusPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Total POIs</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #28a745;" id="filteredPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Filtered POIs</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Active Radius: <strong id="activeRadiusDisplay">None</strong></div>
+                                <div style="font-size: 11px; color: #666;">Active Filter: <strong id="activeFilterDisplay">All Categories</strong></div>
+                            </div>
+                            <button class="action-btn" onclick="exportCurrentViewPOIs()" style="margin-top: 10px;">
+                                📥 Export Current View POIs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="distributors-tab">
+                    <div class="control-section">
+                        <div class="section-title">Filter Distributors</div>
+                        <select id="perfFilter" onchange="filterDistributors()">
+                            <option value="all">All Performance Levels</option>
+                            <option value="Excellent">Excellent (90%+)</option>
+                            <option value="Good">Good (75-90%)</option>
+                            <option value="Average">Average (60-75%)</option>
+                            <option value="Below Average">Below Average (<60%)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Distributor List</div>
+                        <div class="distributor-list" id="distributorList"></div>
                     </div>
                 </div>
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">POI Categories</div>
-                        <div style="margin-bottom: 10px; font-size: 11px; color: #666;">Select multiple categories</div>
-                        <button class="filter-chip active" onclick="toggleCategory('all', this)">All</button>
-                        <button class="filter-chip" onclick="toggleCategory('Retail', this)">Retail</button>
-                        <button class="filter-chip" onclick="toggleCategory('Food & Beverage', this)">F&B</button>
-                        <button class="filter-chip" onclick="toggleCategory('Hospitality', this)">Hospitality</button>
-                        <button class="filter-chip" onclick="toggleCategory('Corporate', this)">Corporate</button>
-                        <button class="filter-chip" onclick="toggleCategory('Healthcare', this)">Healthcare</button>
+                        <div class="section-title">POI Category Filters</div>
+                        <div>
+                            <button class="filter-chip active" onclick="filterPOIsByCategory('all', this)">All Categories</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Distribution', this)">Distribution</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Retail', this)">Retail</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Food & Beverage', this)">F&B</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Hospitality', this)">Hospitality</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Corporate', this)">Corporate</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Healthcare', this)">Healthcare</button>
+                        </div>
                     </div>
 
                     <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Filtered Analysis</div>
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="filteredCount">0</span>
-                                <span class="stat-label">Filtered POIs</span>
+                                <span class="stat-value" id="newWSNeeded">...</span>
+                                <span class="stat-label">New WS Needed</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="wsNeeded">0</span>
-                                <span class="stat-label">WS Needed</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="investment">₹0Cr</span>
+                                <span class="stat-value" id="investment">...</span>
                                 <span class="stat-label">Investment</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value" id="revenue">₹0Cr</span>
-                                <span class="stat-label">Revenue/Month</span>
+                                <span class="stat-value" id="monthlyRev">...</span>
+                                <span class="stat-label">Monthly Revenue</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="roi">6 mo</span>
+                                <span class="stat-label">ROI Period</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <div class="section-title">Export</div>
-                        <button class="action-btn" onclick="exportData()">📥 Export POIs (CSV)</button>
+                        <div class="section-title">Export Options</div>
+                        <button class="action-btn" onclick="exportDistributors()">
+                            📥 Export Distributors (CSV)
+                        </button>
+                        <button class="action-btn" onclick="exportPOIs()">
+                            📥 Export All POIs (CSV)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- NEW TAB: Selection & Territory -->
+                <div class="tab-content" id="selection-tab">
+                    <!-- Selected POIs Panel -->
+                    <div class="selected-poi-panel" id="selectedPOIPanel">
+                        <div class="selected-poi-header">
+                            <span class="selected-poi-count">
+                                <span id="selectedPOICount">0</span> POIs Selected
+                            </span>
+                            <button class="clear-selection-btn" onclick="clearPOISelection()">Clear All</button>
+                        </div>
+                        <div class="selected-poi-list" id="selectedPOIList"></div>
+                        <button class="action-btn" onclick="exportSelectedPOIs()" style="margin-top: 10px;">
+                            📥 Export Selected POIs
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">🎯 POI Selection Mode</div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="poiSelectionMode" onchange="togglePOISelectionMode()">
+                            <label for="poiSelectionMode">Enable POI Selection (Click to Select)</label>
+                        </div>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 Enable this mode to click on POI markers and select them for export
+                        </p>
+                    </div>
+
+                    <!-- Territory Drawing Panel -->
+                    <div class="territory-panel">
+                        <div class="section-title">🗺️ Territory Definition</div>
+                        <div class="territory-status" id="territoryStatus">
+                            No territory defined
+                        </div>
+                        
+                        <button class="action-btn secondary" onclick="startDrawingTerritory()">
+                            ✏️ Draw Territory
+                        </button>
+                        <button class="action-btn danger" onclick="clearTerritory()" style="display: none;" id="clearTerritoryBtn">
+                            🗑️ Clear Territory
+                        </button>
+                        
+                        <div class="territory-info" id="territoryInfo">
+                            <div style="margin-bottom: 6px;">
+                                <strong>POIs in Territory:</strong> <span id="territoryPOICount">0</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                                <strong>Area:</strong> <span id="territoryArea">0</span> km²
+                            </div>
+                        </div>
+
+                        <button class="action-btn" onclick="exportTerritoryPOIs()" style="margin-top: 10px; display: none;" id="exportTerritoryBtn">
+                            📥 Export Territory POIs
+                        </button>
+
+                        <p style="font-size: 11px; color: #055160; margin-top: 8px;">
+                            💡 Draw a polygon on the map to define your territory. All POIs within the territory will be available for export.
+                        </p>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📊 Quick Stats</div>
+                        <div style="background: white; padding: 10px; border-radius: 6px;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #ffc107;" id="statsSelectedPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Selected POIs</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #0dcaf0;" id="statsTerritoryPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Territory POIs</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -432,7 +814,7 @@
         </div>
     </div>
 
-    <div class="modal" id="modal">
+    <div class="modal" id="reportModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">&times;</span>
             <div id="modalContent"></div>
@@ -440,454 +822,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <script>
-        // Configuration
-        const USERS = { 'admin': 'admin123', 'test': 'test123', 'manager': 'manager123' };
-        const GITHUB_USER = 'saumenray-afk';
-        const GITHUB_REPO = 'water_tool';
-        const POI_FILE = 'DENSE_CONTINUOUS_POI_150KM_20251010_225505.zip';
-        const POI_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${POI_FILE}`;
-
-        // Data
-        const distributors = [
-            {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418},
-            {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819},
-            {name: 'AKSHAYA AURA', city: 'Bangalore', retailers: 1, lat: 12.9762, lng: 77.5735, target: 0, sales: 10169},
-            {name: 'AURA ENTERPRISES (Bengaluru)', city: 'Bengaluru', retailers: 55, lat: 13.0382, lng: 77.5156, target: 100000, sales: 239293},
-            {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502},
-            {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3806435},
-            {name: 'BHASKAR-GOWRIBIDNUR', city: 'Tumkur', retailers: 38, lat: 13.522, lng: 77.2373, target: 120000, sales: 460946},
-            {name: 'DINESH KUMAR (BENGALURU)', city: 'Bengaluru', retailers: 21, lat: 12.7981, lng: 77.6846, target: 90000, sales: 159636},
-            {name: 'EPOCH FILMING', city: 'Bangalore', retailers: 20, lat: 13.0382, lng: 77.5156, target: 90000, sales: 86796},
-            {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238},
-            {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530},
-            {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637},
-            {name: 'HANVIK CREATIONS', city: 'Bangalore', retailers: 38, lat: 12.9917, lng: 77.5073, target: 100000, sales: 167667},
-            {name: 'HIMESH FOODS PRIVATE LIMITED(BANGALORE)', city: 'Bangalore', retailers: 11, lat: 13.0096, lng: 77.556, target: 48000, sales: 50000},
-            {name: 'JUBILANT FOODWORKS LTD (BANGALORE)', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 50000, sales: 529836},
-            {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798},
-            {name: 'KUSH ENTERPRISES', city: 'Bengaluru', retailers: 18, lat: 13.0714, lng: 77.6783, target: 320000, sales: 154189},
-            {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 2755869},
-            {name: 'PNS ENTERPRISES (Vijayapura)', city: 'Bengaluru', retailers: 22, lat: 13.0916, lng: 77.6866, target: 100000, sales: 278531},
-            {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 200000, sales: 1069068},
-            {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423},
-            {name: 'RAVI KH', city: 'Bengaluru', retailers: 24, lat: 12.9181, lng: 77.5442, target: 100000, sales: 103670},
-            {name: 'S L V enterprises (Bengaluru)', city: 'Bengaluru', retailers: 22, lat: 12.9181, lng: 77.5442, target: 120000, sales: 627077},
-            {name: 'SAANVI ENTERPRISES', city: 'Bengaluru', retailers: 21, lat: 12.9568, lng: 77.7286, target: 90000, sales: 92376},
-            {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4371139},
-            {name: 'SAKSHI ENTERPRISES(BENGALURU)', city: 'Bengaluru', retailers: 22, lat: 12.9846, lng: 77.5362, target: 100000, sales: 414261},
-            {name: 'SANGVI AGRO PULSES', city: 'Bangalore', retailers: 107, lat: 13.0112, lng: 77.5192, target: 10000000, sales: 1019460},
-            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953},
-            {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 621439},
-            {name: 'Shashank Enterprises', city: 'Bengaluru', retailers: 134, lat: 12.8826, lng: 77.6412, target: 5000000, sales: 953899},
-            {name: 'SM ELIXIR', city: 'Bengaluru', retailers: 4, lat: 12.9352, lng: 77.5838, target: 160000, sales: 372438},
-            {name: 'SM INFRA ELECTRADE', city: 'Bangalore', retailers: 6, lat: 12.9352, lng: 77.5838, target: 300000, sales: 189238},
-            {name: 'SRI BASAVESHWARA ENTERPRISES', city: 'Bangalore', retailers: 40, lat: 13.0916, lng: 77.6866, target: 3000000, sales: 544236},
-            {name: 'SRI DEVIRAMMA FOODS AND BEVERAGES', city: 'Bangalore', retailers: 13, lat: 12.9582, lng: 77.5116, target: 0, sales: 56946},
-            {name: 'Sri Lakshmi Narasimha Swamy Enterprises', city: 'Bangalore', retailers: 41, lat: 13.0714, lng: 77.6783, target: 10000000, sales: 178303},
-            {name: 'Sri Lakshmi Narasimha Swamy Enterprises (BANGALORE)', city: 'Bangalore', retailers: 5, lat: 13.0714, lng: 77.6783, target: 4000000, sales: 2543899},
-            {name: 'Sri Lakshmi Venkateshwra Enterprises Pure Water Supply', city: 'Bangalore', retailers: 43, lat: 12.9496, lng: 77.6226, target: 2000000, sales: 744752},
-            {name: 'Sri Mangala Agencies', city: 'Tumkur', retailers: 138, lat: 13.3409, lng: 77.101, target: 90000, sales: 225081},
-            {name: 'SRI MANJUNATHA ENTERPRISES', city: 'Tumkur', retailers: 22, lat: 13.3409, lng: 77.101, target: 2000000, sales: 911792},
-            {name: 'Sri Manjunatha Enterprises(NELAMANGALA)', city: 'Bengaluru', retailers: 46, lat: 12.7981, lng: 77.6846, target: 90000, sales: 476985},
-            {name: 'SRI VEERABHADRASWAMY AGENCIES', city: 'Bengaluru', retailers: 38, lat: 13.3326, lng: 77.5376, target: 160000, sales: 165928},
-            {name: 'Sri Vinayaka Enterprises (Banglore)', city: 'Bangalore', retailers: 42, lat: 13.0714, lng: 77.6783, target: 3200000, sales: 683462},
-            {name: 'VENNA VENKATARAMA (Nagabhushan)', city: 'Bangalore', retailers: 19, lat: 13.2186, lng: 77.2062, target: 90000, sales: 83832},
-            {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2217457},
-            {name: 'OYO HOTELS AND HOMES PRIVATE LIMITED (Karnataka)', city: 'Bengaluru', retailers: 16, lat: 13.0086, lng: 77.6956, target: 0, sales: 70272},
-            {name: 'JAI MARUTHI ENTERPRISES (BANGLORE)', city: 'Bangalore', retailers: 47, lat: 13.0056, lng: 77.5562, target: 0, sales: 204901}
-        ];
-
-        const plants = [
-            {name: 'Bangalore Plant', lat: 12.996663, lng: 76.982185},
-            {name: 'Secondary Plant', lat: 12.9386, lng: 77.5441}
-        ];
-
-        // Global state
-        let map, pois = [], currentRadius = 50, selectedCategories = ['all'];
-        let markers = [], circles = [];
-
-        // Login
-        function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            
-            if (USERS[user] === pass) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('app').classList.add('active');
-                document.getElementById('userName').textContent = user;
-                initApp();
-            } else {
-                document.getElementById('errorMessage').classList.add('show');
-            }
-        }
-
-        function logout() {
-            if (confirm('Logout?')) location.reload();
-        }
-
-        // Initialize
-        async function initApp() {
-            console.log('🚀 Initializing app...');
-            
-            // Setup map
-            map = L.map('map').setView([12.9716, 77.5946], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
-                maxZoom: 18
-            }).addTo(map);
-
-            // Update stats
-            const totalRetailers = distributors.reduce((sum, d) => sum + d.retailers, 0);
-            document.getElementById('statRetailers').textContent = totalRetailers.toLocaleString();
-
-            // Load POI data
-            await loadPOIData();
-            
-            // Initial render
-            updateMap();
-        }
-
-        // Load POI data from GitHub
-        async function loadPOIData() {
-            try {
-                console.log('📥 Loading POI data...');
-                document.getElementById('poiStatus').textContent = 'Loading...';
-                
-                const response = await fetch(POI_URL);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const blob = await response.blob();
-                console.log('📦 Downloaded:', blob.size, 'bytes');
-                
-                const zip = await JSZip.loadAsync(blob);
-                const csvFile = Object.keys(zip.files)[0];
-                const csvText = await zip.files[csvFile].async('text');
-                
-                console.log('📄 Parsing CSV...');
-                const lines = csvText.trim().split('\n');
-                
-                // Parse CSV with proper quote handling
-                function parseCSVLine(line) {
-                    const result = [];
-                    let current = '';
-                    let inQuotes = false;
-                    
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ',' && !inQuotes) {
-                            result.push(current.trim());
-                            current = '';
-                        } else {
-                            current += char;
-                        }
-                    }
-                    result.push(current.trim());
-                    return result;
-                }
-                
-                const headers = parseCSVLine(lines[0]);
-                console.log('📋 Headers:', headers.slice(0, 15));
-                
-                // Find coordinate columns
-                let latCol = headers.findIndex(h => h === 'Latitude');
-                let lngCol = headers.findIndex(h => h === 'Longitude');
-                
-                // Parse first row to verify
-                const testRow = parseCSVLine(lines[1]);
-                const testLat = parseFloat(testRow[latCol]);
-                const testLng = parseFloat(testRow[lngCol]);
-                
-                console.log(`📍 Test coordinates: lat=${testLat}, lng=${testLng}`);
-                
-                // If not valid numbers, search for valid columns
-                if (isNaN(testLat) || isNaN(testLng)) {
-                    console.log('⚠️ Invalid coordinates, searching...');
-                    for (let i = 0; i < testRow.length; i++) {
-                        const val = parseFloat(testRow[i]);
-                        if (!isNaN(val)) {
-                            if (val >= 8 && val <= 22) {
-                                latCol = i;
-                                console.log(`✅ Found Latitude at column ${i}: ${val}`);
-                            }
-                            if (val >= 74 && val <= 80) {
-                                lngCol = i;
-                                console.log(`✅ Found Longitude at column ${i}: ${val}`);
-                            }
-                        }
-                    }
-                }
-                
-                console.log(`📍 Using columns: lat=${latCol}, lng=${lngCol}`);
-                
-                // Parse all rows
-                for (let i = 1; i < lines.length; i++) {
-                    if (i % 10000 === 0) {
-                        console.log(`⏳ Processing ${i}/${lines.length}...`);
-                        document.getElementById('poiStatus').textContent = `Loading ${i}/${lines.length}...`;
-                    }
-                    
-                    const values = parseCSVLine(lines[i]);
-                    if (values.length < 10) continue;
-                    
-                    const lat = parseFloat(values[latCol]);
-                    const lng = parseFloat(values[lngCol]);
-                    
-                    if (lat && lng && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                        const poi = {};
-                        headers.forEach((h, idx) => {
-                            poi[h] = values[idx] || '';
-                        });
-                        poi.Latitude = lat;
-                        poi.Longitude = lng;
-                        pois.push(poi);
-                    }
-                }
-                
-                console.log(`✅ Loaded ${pois.length.toLocaleString()} POIs`);
-                document.getElementById('poiStatus').textContent = `${pois.length.toLocaleString()} POIs loaded`;
-                document.getElementById('poiCount').textContent = pois.length.toLocaleString();
-                document.getElementById('statPOIs').textContent = pois.length.toLocaleString();
-                
-                const coverage = (distributors.reduce((s, d) => s + d.retailers, 0) / pois.length * 100);
-                document.getElementById('statCoverage').textContent = coverage.toFixed(1) + '%';
-                
-                updateMap();
-                
-            } catch (error) {
-                console.error('❌ Error:', error);
-                document.getElementById('poiStatus').textContent = 'Error loading data';
-            }
-        }
-
-        // Update map
-        function updateMap() {
-            console.log('🗺️ Updating map...');
-            
-            // Clear existing markers
-            markers.forEach(m => map.removeLayer(m));
-            circles.forEach(c => map.removeLayer(c));
-            markers = [];
-            circles = [];
-            
-            // Draw radius circles
-            if (currentRadius > 0) {
-                console.log(`⭕ Drawing ${currentRadius}km circles`);
-                plants.forEach(plant => {
-                    // Count POIs in circle
-                    let count = 0;
-                    pois.forEach(poi => {
-                        const dist = getDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                        if (dist <= currentRadius) count++;
-                    });
-                    
-                    const circle = L.circle([plant.lat, plant.lng], {
-                        radius: currentRadius * 1000,
-                        color: '#667eea',
-                        fillColor: '#667eea',
-                        fillOpacity: 0.2,
-                        weight: 4,
-                        dashArray: '10, 10'
-                    }).addTo(map);
-                    
-                    circle.bindPopup(`<div style="padding:5px;">
-                        <b style="color:#667eea;">${plant.name}</b><br>
-                        <span style="font-size:12px;">📏 Radius: ${currentRadius} KM</span><br>
-                        <span style="font-size:12px;">📍 POIs: <b>${count.toLocaleString()}</b></span>
-                    </div>`);
-                    
-                    circle.on('mouseover', function() { this.openPopup(); });
-                    circle.on('mouseout', function() { this.closePopup(); });
-                    
-                    circles.push(circle);
-                });
-            }
-            
-            // Draw plants
-            if (document.getElementById('showPlants').checked) {
-                plants.forEach(plant => {
-                    const icon = L.divIcon({
-                        html: '<div style="background:#FF6B6B;width:30px;height:30px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;">🏭</div>',
-                        className: '',
-                        iconSize: [30, 30]
-                    });
-                    const marker = L.marker([plant.lat, plant.lng], {icon}).bindPopup(`<b>${plant.name}</b>`).addTo(map);
-                    markers.push(marker);
-                });
-            }
-            
-            // Draw distributors
-            if (document.getElementById('showDist').checked) {
-                distributors.forEach(dist => {
-                    const achievement = dist.target > 0 ? (dist.sales / dist.target * 100) : 0;
-                    const color = achievement >= 75 ? '#28a745' : achievement >= 60 ? '#ffc107' : '#dc3545';
-                    
-                    const icon = L.divIcon({
-                        html: `<div style="background:${color};width:16px;height:16px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-                        className: '',
-                        iconSize: [16, 16]
-                    });
-                    
-                    const marker = L.marker([dist.lat, dist.lng], {icon})
-                        .bindPopup(`<b>${dist.name}</b><br>City: ${dist.city}<br>Retailers: ${dist.retailers}<br>Achievement: ${achievement.toFixed(1)}%`)
-                        .addTo(map);
-                    markers.push(marker);
-                });
-            }
-            
-            // Draw POIs
-            if (document.getElementById('showPOIs').checked && pois.length > 0) {
-                let filtered = pois;
-                
-                // Filter by categories
-                if (!selectedCategories.includes('all')) {
-                    filtered = pois.filter(poi => selectedCategories.includes(poi.Category));
-                    console.log(`🏷️ Categories:`, selectedCategories);
-                    console.log(`📊 Filtered: ${filtered.length.toLocaleString()} POIs`);
-                }
-                
-                // Filter by radius
-                if (currentRadius > 0) {
-                    const before = filtered.length;
-                    filtered = filtered.filter(poi => {
-                        return plants.some(plant => {
-                            const dist = getDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                            return dist <= currentRadius;
-                        });
-                    });
-                    console.log(`📍 Radius filter: ${filtered.length.toLocaleString()} of ${before.toLocaleString()}`);
-                }
-                
-                // Update stats
-                document.getElementById('filteredCount').textContent = filtered.length.toLocaleString();
-                const ws = Math.ceil(filtered.length / 150);
-                document.getElementById('wsNeeded').textContent = ws;
-                document.getElementById('investment').textContent = '₹' + (ws * 0.6).toFixed(1) + 'Cr';
-                document.getElementById('revenue').textContent = '₹' + (ws * 0.3).toFixed(1) + 'Cr';
-                
-                // Display POIs (sample for performance)
-                const skipRate = filtered.length > 10000 ? 50 : filtered.length > 1000 ? 10 : 1;
-                const display = filtered.filter((_, i) => i % skipRate === 0);
-                
-                console.log(`🗺️ Displaying ${display.length.toLocaleString()} of ${filtered.length.toLocaleString()} POIs`);
-                
-                display.forEach(poi => {
-                    const color = getCategoryColor(poi.Category);
-                    const size = (poi.Priority || '').toLowerCase() === 'high' ? 7 : 4;
-                    
-                    const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
-                        radius: size,
-                        fillColor: color,
-                        color: 'white',
-                        weight: 1,
-                        fillOpacity: 0.7
-                    }).bindPopup(`<b>${poi.Business_Name || 'N/A'}</b><br>Category: ${poi.Category}<br>Monthly: ${poi.Monthly_Requirement_Liters || 'N/A'}L`)
-                    .addTo(map);
-                    
-                    markers.push(marker);
-                });
-                
-                console.log(`✅ Added ${markers.length} markers`);
-            }
-        }
-
-        // Helpers
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function getCategoryColor(category) {
-            const colors = {
-                'Retail': '#FFD93D',
-                'Food & Beverage': '#6BCB77',
-                'Hospitality': '#FF6B6B',
-                'Corporate': '#9D84B7',
-                'Healthcare': '#E74C3C',
-                'Distribution': '#4ECDC4'
-            };
-            return colors[category] || '#95A5A6';
-        }
-
-        function setRadius(km) {
-            currentRadius = km;
-            document.querySelectorAll('.radius-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            updateMap();
-        }
-
-        function toggleCategory(cat, element) {
-            if (cat === 'all') {
-                selectedCategories = ['all'];
-                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                element.classList.add('active');
-            } else {
-                const allBtn = document.querySelector('.filter-chip');
-                if (selectedCategories.includes('all')) {
-                    selectedCategories = [];
-                    allBtn.classList.remove('active');
-                }
-                
-                const idx = selectedCategories.indexOf(cat);
-                if (idx > -1) {
-                    selectedCategories.splice(idx, 1);
-                    element.classList.remove('active');
-                } else {
-                    selectedCategories.push(cat);
-                    element.classList.add('active');
-                }
-                
-                if (selectedCategories.length === 0) {
-                    selectedCategories = ['all'];
-                    allBtn.classList.add('active');
-                }
-            }
-            
-            console.log('Selected categories:', selectedCategories);
-            updateMap();
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tab + '-tab').classList.add('active');
-        }
-
-        function exportData() {
-            let filtered = pois;
-            if (!selectedCategories.includes('all')) {
-                filtered = pois.filter(poi => selectedCategories.includes(poi.Category));
-            }
-            
-            let csv = 'POI_ID,Business_Name,Category,City,Latitude,Longitude,Monthly_Requirement\n';
-            filtered.slice(0, 5000).forEach(p => {
-                csv += `${p.POI_ID || ''},${p.Business_Name || ''},${p.Category || ''},${p.City || ''},${p.Latitude},${p.Longitude},${p.Monthly_Requirement_Liters || ''}\n`;
-            });
-            
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'pois_export.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="app_enhanced.js"></script>
 </body>
 </html>
