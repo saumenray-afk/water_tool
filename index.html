@@ -886,21 +886,38 @@
                 throw new Error('CSV has no data rows');
             }
             
-            // Detect delimiter
-            let delimiter = '\t';
-            const firstLine = lines[0];
-            const tabCount = (firstLine.match(/\t/g) || []).length;
-            const commaCount = (firstLine.match(/,/g) || []).length;
-            
-            if (commaCount > tabCount) {
-                delimiter = ',';
+            // CSV Parser that handles quoted fields with commas
+            function parseCSVLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
             }
-            console.log('🔧 Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA', `(tabs: ${tabCount}, commas: ${commaCount})`);
             
-            const headers = firstLine.split(delimiter).map(h => h.trim());
+            const headers = parseCSVLine(lines[0]);
             console.log(`📋 Headers (${headers.length}):`, headers.slice(0, 15));
             
-            // Debug: show where each column is
+            // Debug: show location-related columns
             headers.forEach((h, i) => {
                 if (h.toLowerCase().includes('lat') || h.toLowerCase().includes('lon') || 
                     h.toLowerCase().includes('address') || h.toLowerCase().includes('landmark')) {
@@ -908,37 +925,39 @@
                 }
             });
             
-            // Find lat/lng columns - must be exact matches
+            // Find lat/lng columns by exact name match
             let latCol = headers.findIndex(h => h === 'Latitude' || h === 'latitude' || h === 'lat' || h === 'LAT');
             let lngCol = headers.findIndex(h => h === 'Longitude' || h === 'longitude' || h === 'lng' || h === 'LON' || h === 'Long');
             
-            console.log(`📍 Initial - Latitude column: ${latCol} ("${headers[latCol]}")`);
-            console.log(`📍 Initial - Longitude column: ${lngCol} ("${headers[lngCol]}")`);
+            console.log(`📍 Found columns - Latitude: ${latCol} ("${headers[latCol]}"), Longitude: ${lngCol} ("${headers[lngCol]}")`);
             
-            // Sample first data row to verify
+            // Sample first data row
             if (lines.length > 1) {
-                const sampleValues = lines[1].split(delimiter);
-                console.log('📊 Full sample row (first 20 columns):');
+                const sampleValues = parseCSVLine(lines[1]);
+                console.log('📊 Sample row (first 20 columns):');
                 for (let i = 0; i < Math.min(20, sampleValues.length); i++) {
                     console.log(`  [${i}] ${headers[i]}: "${sampleValues[i]}"`);
                 }
                 
-                // Find the actual numeric lat/lng columns by checking values
-                console.log('🔍 Searching for numeric lat/lng values...');
-                for (let i = 0; i < sampleValues.length; i++) {
-                    const val = parseFloat(sampleValues[i]);
-                    if (!isNaN(val)) {
-                        // Latitude range: roughly 8-22 for Karnataka region
-                        if (val >= 8 && val <= 22) {
-                            console.log(`  🎯 Possible Latitude at column ${i} (${headers[i]}): ${val}`);
-                            if (latCol === -1 || headers[latCol].toLowerCase().includes('address') || headers[latCol].toLowerCase().includes('landmark')) {
+                // Verify the lat/lng values are actually numeric
+                const sampleLat = parseFloat(sampleValues[latCol]);
+                const sampleLng = parseFloat(sampleValues[lngCol]);
+                
+                console.log(`🔍 Sample coordinates: lat=${sampleLat}, lng=${sampleLng}`);
+                
+                if (isNaN(sampleLat) || isNaN(sampleLng)) {
+                    console.warn('⚠️ Lat/Lng columns contain non-numeric data. Searching for correct columns...');
+                    
+                    // Search for columns with valid coordinates
+                    for (let i = 0; i < sampleValues.length; i++) {
+                        const val = parseFloat(sampleValues[i]);
+                        if (!isNaN(val)) {
+                            if (val >= 8 && val <= 22 && latCol !== i) {
+                                console.log(`  🎯 Found Latitude at column ${i} (${headers[i]}): ${val}`);
                                 latCol = i;
                             }
-                        }
-                        // Longitude range: roughly 74-78 for Karnataka region
-                        if (val >= 74 && val <= 78) {
-                            console.log(`  🎯 Possible Longitude at column ${i} (${headers[i]}): ${val}`);
-                            if (lngCol === -1 || headers[lngCol].toLowerCase().includes('address') || headers[lngCol].toLowerCase().includes('landmark')) {
+                            if (val >= 74 && val <= 78 && lngCol !== i) {
+                                console.log(`  🎯 Found Longitude at column ${i} (${headers[i]}): ${val}`);
                                 lngCol = i;
                             }
                         }
@@ -946,11 +965,10 @@
                 }
             }
             
-            console.log(`📍 FINAL - Latitude column: ${latCol} ("${headers[latCol]}")`);
-            console.log(`📍 FINAL - Longitude column: ${lngCol} ("${headers[lngCol]}")`);
+            console.log(`📍 FINAL - Using columns: Latitude=${latCol} ("${headers[latCol]}"), Longitude=${lngCol} ("${headers[lngCol]}")`);
             
             if (latCol === -1 || lngCol === -1) {
-                throw new Error(`Could not find valid lat/lng columns. Found lat=${latCol}, lng=${lngCol}`);
+                throw new Error(`Could not find valid lat/lng columns`);
             }
             
             // Clear existing POIs
@@ -962,10 +980,10 @@
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                const values = line.split(delimiter);
+                const values = parseCSVLine(line);
                 
-                if (values.length < Math.min(headers.length - 5, 3)) {
-                    continue; // Skip malformed rows
+                if (values.length < 10) {
+                    continue;
                 }
                 
                 const poi = {};
@@ -985,18 +1003,15 @@
                     validCount++;
                 } else {
                     invalidCount++;
-                    if (invalidCount <= 3) {
-                        console.log(`❌ Invalid row ${i}: lat="${values[latCol]}", lng="${values[lngCol]}"`);
+                    if (invalidCount <= 5) {
+                        console.log(`❌ Invalid row ${i}: lat="${values[latCol]}" (${lat}), lng="${values[lngCol]}" (${lng})`);
                     }
                 }
                 
-                // Progress updates
                 if (i % 10000 === 0) {
                     console.log(`⏳ Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows (${validCount.toLocaleString()} valid)...`);
                     document.getElementById('poiStatusText').textContent = 
                         `Processing: ${i.toLocaleString()}/${lines.length.toLocaleString()} rows...`;
-                    
-                    // Allow UI to update
                     await new Promise(resolve => setTimeout(resolve, 0));
                 }
             }
