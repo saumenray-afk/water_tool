@@ -1417,3 +1417,641 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
+// ============================================================
+// ENHANCED FEATURES - POI SELECTION & TERRITORY MANAGEMENT
+// Version 2.0 - Added by Enhancement Script
+// ============================================================
+
+// Global variables for new features
+let selectedPOIs = new Set();
+let poiSelectionModeEnabled = false;
+let drawnItems = new L.FeatureGroup();
+let drawControl = null;
+let currentTerritory = null;
+let territoryPOIs = [];
+
+// ============================================================
+// FEATURE 1: Multiple POI Selection
+// ============================================================
+
+function togglePOISelectionMode() {
+    poiSelectionModeEnabled = document.getElementById('poiSelectionMode').checked;
+    
+    if (poiSelectionModeEnabled) {
+        alert('✅ POI Selection Mode Enabled!\n\nClick on any POI marker on the map to select it.\nSelected POIs will be highlighted in GOLD color.');
+    } else {
+        alert('❌ POI Selection Mode Disabled');
+    }
+    
+    // Refresh map to apply selection styles
+    updateMap();
+}
+
+function selectPOI(poi, marker) {
+    if (!poiSelectionModeEnabled) return;
+    
+    const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
+    
+    if (selectedPOIs.has(poiId)) {
+        // Deselect
+        selectedPOIs.delete(poiId);
+        marker.setStyle({
+            fillColor: getMarkerColor(poi.Category),
+            fillOpacity: 0.7,
+            weight: 1
+        });
+    } else {
+        // Select
+        selectedPOIs.add(poiId);
+        poi._selectionId = poiId;
+        marker.setStyle({
+            fillColor: '#FFD700',  // Gold color for selected
+            fillOpacity: 1,
+            weight: 2
+        });
+    }
+    
+    updateSelectedPOIPanel();
+}
+
+function updateSelectedPOIPanel() {
+    const panel = document.getElementById('selectedPOIPanel');
+    const count = document.getElementById('selectedPOICount');
+    const list = document.getElementById('selectedPOIList');
+    const statsCount = document.getElementById('statsSelectedPOIs');
+    
+    count.textContent = selectedPOIs.size;
+    statsCount.textContent = selectedPOIs.size;
+    
+    if (selectedPOIs.size > 0) {
+        panel.classList.add('active');
+        
+        // Build list of selected POIs
+        let listHTML = '';
+        const selectedPOIArray = getSelectedPOIArray();
+        
+        selectedPOIArray.slice(0, 20).forEach((poi, index) => {
+            const name = (poi.Business_Name || poi.POI_ID || 'Unknown').substring(0, 30);
+            const category = (poi.Sub_Category || poi.Category || 'N/A').substring(0, 20);
+            const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
+            listHTML += `
+                <div class="selected-poi-item">
+                    <span>${index + 1}. ${name} - ${category}</span>
+                    <span class="remove-poi-btn" onclick="removePOIFromSelection('${poiId.replace(/'/g, "\\'")}')">✕</span>
+                </div>
+            `;
+        });
+        
+        if (selectedPOIArray.length > 20) {
+            listHTML += `<div style="text-align: center; padding: 8px; color: #856404;">...and ${selectedPOIArray.length - 20} more</div>`;
+        }
+        
+        list.innerHTML = listHTML;
+    } else {
+        panel.classList.remove('active');
+        list.innerHTML = '';
+    }
+}
+
+function getSelectedPOIArray() {
+    return pois.filter(poi => {
+        const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
+        return selectedPOIs.has(poiId);
+    });
+}
+
+function removePOIFromSelection(poiId) {
+    selectedPOIs.delete(poiId);
+    updateSelectedPOIPanel();
+    updateMap();
+}
+
+function clearPOISelection() {
+    if (selectedPOIs.size === 0) return;
+    
+    if (confirm(`Clear all ${selectedPOIs.size} selected POIs?`)) {
+        selectedPOIs.clear();
+        updateSelectedPOIPanel();
+        updateMap();
+    }
+}
+
+function exportSelectedPOIs() {
+    if (selectedPOIs.size === 0) {
+        alert('❌ No POIs selected.\n\nTo select POIs:\n1. Enable "POI Selection Mode" in the Selection tab\n2. Click on POI markers on the map to select them\n3. Selected POIs will turn GOLD');
+        return;
+    }
+    
+    const selectedPOIArray = getSelectedPOIArray();
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `Selected_POIs_${selectedPOIArray.length}_${date}.csv`;
+    
+    // Add selection metadata
+    const enrichedPOIs = selectedPOIArray.map((poi, index) => {
+        const nearestPlant = findNearestPlant(poi.Latitude, poi.Longitude);
+        return {
+            Selection_Order: index + 1,
+            Export_Date: new Date().toISOString(),
+            Selection_Mode: 'Manual',
+            ...poi,
+            Nearest_Plant: nearestPlant.name,
+            Distance_To_Plant_KM: nearestPlant.distance.toFixed(2)
+        };
+    });
+    
+    exportPOIsToCSV(enrichedPOIs, filename);
+    alert(`✅ Successfully Exported!\n\n${selectedPOIArray.length} selected POIs exported to:\n${filename}`);
+}
+
+// ============================================================
+// FEATURE 2: Territory Definition & Export
+// ============================================================
+
+function initializeDrawControls() {
+    // Add drawn items layer to map
+    map.addLayer(drawnItems);
+    
+    // Initialize draw control
+    drawControl = new L.Control.Draw({
+        position: 'topright',
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                showArea: true,
+                drawError: {
+                    color: '#e74c3c',
+                    message: '<strong>Error:</strong> Shape edges cannot cross!'
+                },
+                shapeOptions: {
+                    color: '#0dcaf0',
+                    fillColor: '#0dcaf0',
+                    fillOpacity: 0.2,
+                    weight: 3
+                }
+            },
+            polyline: false,
+            rectangle: {
+                shapeOptions: {
+                    color: '#0dcaf0',
+                    fillColor: '#0dcaf0',
+                    fillOpacity: 0.2,
+                    weight: 3
+                }
+            },
+            circle: false,
+            circlemarker: false,
+            marker: false
+        },
+        edit: {
+            featureGroup: drawnItems,
+            remove: false
+        }
+    });
+    
+    // Handle draw events
+    map.on(L.Draw.Event.CREATED, function (e) {
+        const layer = e.layer;
+        
+        // Clear previous territory
+        drawnItems.clearLayers();
+        drawnItems.addLayer(layer);
+        
+        currentTerritory = layer;
+        analyzeTerritoryPOIs();
+        updateTerritoryUI();
+        
+        // Remove draw control after drawing
+        if (drawControl._map) {
+            map.removeControl(drawControl);
+        }
+    });
+    
+    map.on(L.Draw.Event.EDITED, function (e) {
+        analyzeTerritoryPOIs();
+        updateTerritoryUI();
+    });
+}
+
+function startDrawingTerritory() {
+    if (!drawControl) {
+        alert('⚠️ Draw controls not initialized yet. Please wait a moment and try again.');
+        return;
+    }
+    
+    // Add draw control to map
+    if (!drawControl._map) {
+        map.addControl(drawControl);
+    }
+    
+    alert('✏️ Draw Your Territory\n\n' +
+          '1. Click the POLYGON or RECTANGLE tool in the top-right corner\n' +
+          '2. Draw your territory boundaries on the map\n' +
+          '3. For polygon: Double-click to finish\n' +
+          '4. For rectangle: Click and drag\n\n' +
+          'The system will automatically find all POIs within your territory!');
+}
+
+function analyzeTerritoryPOIs() {
+    if (!currentTerritory || pois.length === 0) {
+        territoryPOIs = [];
+        return;
+    }
+    
+    console.log('Analyzing territory POIs...');
+    
+    // Get territory bounds
+    const isPolygon = currentTerritory instanceof L.Polygon || currentTerritory instanceof L.Rectangle;
+    
+    if (!isPolygon) {
+        territoryPOIs = [];
+        return;
+    }
+    
+    // Filter POIs within territory
+    territoryPOIs = pois.filter(poi => {
+        const point = L.latLng(poi.Latitude, poi.Longitude);
+        
+        try {
+            // First check if point is within bounds for performance
+            const bounds = currentTerritory.getBounds();
+            if (!bounds.contains(point)) {
+                return false;
+            }
+            
+            // More precise check using point-in-polygon
+            return isPointInPolygon(point, currentTerritory);
+        } catch (error) {
+            console.error('Error checking point in polygon:', error);
+            return false;
+        }
+    });
+    
+    console.log(`✅ Found ${territoryPOIs.length} POIs in territory`);
+}
+
+function isPointInPolygon(point, polygon) {
+    // Get polygon coordinates
+    let latlngs;
+    if (polygon instanceof L.Rectangle) {
+        latlngs = polygon.getLatLngs()[0];
+    } else {
+        latlngs = polygon.getLatLngs()[0];
+    }
+    
+    // Ray casting algorithm
+    let inside = false;
+    const x = point.lng;
+    const y = point.lat;
+    
+    for (let i = 0, j = latlngs.length - 1; i < latlngs.length; j = i++) {
+        const xi = latlngs[i].lng;
+        const yi = latlngs[i].lat;
+        const xj = latlngs[j].lng;
+        const yj = latlngs[j].lat;
+        
+        const intersect = ((yi > y) !== (yj > y)) && 
+                         (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        
+        if (intersect) inside = !inside;
+    }
+    
+    return inside;
+}
+
+function updateTerritoryUI() {
+    const statusElement = document.getElementById('territoryStatus');
+    const infoElement = document.getElementById('territoryInfo');
+    const countElement = document.getElementById('territoryPOICount');
+    const areaElement = document.getElementById('territoryArea');
+    const exportBtn = document.getElementById('exportTerritoryBtn');
+    const clearBtn = document.getElementById('clearTerritoryBtn');
+    const statsCount = document.getElementById('statsTerritoryPOIs');
+    
+    if (currentTerritory && territoryPOIs.length >= 0) {
+        statusElement.textContent = `✅ Territory Defined (${territoryPOIs.length} POIs)`;
+        statusElement.style.color = '#0f5132';
+        statusElement.style.fontWeight = '700';
+        
+        countElement.textContent = territoryPOIs.length.toLocaleString();
+        statsCount.textContent = territoryPOIs.length.toLocaleString();
+        
+        // Calculate area in km²
+        try {
+            const latlngs = currentTerritory.getLatLngs()[0];
+            let area = 0;
+            
+            // Calculate area using shoelace formula (approximation)
+            for (let i = 0; i < latlngs.length; i++) {
+                const j = (i + 1) % latlngs.length;
+                area += latlngs[i].lng * latlngs[j].lat;
+                area -= latlngs[j].lng * latlngs[i].lat;
+            }
+            area = Math.abs(area / 2) * 12364; // Rough conversion to km²
+            
+            areaElement.textContent = area.toFixed(2);
+        } catch (error) {
+            areaElement.textContent = 'N/A';
+        }
+        
+        infoElement.classList.add('active');
+        exportBtn.style.display = 'block';
+        clearBtn.style.display = 'block';
+    } else {
+        statusElement.textContent = 'No territory defined';
+        statusElement.style.color = '#055160';
+        statusElement.style.fontWeight = '600';
+        
+        infoElement.classList.remove('active');
+        exportBtn.style.display = 'none';
+        clearBtn.style.display = 'none';
+        
+        countElement.textContent = '0';
+        areaElement.textContent = '0';
+        statsCount.textContent = '0';
+    }
+}
+
+function clearTerritory() {
+    if (!currentTerritory) {
+        alert('No territory to clear.');
+        return;
+    }
+    
+    if (confirm(`Clear the current territory?\n\nThis will remove the territory boundary and reset the ${territoryPOIs.length} POIs found.`)) {
+        drawnItems.clearLayers();
+        currentTerritory = null;
+        territoryPOIs = [];
+        updateTerritoryUI();
+        
+        alert('✅ Territory cleared successfully!');
+    }
+}
+
+function exportTerritoryPOIs() {
+    if (!currentTerritory) {
+        alert('❌ No territory defined.\n\nTo define a territory:\n1. Go to the "Selection" tab\n2. Click "Draw Territory" button\n3. Use the drawing tools to define your area');
+        return;
+    }
+    
+    if (territoryPOIs.length === 0) {
+        alert('❌ No POIs found in the defined territory.\n\nTry:\n1. Drawing a larger territory area\n2. Checking if POIs are loaded on the map\n3. Adjusting your radius filters');
+        return;
+    }
+    
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `Territory_POIs_${territoryPOIs.length}_${date}.csv`;
+    
+    // Calculate territory metadata
+    const bounds = currentTerritory.getBounds();
+    let area = 0;
+    try {
+        const latlngs = currentTerritory.getLatLngs()[0];
+        for (let i = 0; i < latlngs.length; i++) {
+            const j = (i + 1) % latlngs.length;
+            area += latlngs[i].lng * latlngs[j].lat;
+            area -= latlngs[j].lng * latlngs[i].lat;
+        }
+        area = Math.abs(area / 2) * 12364;
+    } catch (error) {
+        area = 0;
+    }
+    
+    // Add territory metadata to POIs
+    const enrichedPOIs = territoryPOIs.map((poi, index) => {
+        const nearestPlant = findNearestPlant(poi.Latitude, poi.Longitude);
+        return {
+            Territory_Order: index + 1,
+            Export_Date: new Date().toISOString(),
+            Territory_Area_KM2: area.toFixed(2),
+            Territory_Center_Lat: bounds.getCenter().lat.toFixed(6),
+            Territory_Center_Lng: bounds.getCenter().lng.toFixed(6),
+            ...poi,
+            Nearest_Plant: nearestPlant.name,
+            Distance_To_Plant_KM: nearestPlant.distance.toFixed(2)
+        };
+    });
+    
+    exportPOIsToCSV(enrichedPOIs, filename);
+    alert(`✅ Successfully Exported!\n\n${territoryPOIs.length} POIs from territory exported to:\n${filename}\n\nTerritory Area: ${area.toFixed(2)} km²`);
+}
+
+// ============================================================
+// Enhanced updateMap Function
+// ============================================================
+
+// Store the original updateMap function
+const originalUpdateMapFunction = updateMap;
+
+// Create enhanced version
+updateMap = function() {
+    mapMarkers.forEach(marker => map.removeLayer(marker));
+    mapMarkers = [];
+    coverageCircles.forEach(circle => map.removeLayer(circle));
+    coverageCircles = [];
+
+    // Reset current view stats
+    currentViewPOIs = [];
+    currentViewStats = {
+        totalInRadius: 0,
+        filtered: 0,
+        radius: currentRadius,
+        category: activeCategoryFilter,
+        subCategory: activeSubCategoryFilter
+    };
+
+    if (currentRadius > 0 && document.getElementById('showPlants').checked) {
+        Object.values(plants).forEach(plant => {
+            const circle = L.circle([plant.lat, plant.lng], {
+                radius: currentRadius * 1000,
+                color: '#667eea',
+                fillColor: '#667eea',
+                fillOpacity: 0.15,
+                weight: 2
+            }).addTo(map);
+            coverageCircles.push(circle);
+        });
+    }
+
+    if (document.getElementById('showDistributors').checked) {
+        distributors.forEach(dist => {
+            const color = dist.achievement >= 75 ? '#28a745' : 
+                         dist.achievement >= 60 ? '#ffc107' : '#dc3545';
+            const distIcon = L.divIcon({
+                html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                className: '',
+                iconSize: [20, 20]
+            });
+
+            const marker = L.marker([dist.lat, dist.lng], {icon: distIcon})
+                .bindPopup(createDistributorPopup(dist), { maxWidth: 350 })
+                .addTo(map);
+            
+            marker.bindTooltip(`<b>${dist.name}</b><br>${dist.achievement.toFixed(1)}% • ${dist.classification}`, {
+                permanent: false,
+                direction: 'top'
+            });
+            
+            mapMarkers.push(marker);
+        });
+    }
+
+    if (document.getElementById('showCoverage').checked) {
+        const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
+        distributors.forEach(dist => {
+            const circle = L.circle([dist.lat, dist.lng], {
+                radius: coverageRadius * 1000,
+                color: '#28a745',
+                fillColor: '#28a745',
+                fillOpacity: 0.08,
+                weight: 1
+            }).addTo(map);
+            
+            circle.bindTooltip(
+                `<div style="text-align: center;">
+                    <b>${dist.name}</b><br>
+                    Coverage: ${coverageRadius} KM
+                </div>`,
+                {
+                    permanent: false,
+                    direction: 'center'
+                }
+            );
+            
+            coverageCircles.push(circle);
+        });
+    }
+
+    // ENHANCED POI DISPLAY WITH SELECTION SUPPORT
+    if (document.getElementById('showPOIs').checked && pois.length > 0) {
+        let poisInRadius = pois;
+
+        if (currentRadius > 0) {
+            poisInRadius = poisInRadius.filter(poi => {
+                return Object.values(plants).some(plant => {
+                    const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                    return distance <= currentRadius;
+                });
+            });
+        }
+
+        currentViewStats.totalInRadius = poisInRadius.length;
+
+        let filteredPOIs = poisInRadius;
+        if (activeCategoryFilter !== 'all') {
+            filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
+        }
+
+        if (activeCategoryFilter === 'Distribution' && activeSubCategoryFilter !== 'all') {
+            filteredPOIs = filteredPOIs.filter(poi => poi.Sub_Category === activeSubCategoryFilter);
+        }
+
+        currentViewPOIs = filteredPOIs;
+        currentViewStats.filtered = filteredPOIs.length;
+
+        updateCurrentViewStats();
+
+        // Display POIs on map (sample for performance)
+        const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
+
+        displayPOIs.forEach(poi => {
+            // Generate unique POI ID
+            const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
+            poi._selectionId = poiId;
+            
+            // Check if POI is selected
+            const isSelected = selectedPOIs.has(poiId);
+            const color = isSelected ? '#FFD700' : getMarkerColor(poi.Category);
+            const size = poi.Priority === 'High' ? 8 : 5;
+            
+            const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
+                radius: size,
+                fillColor: color,
+                color: 'white',
+                weight: isSelected ? 2 : 1,
+                fillOpacity: isSelected ? 1 : 0.7
+            }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
+            .addTo(map);
+            
+            // Add click handler for selection
+            marker.on('click', function(e) {
+                if (poiSelectionModeEnabled) {
+                    L.DomEvent.stopPropagation(e);
+                    selectPOI(poi, marker);
+                }
+            });
+            
+            const tooltipContent = `
+                <div style="text-align: center;">
+                    <b>${poi.Business_Name || poi.POI_ID}</b><br>
+                    <span style="font-size: 11px;">${poi.Sub_Category || poi.Category} • ${poi.City}</span><br>
+                    <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
+                    ${isSelected ? '<br><span style="font-size: 10px; color: #FFD700; font-weight: 700;">⭐ SELECTED</span>' : ''}
+                </div>
+            `;
+            marker.bindTooltip(tooltipContent, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -5]
+            });
+            
+            mapMarkers.push(marker);
+        });
+    } else {
+        updateCurrentViewStats();
+    }
+    
+    // Draw distance lines
+    drawPlantDistributorLines();
+};
+
+// ============================================================
+// Enhanced Initialization
+// ============================================================
+
+// Store original initializeApp
+const originalInitializeAppFunction = initializeApp;
+
+// Enhanced initialization
+initializeApp = function() {
+    // Call original initialization
+    originalInitializeAppFunction();
+    
+    // Initialize enhanced features after a short delay
+    setTimeout(() => {
+        console.log('🚀 Initializing enhanced features...');
+        
+        try {
+            initializeDrawControls();
+            console.log('✅ Draw controls initialized');
+        } catch (error) {
+            console.error('❌ Error initializing draw controls:', error);
+        }
+        
+        // Initialize UI elements
+        updateSelectedPOIPanel();
+        updateTerritoryUI();
+        
+        console.log('✅ Enhanced features ready!');
+    }, 1000);
+};
+
+// ============================================================
+// Tab Switching Enhancement
+// ============================================================
+
+const originalSwitchTab = switchTab;
+
+switchTab = function(tabName) {
+    originalSwitchTab(tabName);
+    
+    // Update stats when switching to selection tab
+    if (tabName === 'selection') {
+        updateSelectedPOIPanel();
+        updateTerritoryUI();
+    }
+};
+
+console.log('✅ Enhanced features loaded successfully!');
+console.log('📌 New Features Available:');
+console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
+console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
