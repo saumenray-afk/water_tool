@@ -642,29 +642,83 @@ function createDistributorPopup(dist) {
 }
 
 // Authentication functions
+// ============================================================
+// CORRECTED LOGIN FIX - Replace your existing handleLogin function
+// ============================================================
+
 function handleLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
     const errorMsg = document.getElementById('errorMessage');
+    const loginForm = document.getElementById('loginForm');
+    const app = document.getElementById('app');
+    const userDisplay = document.getElementById('userDisplay');
     
-    if (VALID_USERS[username] && VALID_USERS[username] === password) {
-        errorMsg.classList.remove('show');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('app').classList.add('active');
-        document.getElementById('userDisplay').textContent = `👤 ${username}`;
+    // Check if all elements exist
+    if (!username || !password || !errorMsg || !loginForm || !app || !userDisplay) {
+        console.error('❌ Missing HTML elements!');
+        console.log('username:', username);
+        console.log('password:', password);
+        console.log('errorMessage:', errorMsg);
+        console.log('loginForm:', loginForm);
+        console.log('app:', app);
+        console.log('userDisplay:', userDisplay);
+        alert('Error: Page not loaded correctly. Please refresh.');
+        return;
+    }
+    
+    const usernameValue = username.value.trim();
+    const passwordValue = password.value;
+    
+    console.log('🔐 Attempting login for user:', usernameValue);
+    
+    if (VALID_USERS[usernameValue] && VALID_USERS[usernameValue] === passwordValue) {
+        console.log('✅ Login successful!');
         
+        // Hide error message
+        errorMsg.classList.remove('show');
+        errorMsg.style.display = 'none';
+        
+        // Hide login form
+        loginForm.style.display = 'none';
+        
+        // Show main app
+        app.classList.add('active');
+        app.style.display = 'block';
+        
+        // Display username
+        userDisplay.textContent = usernameValue;
+        
+        // Set session
         const loginTime = new Date().getTime();
         sessionStorage.setItem('loggedIn', 'true');
-        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('username', usernameValue);
         sessionStorage.setItem('loginTime', loginTime);
         
+        console.log('🚀 Initializing application...');
+        
+        // Initialize the application
         initializeApp();
     } else {
+        console.log('❌ Login failed - Invalid credentials');
+        
+        // Show error message
+        errorMsg.textContent = 'Invalid username or password';
         errorMsg.classList.add('show');
-        document.getElementById('password').value = '';
-        document.getElementById('username').focus();
+        errorMsg.style.display = 'block';
+        
+        // Clear password field
+        password.value = '';
+        
+        // Focus back to username
+        username.focus();
+        
+        // Hide error after 3 seconds
+        setTimeout(() => {
+            errorMsg.classList.remove('show');
+        }, 3000);
     }
 }
 
@@ -675,33 +729,32 @@ function logout() {
     }
 }
 
-function checkSessionTimeout() {
+function checkSession() {
+    const loggedIn = sessionStorage.getItem('loggedIn');
+    const username = sessionStorage.getItem('username');
     const loginTime = sessionStorage.getItem('loginTime');
-    if (loginTime) {
-        const currentTime = new Date().getTime();
-        const elapsed = (currentTime - loginTime) / 1000 / 60;
+    
+    if (loggedIn === 'true' && username && loginTime) {
+        console.log('✅ Session found for user:', username);
         
-        if (elapsed > SESSION_TIMEOUT) {
-            alert('⏰ Session expired. Please login again.');
-            sessionStorage.clear();
-            location.reload();
+        const loginForm = document.getElementById('loginForm');
+        const app = document.getElementById('app');
+        const userDisplay = document.getElementById('userDisplay');
+        
+        if (loginForm && app && userDisplay) {
+            loginForm.style.display = 'none';
+            app.classList.add('active');
+            app.style.display = 'block';
+            userDisplay.textContent = username;
+            
+            initializeApp();
         }
+    } else {
+        console.log('ℹ️ No active session found');
     }
 }
 
-window.addEventListener('load', function() {
-    if (sessionStorage.getItem('loggedIn') === 'true') {
-        checkSessionTimeout();
-        
-        if (sessionStorage.getItem('loggedIn') === 'true') {
-            const username = sessionStorage.getItem('username');
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('app').classList.add('active');
-            document.getElementById('userDisplay').textContent = `👤 ${username}`;
-            initializeApp();
-        }
-    }
-});
+console.log('✅ Login functions loaded');
 
 setInterval(checkSessionTimeout, 5 * 60 * 1000);
 
