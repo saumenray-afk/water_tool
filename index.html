@@ -542,7 +542,7 @@
         <div class="header">
             <div class="header-left">
                 <h1>🚰 Water Business Expansion & Territory Planning Tool</h1>
-                <p><span id="poiCountHeader">Loading...</span> POIs • 70 Distributors • Real-time Analysis</p>
+                <p><span id="poiCountHeader">Loading...</span> POIs • <span id="distCountHeader">23</span> Distributors • Real-time Analysis</p>
             </div>
             <div>
                 <span style="margin-right: 15px; font-size: 13px;" id="userDisplay"></span>
@@ -568,7 +568,7 @@
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Metrics</div>
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <span class="stat-value" id="totalDist">70</span>
+                                <span class="stat-value" id="totalDist">23</span>
                                 <span class="stat-label">Active Distributors</span>
                             </div>
                             <div class="stat-item">
@@ -606,7 +606,7 @@
                         </label>
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showDistributors" onchange="updateMap()">
-                            <span style="margin-left: 10px;">📦 Distributors (70)</span>
+                            <span style="margin-left: 10px;">📦 Distributors (<span id="distCountLabel">23</span>)</span>
                         </label>
                         <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                             <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
@@ -777,14 +777,27 @@
         const distributorsData = [
             {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Shivakumar HC'},
             {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Shivakumar HC'},
+            {name: 'AMOGH TRADERS', city: 'Tumakuru', retailers: 19, lat: 13.7416, lng: 76.9042, target: 1800000, sales: 81768, tsm: 'Shivakumar HC'},
             {name: 'AQUAQUEST VENTURES', city: 'Mysuru', retailers: 284, lat: 12.2958, lng: 76.6394, target: 6000000, sales: 3304994, tsm: 'Vacant'},
             {name: 'B P AGENCY', city: 'Bengaluru', retailers: 55, lat: 12.9702, lng: 77.5619, target: 1200000, sales: 1205502, tsm: 'Shivakumar HC'},
+            {name: 'BHARATH CARE (BANGALORE)', city: 'Bengaluru', retailers: 19, lat: 13.0116, lng: 77.7263, target: 8000000, sales: 3580126, tsm: 'Vacant'},
             {name: 'ETERNAL TRADERS', city: 'Bangalore', retailers: 149, lat: 13.0214, lng: 77.6585, target: 11000000, sales: 4098238, tsm: 'Vacant'},
             {name: 'G S Enterprises(Bengaluru) NEW', city: 'Bengaluru', retailers: 216, lat: 13.1391, lng: 77.4876, target: 2200000, sales: 4321530, tsm: 'Srikanth BN'},
             {name: 'GARUDA ENTERPRISES', city: 'Bangalore', retailers: 156, lat: 12.926, lng: 77.5293, target: 3200000, sales: 2092637, tsm: 'Shivakumar HC'},
+            {name: 'JUBILANT FOODWORKS LTD', city: 'Bengaluru', retailers: 109, lat: 12.8381, lng: 77.6715, target: 0, sales: 529836, tsm: 'Vacant'},
             {name: 'K B C DISTRIBUTORS', city: 'Bengaluru', retailers: 269, lat: 12.8452, lng: 77.6604, target: 1800000, sales: 920798, tsm: 'Shivakumar HC'},
+            {name: 'P G C (BANGLORE)', city: 'Bengaluru', retailers: 59, lat: 12.9732, lng: 77.5286, target: 3200000, sales: 3205870, tsm: 'Shivakumar HC'},
+            {name: 'PADMAVATU TRADERS', city: 'Belagavi', retailers: 42, lat: 15.8497, lng: 74.4977, target: 1800000, sales: 1767040, tsm: 'Shivakumar HC'},
+            {name: 'POORNAPRAJNA ENTERPRISES', city: 'Shivamogga', retailers: 63, lat: 13.8485, lng: 75.705, target: 900000, sales: 976093, tsm: 'Shivakumar HC'},
+            {name: 'POPKART INDIA PRIVATE LIMITED', city: 'Bengaluru', retailers: 118, lat: 12.9568, lng: 77.7286, target: 2000000, sales: 1168169, tsm: 'Vacant'},
             {name: 'PVR ENTERPRISES (BANGLORE)', city: 'Bengaluru', retailers: 605, lat: 12.9966, lng: 77.7136, target: 45000000, sales: 28402423, tsm: 'Vacant'},
-            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'}
+            {name: 'S S AGENCIES (BANGALORE)', city: 'Varthur', retailers: 188, lat: 13.0056, lng: 77.4982, target: 8000000, sales: 7538482, tsm: 'Vacant'},
+            {name: 'SAI ESHWAR ENTERPRISES', city: 'Bengaluru', retailers: 43, lat: 12.9896, lng: 77.5811, target: 7000000, sales: 4971709, tsm: 'Vacant'},
+            {name: 'SANGVI AGRO PULSES (BANGALORE)', city: 'Bangalore', retailers: 276, lat: 13.0112, lng: 77.5192, target: 55000000, sales: 25069953, tsm: 'Vacant'},
+            {name: 'SBM Enterprises', city: 'Bengaluru', retailers: 190, lat: 12.8001, lng: 77.6092, target: 1800000, sales: 630115, tsm: 'Shivakumar HC'},
+            {name: 'SHREE LAKSHMI ENTERPRISES', city: 'Ballari', retailers: 24, lat: 15.1394, lng: 76.9214, target: 1000000, sales: 1072265, tsm: 'Shivakumar HC'},
+            {name: 'SLN ENTERPRISES', city: 'Chikkaballapur', retailers: 37, lat: 13.4356, lng: 77.7311, target: 2000000, sales: 1924755, tsm: 'Srikanth BN'},
+            {name: 'VIVAN WORLD WIDES', city: 'Bengaluru', retailers: 123, lat: 13.0285, lng: 77.5406, target: 1800000, sales: 2414450, tsm: 'Shivakumar HC'}
         ];
 
         const plants = {
@@ -1281,6 +1294,11 @@
             loadPOIData();
 
             console.log(`✅ App Initialized: ${distributors.length} Distributors`);
+            
+            // Update distributor count in header
+            document.getElementById('distCountHeader').textContent = distributors.length;
+            document.getElementById('distCountLabel').textContent = distributors.length;
+            document.getElementById('totalDist').textContent = distributors.length;
         }
 
         function setupEventListeners() {
