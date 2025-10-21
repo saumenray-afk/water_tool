@@ -952,12 +952,12 @@
                     for (let i = 0; i < sampleValues.length; i++) {
                         const val = parseFloat(sampleValues[i]);
                         if (!isNaN(val)) {
-                            if (val >= 8 && val <= 22 && latCol !== i) {
-                                console.log(`  🎯 Found Latitude at column ${i} (${headers[i]}): ${val}`);
+                            if (val >= 8 && val <= 22) {
+                                console.log(`  🎯 Found numeric Latitude at column ${i} (${headers[i]}): ${val}`);
                                 latCol = i;
                             }
-                            if (val >= 74 && val <= 78 && lngCol !== i) {
-                                console.log(`  🎯 Found Longitude at column ${i} (${headers[i]}): ${val}`);
+                            if (val >= 74 && val <= 80) {
+                                console.log(`  🎯 Found numeric Longitude at column ${i} (${headers[i]}): ${val}`);
                                 lngCol = i;
                             }
                         }
@@ -969,6 +969,18 @@
             
             if (latCol === -1 || lngCol === -1) {
                 throw new Error(`Could not find valid lat/lng columns`);
+            }
+            
+            // Verify with sample
+            if (lines.length > 1) {
+                const testValues = parseCSVLine(lines[1]);
+                const testLat = parseFloat(testValues[latCol]);
+                const testLng = parseFloat(testValues[lngCol]);
+                console.log(`✅ Verification - Will use: lat[${latCol}]=${testLat}, lng[${lngCol}]=${testLng}`);
+                
+                if (isNaN(testLat) || isNaN(testLng)) {
+                    throw new Error(`Selected columns still contain non-numeric data: lat="${testValues[latCol]}", lng="${testValues[lngCol]}"`);
+                }
             }
             
             // Clear existing POIs
