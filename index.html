@@ -1029,10 +1029,12 @@
                 
                 const response = await fetch(POI_ZIP_URL);
                 console.log('📡 Response status:', response.status, response.statusText);
+                console.log('📡 Content-Type:', response.headers.get('content-type'));
+                console.log('📡 Content-Length:', response.headers.get('content-length'));
                 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        throw new Error(`File not found (404). Please check:\n1. GitHub username: ${GITHUB_USERNAME}\n2. Repository name: ${GITHUB_REPO}\n3. Branch name: ${GITHUB_BRANCH}\n4. File exists in repository root`);
+                        throw new Error(`File not found (404). Please verify:\n- File exists at: ${POI_ZIP_URL}\n- File name is exactly: ${POI_ZIP_FILENAME}`);
                     }
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -1041,16 +1043,26 @@
                 console.log('📦 Downloaded:', blob.size.toLocaleString(), 'bytes');
                 
                 if (blob.size === 0) {
-                    throw new Error('Downloaded file is empty');
+                    throw new Error('Downloaded file is empty (0 bytes)');
+                }
+                
+                // Check if it's actually a ZIP file
+                const firstBytes = await blob.slice(0, 4).arrayBuffer();
+                const uint8Array = new Uint8Array(firstBytes);
+                const isZip = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B; // PK signature
+                
+                if (!isZip) {
+                    console.warn('⚠️ File may not be a valid ZIP. First bytes:', Array.from(uint8Array).map(b => b.toString(16)));
                 }
                 
                 await loadPOIDataFromBlob(blob);
                 
             } catch (error) {
                 console.error('❌ Error loading from GitHub:', error);
+                console.error('Stack:', error.stack);
                 document.getElementById('poiStatusText').innerHTML = 
                     `<span style="color: #dc3545;">⚠️ ${error.message}</span><br>
-                    <span style="font-size: 11px;">Update GITHUB_USERNAME and GITHUB_REPO in the code (lines 447-449)</span>`;
+                    <span style="font-size: 11px;">Check browser console (F12) for details</span>`;
             }
         }
 
