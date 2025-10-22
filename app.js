@@ -639,33 +639,6 @@ function createDistributorPopup(dist) {
     `;
 }
 
-// Authentication functions
-// ============================================================
-// CORRECTED LOGIN FIX - Replace your existing handleLogin function
-// ============================================================
-        
-        // Initialize the application
-        initializeApp();
-    } else {
-        console.log('❌ Login failed - Invalid credentials');
-        
-        // Show error message
-        errorMsg.textContent = 'Invalid username or password';
-        errorMsg.classList.add('show');
-        errorMsg.style.display = 'block';
-        
-        // Clear password field
-        password.value = '';
-        
-        // Focus back to username
-        username.focus();
-        
-        // Hide error after 3 seconds
-        setTimeout(() => {
-            errorMsg.classList.remove('show');
-        }, 3000);
-    }
-}
 
 setInterval(checkSessionTimeout, 5 * 60 * 1000);
 
