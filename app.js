@@ -1474,18 +1474,23 @@ function updateSelectedPOIPanel() {
     document.getElementById('totalSelectedPOIs').textContent = count;
     
     if (count === 0) {
-        document.getElementById('selectedPOIList').innerHTML = '<em>No POIs selected</em>';
+        document.getElementById('selectedPOIList').innerHTML = '<div style="color: rgba(255,255,255,0.8); font-size: 12px; font-style: italic; text-align: center; padding: 8px;">No POIs selected</div>';
         return;
     }
     
-    let html = '<div style="display: flex; flex-direction: column; gap: 4px;">';
+    let html = '<div style="display: flex; flex-direction: column; gap: 6px;">';
     selectedPOIs.forEach(poiId => {
-        const poi = pois.find(p => p.id === poiId);
+        const poi = pois.find(p => p.POI_ID === poiId);
         if (poi) {
+            const name = poi.Business_Name || poi.POI_ID;
+            const truncatedName = name.length > 35 ? name.substring(0, 35) + '...' : name;
             html += `
-                <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: white; border-radius: 4px;">
-                    <span>${poi.name}</span>
-                    <button onclick="selectPOI('${poiId}')" style="padding: 2px 6px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">✕</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.95); border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 12px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${truncatedName}</div>
+                        <div style="font-size: 10px; color: #666; margin-top: 2px;">${poi.Sub_Category || poi.Category}</div>
+                    </div>
+                    <button onclick="selectPOI('${poiId}')" style="padding: 4px 8px; background: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.3); border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s; flex-shrink: 0; margin-left: 8px;">✕</button>
                 </div>
             `;
         }
