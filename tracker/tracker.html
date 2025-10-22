@@ -1,1 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Field Tracker - Water Business</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="tracker.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1>💧 Field Tracker</h1>
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="todayVisits">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="weekVisits">0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalVisits">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="pendingPOIs">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="my-territory">🗺️ My Territory</button>
+        <button class="nav-tab" data-view="check-in">📍 Check In</button>
+        <button class="nav-tab" data-view="history">📜 History</button>
+    </nav>
+
+    <!-- My Territory View -->
+    <div class="view active" id="my-territory-view">
+        <div class="territory-info">
+            <h2 id="territoryName">Loading...</h2>
+            <p id="territoryDetails">Territory details loading...</p>
+        </div>
+
+        <!-- Map -->
+        <div id="map" class="map-container"></div>
+
+        <!-- POI List -->
+        <div class="poi-list-container">
+            <div class="section-header">
+                <h3>📍 POIs in My Territory</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterPOIs('all')">All</button>
+                    <button class="filter-btn" onclick="filterPOIs('pending')">Pending</button>
+                    <button class="filter-btn" onclick="filterPOIs('visited')">Visited</button>
+                </div>
+            </div>
+            <div id="poiList" class="poi-list">
+                <div class="loading">Loading POIs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Check In View -->
+    <div class="view" id="check-in-view">
+        <div class="check-in-container">
+            <div class="check-in-header">
+                <h2>📍 Check In at POI</h2>
+                <p>Record your visit and update status</p>
+            </div>
+
+            <div class="form-section">
+                <label>Select POI:</label>
+                <select id="poiSelect" onchange="selectPOI()">
+                    <option value="">Choose a POI...</option>
+                </select>
+            </div>
+
+            <div id="selectedPOIInfo" class="poi-info" style="display: none;">
+                <h3 id="selectedPOIName"></h3>
+                <p id="selectedPOIAddress"></p>
+                <p id="selectedPOICategory"></p>
+            </div>
+
+            <div class="form-section">
+                <label>Status:</label>
+                <select id="visitStatus">
+                    <option value="visited">✅ Visited - Interested</option>
+                    <option value="converted">🎉 Converted - Order Placed</option>
+                    <option value="not-interested">❌ Not Interested</option>
+                    <option value="follow-up">🔄 Follow-up Required</option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <label>Contact Person:</label>
+                <input type="text" id="contactPerson" placeholder="e.g. Mr. Sharma">
+            </div>
+
+            <div class="form-section">
+                <label>Phone Number:</label>
+                <input type="tel" id="contactPhone" placeholder="e.g. +91 9876543210">
+            </div>
+
+            <div class="form-section">
+                <label>Notes:</label>
+                <textarea id="visitNotes" rows="4" placeholder="Add any notes about the visit..."></textarea>
+            </div>
+
+            <div class="form-section">
+                <label>Take Photo (Optional):</label>
+                <input type="file" id="visitPhoto" accept="image/*" capture="environment">
+                <div id="photoPreview" class="photo-preview"></div>
+            </div>
+
+            <div class="form-section">
+                <button class="btn-primary" onclick="getCurrentLocation()">
+                    📍 Get My Location
+                </button>
+                <div id="locationInfo" class="location-info" style="display: none;">
+                    <span id="locationText"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-primary btn-large" onclick="submitCheckIn()">
+                    ✅ Submit Check In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History View -->
+    <div class="view" id="history-view">
+        <div class="history-container">
+            <div class="history-header">
+                <h2>📜 Visit History</h2>
+                <button class="btn-export" onclick="exportHistory()">📥 Export</button>
+            </div>
+
+            <div class="history-filters">
+                <button class="history-filter-btn active" onclick="filterHistory('all')">All</button>
+                <button class="history-filter-btn" onclick="filterHistory('today')">Today</button>
+                <button class="history-filter-btn" onclick="filterHistory('week')">This Week</button>
+                <button class="history-filter-btn" onclick="filterHistory('month')">This Month</button>
+            </div>
+
+            <div id="historyList" class="history-list">
+                <div class="no-data">No visit history yet. Start checking in!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install Prompt (for PWA) -->
+    <div id="installPrompt" class="install-prompt" style="display: none;">
+        <div class="install-content">
+            <h3>📱 Install App</h3>
+            <p>Install this app on your device for easy access and offline use!</p>
+            <div class="install-actions">
+                <button class="btn-primary" onclick="installApp()">Install</button>
+                <button class="btn-secondary" onclick="dismissInstall()">Later</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="tracker.js"></script>
+</body>
+</html>
 
