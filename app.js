@@ -1904,7 +1904,15 @@ console.log('📌 Select All Visible POIs button added');
 // MULTIPLE CATEGORY SELECTION WITH CHECKBOXES (GLOBAL)
 // ============================================================
 
+console.log('📌 Select multiple categories with checkboxes');
+
+// ============================================================
+// FIXED: MULTIPLE CATEGORY SELECTION WITH SUBCATEGORIES
+// ============================================================
+
 let selectedCategories = new Set();
+let activeCategoryFilter = 'all';
+let activeSubCategoryFilter = 'all';
 
 function updateCategorySelection() {
     // Get all checked category checkboxes
@@ -1916,7 +1924,10 @@ function updateCategorySelection() {
     });
     
     // Update counter
-    document.getElementById('selectedCategoriesCount').textContent = selectedCategories.size;
+    const counterElem = document.getElementById('selectedCategoriesCount');
+    if (counterElem) {
+        counterElem.textContent = selectedCategories.size;
+    }
     
     // Update visual style for checked items
     document.querySelectorAll('.category-checkbox').forEach(label => {
@@ -1930,24 +1941,42 @@ function updateCategorySelection() {
         }
     });
     
-    // Filter POIs on map based on selected categories
+    // Show/hide subcategory filters
+    const subFilters = document.getElementById('distributionSubFilters');
+    if (subFilters) {
+        if (selectedCategories.has('Distribution')) {
+            subFilters.style.display = 'block';
+        } else {
+            subFilters.style.display = 'none';
+        }
+    }
+    
+    // Set active category for compatibility
+    if (selectedCategories.size === 0) {
+        activeCategoryFilter = 'all';
+    } else if (selectedCategories.size === 1) {
+        activeCategoryFilter = Array.from(selectedCategories)[0];
+    } else {
+        activeCategoryFilter = 'multiple';
+    }
+    
+    // Filter and update map
     filterPOIsByMultipleCategories();
 }
 
 function filterPOIsByMultipleCategories() {
-    if (selectedCategories.size === 0) {
-        // No categories selected - show all POIs
-        currentViewPOIs = pois;
-    } else {
-        // Filter POIs by selected categories
-        currentViewPOIs = pois.filter(poi => {
+    let filteredPOIs = pois;
+    
+    // Apply category filter
+    if (selectedCategories.size > 0) {
+        filteredPOIs = filteredPOIs.filter(poi => {
             return selectedCategories.has(poi.Category);
         });
     }
     
     // Apply radius filter if active
     if (currentRadius > 0) {
-        currentViewPOIs = currentViewPOIs.filter(poi => {
+        filteredPOIs = filteredPOIs.filter(poi => {
             return Object.values(plants).some(plant => {
                 const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
                 return distance <= currentRadius;
@@ -1955,43 +1984,41 @@ function filterPOIsByMultipleCategories() {
         });
     }
     
-    // Update stats
-    currentViewStats.totalInRadius = currentViewPOIs.length;
-    currentViewStats.filtered = currentViewPOIs.length;
+    // Apply subcategory filter if Distribution is selected
+    if (selectedCategories.has('Distribution') && activeSubCategoryFilter !== 'all') {
+        filteredPOIs = filteredPOIs.filter(poi => {
+            return poi.Category === 'Distribution' && poi.Sub_Category === activeSubCategoryFilter;
+        });
+    }
+    
+    // Update current view
+    currentViewPOIs = filteredPOIs;
+    currentViewStats.totalInRadius = filteredPOIs.length;
+    currentViewStats.filtered = filteredPOIs.length;
+    currentViewStats.category = activeCategoryFilter;
+    currentViewStats.subCategory = activeSubCategoryFilter;
     
     // Update map
     updateMap();
     updateCurrentViewStats();
     
-    console.log(`Filtered to ${currentViewPOIs.length} POIs across ${selectedCategories.size} categories`);
+    console.log(`✅ Filtered: ${filteredPOIs.length} POIs from ${selectedCategories.size} categories`);
 }
 
 function selectAllCategories() {
-    // Check all category checkboxes
     document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
         cb.checked = true;
     });
     updateCategorySelection();
-    alert(`✅ All 6 categories selected!\n\nShowing POIs from all categories on the map.`);
 }
 
 function clearAllCategories() {
-    // Uncheck all category checkboxes
     document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
         cb.checked = false;
     });
     updateCategorySelection();
-    alert('✅ All categories cleared!\n\nMap will show POIs from all categories (no filter).');
 }
 
-// Function to get selected categories for export
-function getSelectedCategoriesForExport() {
-    if (selectedCategories.size === 0) {
-        return 'All Categories';
-    }
-    return Array.from(selectedCategories).join(', ');
-}
+console.log('✅ Fixed: Multiple category selection with subcategories');
 
-console.log('✅ Multiple category selection enabled!');
-console.log('📌 Select multiple categories with checkboxes');
 
