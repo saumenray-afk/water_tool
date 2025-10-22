@@ -1703,3 +1703,4 @@ console.log('✅ Enhanced features loaded successfully!');
 console.log('📌 New Features Available:');
 console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
 console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
+
