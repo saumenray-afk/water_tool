@@ -1541,6 +1541,36 @@ function populateDistributorDropdown() {
     });
 }
 
+function focusDistributor() {
+    const select = document.getElementById('distributorSelect');
+    if (!select || !select.value) return;
+    
+    const distIndex = parseInt(select.value);
+    const dist = distributors[distIndex];
+    
+    if (dist && map) {
+        // Center map on distributor
+        map.setView([dist.lat, dist.lng], 13);
+        
+        // Highlight the distributor temporarily
+        const tempCircle = L.circle([dist.lat, dist.lng], {
+            radius: 1000,
+            color: '#ff0000',
+            fillColor: '#ff0000',
+            fillOpacity: 0.3,
+            weight: 3
+        }).addTo(map);
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+            map.removeLayer(tempCircle);
+        }, 3000);
+        
+        // Show distributor info
+        alert(`📍 ${dist.name}\n🏙️ ${dist.city}\n📊 Achievement: ${dist.achievement.toFixed(1)}%\n🎯 Rating: ${dist.rating}`);
+    }
+}
+
 function updateDistributorExportInfo() {
     const select = document.getElementById('distributorSelect');
     const infoDiv = document.getElementById('distExportInfo');
