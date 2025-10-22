@@ -679,6 +679,22 @@
                     </div>
 
                     <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <div class="control-section">
+                        <div class="section-title">⭐ Select Multiple POIs (Global)</div>
+                        <div style="background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="color: white; font-size: 12px; font-weight: 600; margin-bottom: 10px;">
+                                Click POIs on map to select • Selected: <span id="expansionSelectedCount" style="font-size: 16px;">0</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button onclick="selectAllVisiblePOIs()" style="padding: 8px; background: white; color: #FF9800; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
+                                    ✓ Select All Visible
+                                </button>
+                                <button onclick="clearSelectedPOIs()" style="padding: 8px; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
+                                    ✕ Clear Selection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
                         <div class="stats-grid">
                             <div class="stat-item">
