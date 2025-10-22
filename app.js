@@ -80,7 +80,6 @@ const plants = {
 let map, currentRadius = 50;
 let activeCategoryFilter = 'all';
 let activeSubCategoryFilter = 'all';
-let selectedCategories = new Set();
 let mapMarkers = [], coverageCircles = [], distributors = [], distanceLines = [];
 let pois = [], poisLoaded = false;
 let selectedPlantForExport = null;
@@ -898,17 +897,28 @@ function updateMap() {
         // Update total POIs in radius
         currentViewStats.totalInRadius = poisInRadius.length;
 
-        // Apply category filter
+        // Apply category filter - SUPPORTS MULTIPLE
         let filteredPOIs = poisInRadius;
         if (activeCategoryFilter !== 'all') {
-            filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
+            if (activeCategoryFilter.includes(',')) {
+                // Multiple categories selected
+                const cats = activeCategoryFilter.split(',');
+                filteredPOIs = filteredPOIs.filter(poi => cats.includes(poi.Category));
+            } else {
+                // Single category
+                filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
+            }
         }
 
         // Apply sub-category filter (only if Distribution is selected)
-        if (activeCategoryFilter === 'Distribution' && activeSubCategoryFilter !== 'all') {
-            filteredPOIs = filteredPOIs.filter(poi => poi.Sub_Category === activeSubCategoryFilter);
+        if (activeCategoryFilter.includes('Distribution') && activeSubCategoryFilter !== 'all') {
+            filteredPOIs = filteredPOIs.filter(poi => {
+                if (poi.Category === 'Distribution') {
+                    return poi.Sub_Category === activeSubCategoryFilter;
+                }
+                return true; // Keep other categories if multiple selected
+            });
         }
-
         // Store filtered POIs for export
         currentViewPOIs = filteredPOIs;
         currentViewStats.filtered = filteredPOIs.length;
@@ -920,36 +930,23 @@ function updateMap() {
         const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
 
         displayPOIs.forEach(poi => {
-            // Check if this POI is selected
-            const isSelected = selectedPOIs.has(poi.POI_ID);
-            
-            // Use gold color for selected POIs, otherwise normal category color
-            const color = isSelected ? '#FFD700' : getMarkerColor(poi.Category);
+            const color = getMarkerColor(poi.Category);
             const size = poi.Priority === 'High' ? 8 : 5;
-            const selectedSize = isSelected ? size + 3 : size;
             
             const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
-                radius: selectedSize,
+                radius: size,
                 fillColor: color,
-                color: isSelected ? '#FF8C00' : 'white',
-                weight: isSelected ? 2 : 1,
-                fillOpacity: isSelected ? 1.0 : 0.7
+                color: 'white',
+                weight: 1,
+                fillOpacity: 0.7
             }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
             .addTo(map);
-            
-            // Add click handler for selection if selection mode is enabled
-            // POI selection is now always enabled - global selection
-            marker.on('click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                selectPOI(poi.POI_ID);
-            });
             
             const tooltipContent = `
                 <div style="text-align: center;">
                     <b>${poi.Business_Name || poi.POI_ID}</b><br>
                     <span style="font-size: 11px;">${poi.Sub_Category || poi.Category} • ${poi.City}</span><br>
                     <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
-                    ${isSelected ? '<br><span style="color: #FFD700; font-weight: bold;">⭐ SELECTED</span>' : ''}
                 </div>
             `;
             marker.bindTooltip(tooltipContent, {
@@ -970,7 +967,6 @@ function updateMap() {
 
 function updateCurrentViewStats() {
     document.getElementById('currentRadiusPOIs').textContent = currentViewStats.totalInRadius.toLocaleString();
-    document.getElementById("totalVisiblePOIs").textContent = currentViewStats.filtered.toLocaleString();
     document.getElementById('filteredPOIs').textContent = currentViewStats.filtered.toLocaleString();
     
     // Update active radius display
@@ -1433,590 +1429,46 @@ function downloadCSV(csv, filename) {
     window.URL.revokeObjectURL(url);
 }
 
-// ============================================================
-// FEATURE 1: MULTIPLE POI SELECTION
-// ============================================================
+// Simple multiple category selection
+let selectedCats = new Set();
 
-let selectedPOIs = new Set();
-let poiSelectionEnabled = false;
-
-function togglePOISelection() {
-    // POI selection is now always global - this just shows/hides the panel
-    const checkbox = document.getElementById('poiSelectionMode');
-    const panel = document.getElementById('selectedPOIPanel');
+function handleCategoryCheck() {
+    selectedCats.clear();
     
-    if (checkbox && checkbox.checked) {
-        if (panel) panel.style.display = 'block';
-        alert('✅ POI Selection Active!\n\nClick any POI on the map to select it.\nSelected POIs will turn GOLD and work across all tabs.');
-    } else {
-        if (panel) panel.style.display = 'none';
-    }
-}
-
-function selectPOI(poiId) {
-    if (!poiSelectionEnabled) return;
-    
-    if (selectedPOIs.has(poiId)) {
-        // Deselect
-        selectedPOIs.delete(poiId);
-    } else {
-        // Select
-        selectedPOIs.add(poiId);
-    }
-    
-    updateSelectedPOIPanel();
-    updateMap(); // Refresh map to show selected POIs in different color
-}
-
-function updateSelectedPOIPanel() {
-    const count = selectedPOIs.size;
-    document.getElementById('selectedCount').textContent = count;
-    document.getElementById('totalSelectedPOIs').textContent = count;
-    
-    if (count === 0) {
-        document.getElementById('selectedPOIList').innerHTML = '<div style="color: #999; font-size: 11px; text-align: center; padding: 4px;">No POIs selected</div>';
-        return;
-    }
-    
-    let html = '<div style="display: flex; flex-direction: column; gap: 4px;">';
-    selectedPOIs.forEach(poiId => {
-        const poi = pois.find(p => p.POI_ID === poiId);
-        if (poi) {
-            const name = poi.Business_Name || poi.POI_ID;
-            const truncatedName = name.length > 30 ? name.substring(0, 30) + '...' : name;
-            html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; border-left: 3px solid #FF9800;">
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 11px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${truncatedName}</div>
-                        <div style="font-size: 9px; color: #666;">${poi.Sub_Category || poi.Category}</div>
-                    </div>
-                    <button onclick="selectPOI('${poiId}')" style="padding: 2px 6px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: 600; margin-left: 6px;">✕</button>
-                </div>
-            `;
-        }
-    });
-    html += '</div>';
-    
-    document.getElementById('selectedPOIList').innerHTML = html;
-}
-
-function clearSelectedPOIs() {
-    selectedPOIs.clear();
-    updateSelectedPOIPanel();
-    updateMap();
-}
-
-function exportSelectedPOIs() {
-    if (selectedPOIs.size === 0) {
-        alert('❌ No POIs selected!\n\nPlease select POIs first by clicking on them.');
-        return;
-    }
-    
-    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State\n';
-    
-    selectedPOIs.forEach(poiId => {
-        const poi = pois.find(p => p.id === poiId);
-        if (poi) {
-            csvContent += `"${poi.name}","${poi.category}","${poi.subCategory}",${poi.lat},${poi.lng},"${poi.city || ''}","${poi.state || ''}"\n`;
-        }
+    // Get checked categories
+    document.querySelectorAll('.cat-check input:checked').forEach(cb => {
+        selectedCats.add(cb.value);
     });
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `selected_pois_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    
-    alert(`✅ Exported ${selectedPOIs.size} POIs to CSV!`);
-}
-
-// ============================================================
-// FEATURE 2: TERRITORY DRAWING & EXPORT
-// ============================================================
-
-let drawnItems;
-let drawControl;
-let territoryPOIs = [];
-
-function enableTerritoryDrawing() {
-    if (!map) {
-        alert('❌ Map not initialized yet. Please wait...');
-        return;
-    }
-    
-    // Initialize FeatureGroup for drawn items if not exists
-    if (!drawnItems) {
-        drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        
-        // Initialize draw control
-        drawControl = new L.Control.Draw({
-            edit: {
-                featureGroup: drawnItems,
-                remove: true
-            },
-            draw: {
-                polygon: {
-                    allowIntersection: false,
-                    showArea: true,
-                    drawError: {
-                        color: '#e1e100',
-                        message: '<strong>Error:</strong> Shape edges cannot cross!'
-                    },
-                    shapeOptions: {
-                        color: '#667eea',
-                        weight: 3,
-                        opacity: 0.8,
-                        fillOpacity: 0.2
-                    }
-                },
-                polyline: false,
-                circle: false,
-                marker: false,
-                circlemarker: false,
-                rectangle: {
-                    shapeOptions: {
-                        color: '#667eea',
-                        weight: 3,
-                        opacity: 0.8,
-                        fillOpacity: 0.2
-                    }
-                }
-            }
-        });
-        map.addControl(drawControl);
-        
-        // Handle draw created
-        map.on(L.Draw.Event.CREATED, function (e) {
-            const layer = e.layer;
-            drawnItems.addLayer(layer);
-            calculateTerritoryPOIs(layer);
-        });
-        
-        // Handle draw edited
-        map.on(L.Draw.Event.EDITED, function (e) {
-            const layers = e.layers;
-            layers.eachLayer(function (layer) {
-                calculateTerritoryPOIs(layer);
-            });
-        });
-        
-        // Handle draw deleted
-        map.on(L.Draw.Event.DELETED, function (e) {
-            if (drawnItems.getLayers().length === 0) {
-                territoryPOIs = [];
-                updateTerritoryPanel();
-            }
-        });
-    }
-    
-    alert('✅ Territory Drawing Enabled!\n\n1. Use the drawing tools in the top-right corner\n2. Draw a polygon or rectangle around your target area\n3. POIs within the territory will be calculated automatically\n4. Export the POIs when done');
-    
-    document.getElementById('territoryPanel').style.display = 'block';
-}
-
-function calculateTerritoryPOIs(layer) {
-    const bounds = layer.getBounds ? layer.getBounds() : null;
-    
-    if (!bounds) return;
-    
-    territoryPOIs = [];
-    
-    pois.forEach(poi => {
-        const latlng = L.latLng(poi.lat, poi.lng);
-        
-        // Check if point is in polygon for polygon layers
-        if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
-            if (isPointInPolygon(latlng, layer.getLatLngs()[0])) {
-                territoryPOIs.push(poi);
-            }
-        }
-    });
-    
-    updateTerritoryPanel(layer);
-}
-
-function isPointInPolygon(point, polygon) {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i].lat, yi = polygon[i].lng;
-        const xj = polygon[j].lat, yj = polygon[j].lng;
-        
-        const intersect = ((yi > point.lng) !== (yj > point.lng))
-            && (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
-    }
-    return inside;
-}
-
-function updateTerritoryPanel(layer) {
-    const count = territoryPOIs.length;
-    document.getElementById('territoryPOICount').textContent = count;
-    document.getElementById('totalTerritoryPOIs').textContent = count;
-    
-    // Calculate area
-    if (layer && layer.getBounds) {
-        const bounds = layer.getBounds();
-        const ne = bounds.getNorthEast();
-        const sw = bounds.getSouthWest();
-        
-        // Rough area calculation in km²
-        const latDiff = ne.lat - sw.lat;
-        const lngDiff = ne.lng - sw.lng;
-        const area = Math.abs(latDiff * lngDiff * 111 * 111); // Very rough approximation
-        
-        document.getElementById('territoryArea').textContent = area.toFixed(2);
-    }
-}
-
-function exportTerritoryPOIs() {
-    if (territoryPOIs.length === 0) {
-        alert('❌ No territory defined!\n\nPlease draw a territory first using the drawing tools.');
-        return;
-    }
-    
-    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State\n';
-    
-    territoryPOIs.forEach(poi => {
-        csvContent += `"${poi.name}","${poi.category}","${poi.subCategory}",${poi.lat},${poi.lng},"${poi.city || ''}","${poi.state || ''}"\n`;
-    });
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `territory_pois_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    
-    alert(`✅ Exported ${territoryPOIs.length} POIs from territory to CSV!`);
-}
-
-function clearTerritory() {
-    if (confirm('Are you sure you want to clear the territory?')) {
-        if (drawnItems) {
-            drawnItems.clearLayers();
-        }
-        territoryPOIs = [];
-        updateTerritoryPanel();
-        document.getElementById('territoryPanel').style.display = 'none';
-        alert('✅ Territory cleared!');
-    }
-}
-
-console.log('✅ Enhanced features loaded successfully!');
-console.log('📌 New Features Available:');
-console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
-console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
-
-
-// Toggle collapsible sections
-function toggleSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    const arrow = document.getElementById(sectionId + 'Arrow');
-    
-    if (section.style.display === 'none' || section.style.display === '') {
-        section.style.display = 'block';
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
-    } else {
-        section.style.display = 'none';
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
-    }
-}
-
-// Update status text when POI selection is toggled
-const originalTogglePOISelection = togglePOISelection;
-togglePOISelection = function() {
-    originalTogglePOISelection();
-    const status = document.getElementById('poiSelectionStatus');
-    if (status) {
-        status.textContent = poiSelectionEnabled ? 'Mode: Active ✓' : 'Click to expand';
-    }
-};
-
-
-// ============================================================
-// ENHANCED: MULTIPLE TERRITORIES SUPPORT
-// ============================================================
-
-let allTerritories = []; // Array to store all territories
-let allTerritoryPOIs = new Set(); // Combined POIs from all territories
-
-// Override the calculate function to store each territory
-const originalCalculateTerritoryPOIs = calculateTerritoryPOIs;
-calculateTerritoryPOIs = function(layer) {
-    const territoryPOIs = [];
-    
-    pois.forEach(poi => {
-        const latlng = L.latLng(poi.Latitude, poi.Longitude);
-        
-        if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
-            if (isPointInPolygon(latlng, layer.getLatLngs()[0])) {
-                territoryPOIs.push(poi.POI_ID);
-            }
-        }
-    });
-    
-    // Store this territory
-    const territoryNumber = allTerritories.length + 1;
-    allTerritories.push({
-        layer: layer,
-        pois: new Set(territoryPOIs),
-        number: territoryNumber
-    });
-    
-    // Add all POIs to combined set
-    territoryPOIs.forEach(id => allTerritoryPOIs.add(id));
-    
-    // Update the panel to show all territories
-    updateMultipleTerritoryPanel();
-};
-
-function updateMultipleTerritoryPanel() {
-    // Update total counts
-    document.getElementById('territoryPOICount').textContent = allTerritoryPOIs.size;
-    document.getElementById('totalTerritoryPOIs').textContent = allTerritoryPOIs.size;
-    
-    // Show territory count
-    const territoryCount = allTerritories.length;
-    if (territoryCount > 0) {
-        document.getElementById('territoryArea').textContent = territoryCount + ' areas';
-    }
-}
-
-// Export all territories combined
-function exportAllTerritories() {
-    if (allTerritoryPOIs.size === 0) {
-        alert('❌ No territories defined!\n\nPlease draw at least one territory first.');
-        return;
-    }
-    
-    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State,Territory_Number\n';
-    
-    allTerritoryPOIs.forEach(poiId => {
-        const poi = pois.find(p => p.POI_ID === poiId);
-        if (poi) {
-            // Find which territory/territories this POI belongs to
-            let territoryNumbers = [];
-            allTerritories.forEach((territory) => {
-                if (territory.pois.has(poiId)) {
-                    territoryNumbers.push(territory.number);
-                }
-            });
-            
-            const territoryStr = territoryNumbers.join(';');
-            csvContent += `"${poi.Business_Name || poi.POI_ID}","${poi.Category}","${poi.Sub_Category}",${poi.Latitude},${poi.Longitude},"${poi.City || ''}","${poi.State || ''}","${territoryStr}"\n`;
-        }
-    });
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `all_territories_combined_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    
-    alert(`✅ Exported ${allTerritoryPOIs.size} POIs from ${allTerritories.length} territories!\n\nNote: POIs in multiple territories show all territory numbers.`);
-}
-
-// Clear all territories at once
-function clearAllTerritories() {
-    if (allTerritories.length === 0) {
-        alert('No territories to clear.');
-        return;
-    }
-    
-    if (confirm(`Clear all ${allTerritories.length} territories and reset?`)) {
-        if (drawnItems) {
-            drawnItems.clearLayers();
-        }
-        allTerritories = [];
-        allTerritoryPOIs.clear();
-        updateMultipleTerritoryPanel();
-        document.getElementById('territoryPanel').style.display = 'none';
-        alert('✅ All territories cleared!');
-    }
-}
-
-console.log('✅ Multiple territories support loaded!');
-console.log('📌 Features: Draw multiple territories, export all POIs combined');
-
-
-// ============================================================
-// SELECT ALL VISIBLE POIs (for Expansion tab)
-// ============================================================
-
-function selectAllVisiblePOIs() {
-    if (currentViewPOIs.length === 0) {
-        alert('❌ No POIs visible!\n\nPlease apply filters first to show POIs on the map.');
-        return;
-    }
-    
-    // Select all currently visible POIs
-    let newSelections = 0;
-    currentViewPOIs.forEach(poi => {
-        if (!selectedPOIs.has(poi.POI_ID)) {
-            selectedPOIs.add(poi.POI_ID);
-            newSelections++;
-        }
-    });
-    
-    updateSelectedPOIPanel();
-    updateExpansionSelectedCount();
-    updateMap(); // Refresh to show gold POIs
-    
-    alert(`✅ Selected ${newSelections} new POIs!\n\nTotal selected: ${selectedPOIs.size}\n\nThey're now highlighted in GOLD on the map.`);
-}
-
-// Update the expansion tab counter
-function updateExpansionSelectedCount() {
-    const countElem = document.getElementById('expansionSelectedCount');
-    if (countElem) {
-        countElem.textContent = selectedPOIs.size;
-    }
-}
-
-// Override updateSelectedPOIPanel to also update expansion counter
-const originalUpdateSelectedPOIPanel = updateSelectedPOIPanel;
-updateSelectedPOIPanel = function() {
-    originalUpdateSelectedPOIPanel();
-    updateExpansionSelectedCount();
-};
-
-// Override selectPOI to update expansion counter
-const originalSelectPOI = selectPOI;
-selectPOI = function(poiId) {
-    originalSelectPOI(poiId);
-    updateExpansionSelectedCount();
-};
-
-// Override clearSelectedPOIs to update expansion counter
-const originalClearSelectedPOIs = clearSelectedPOIs;
-clearSelectedPOIs = function() {
-    originalClearSelectedPOIs();
-    updateExpansionSelectedCount();
-};
-
-console.log('✅ Multiple selection in Expansion tab enabled!');
-console.log('📌 Select All Visible POIs button added');
-
-
-// ============================================================
-// MULTIPLE CATEGORY SELECTION WITH CHECKBOXES (GLOBAL)
-// ============================================================
-
-console.log('📌 Select multiple categories with checkboxes');
-
-// ============================================================
-// FIXED: MULTIPLE CATEGORY SELECTION WITH SUBCATEGORIES
-// ============================================================
-
-
-function updateCategorySelection() {
-    // Get all checked category checkboxes
-    selectedCategories.clear();
-    const checkboxes = document.querySelectorAll('.category-checkbox input[type="checkbox"]:checked');
-    
-    checkboxes.forEach(cb => {
-        selectedCategories.add(cb.value);
-    });
-    
-    // Update counter
-    const counterElem = document.getElementById('selectedCategoriesCount');
-    if (counterElem) {
-        counterElem.textContent = selectedCategories.size;
-    }
-    
-    // Update visual style for checked items
-    document.querySelectorAll('.category-checkbox').forEach(label => {
-        const checkbox = label.querySelector('input[type="checkbox"]');
-        if (checkbox.checked) {
+    // Update visual style
+    document.querySelectorAll('.cat-check').forEach(label => {
+        const cb = label.querySelector('input');
+        if (cb.checked) {
+            label.style.background = '#667eea';
+            label.style.color = 'white';
             label.style.borderColor = '#667eea';
-            label.style.background = '#f0f3ff';
         } else {
-            label.style.borderColor = '#e0e0e0';
             label.style.background = 'white';
+            label.style.color = 'black';
+            label.style.borderColor = '#ddd';
         }
     });
     
-    // Show/hide subcategory filters
-    const subFilters = document.getElementById('distributionSubFilters');
-    if (subFilters) {
-        if (selectedCategories.has('Distribution')) {
-            subFilters.style.display = 'block';
-        } else {
-            subFilters.style.display = 'none';
-        }
+    // Show/hide Distribution subcategories
+    const subDiv = document.getElementById('distributionSubFilters');
+    if (subDiv) {
+        subDiv.style.display = selectedCats.has('Distribution') ? 'block' : 'none';
     }
     
-    // Set active category for compatibility
-    if (selectedCategories.size === 0) {
+    // Filter POIs
+    if (selectedCats.size === 0) {
         activeCategoryFilter = 'all';
-    } else if (selectedCategories.size === 1) {
-        activeCategoryFilter = Array.from(selectedCategories)[0];
     } else {
-        activeCategoryFilter = 'multiple';
+        activeCategoryFilter = Array.from(selectedCats).join(',');
     }
     
-    // Filter and update map
-    filterPOIsByMultipleCategories();
-}
-
-function filterPOIsByMultipleCategories() {
-    let filteredPOIs = pois;
-    
-    // Apply category filter
-    if (selectedCategories.size > 0) {
-        filteredPOIs = filteredPOIs.filter(poi => {
-            return selectedCategories.has(poi.Category);
-        });
-    }
-    
-    // Apply radius filter if active
-    if (currentRadius > 0) {
-        filteredPOIs = filteredPOIs.filter(poi => {
-            return Object.values(plants).some(plant => {
-                const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                return distance <= currentRadius;
-            });
-        });
-    }
-    
-    // Apply subcategory filter if Distribution is selected
-    if (selectedCategories.has('Distribution') && activeSubCategoryFilter !== 'all') {
-        filteredPOIs = filteredPOIs.filter(poi => {
-            return poi.Category === 'Distribution' && poi.Sub_Category === activeSubCategoryFilter;
-        });
-    }
-    
-    // Update current view
-    currentViewPOIs = filteredPOIs;
-    currentViewStats.totalInRadius = filteredPOIs.length;
-    currentViewStats.filtered = filteredPOIs.length;
-    currentViewStats.category = activeCategoryFilter;
-    currentViewStats.subCategory = activeSubCategoryFilter;
-    
-    // Update map
     updateMap();
-    updateCurrentViewStats();
-    
-    console.log(`✅ Filtered: ${filteredPOIs.length} POIs from ${selectedCategories.size} categories`);
 }
 
-function selectAllCategories() {
-    document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
-        cb.checked = true;
-    });
-    updateCategorySelection();
-}
-
-function clearAllCategories() {
-    document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
-        cb.checked = false;
-    });
-    updateCategorySelection();
-}
-
-console.log('✅ Fixed: Multiple category selection with subcategories');
-
+console.log('✅ Multiple category checkboxes ready');
 
