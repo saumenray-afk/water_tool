@@ -1474,23 +1474,23 @@ function updateSelectedPOIPanel() {
     document.getElementById('totalSelectedPOIs').textContent = count;
     
     if (count === 0) {
-        document.getElementById('selectedPOIList').innerHTML = '<div style="color: rgba(255,255,255,0.8); font-size: 12px; font-style: italic; text-align: center; padding: 8px;">No POIs selected</div>';
+        document.getElementById('selectedPOIList').innerHTML = '<div style="color: #999; font-size: 11px; text-align: center; padding: 4px;">No POIs selected</div>';
         return;
     }
     
-    let html = '<div style="display: flex; flex-direction: column; gap: 6px;">';
+    let html = '<div style="display: flex; flex-direction: column; gap: 4px;">';
     selectedPOIs.forEach(poiId => {
         const poi = pois.find(p => p.POI_ID === poiId);
         if (poi) {
             const name = poi.Business_Name || poi.POI_ID;
-            const truncatedName = name.length > 35 ? name.substring(0, 35) + '...' : name;
+            const truncatedName = name.length > 30 ? name.substring(0, 30) + '...' : name;
             html += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(255,255,255,0.95); border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; border-left: 3px solid #FF9800;">
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 12px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${truncatedName}</div>
-                        <div style="font-size: 10px; color: #666; margin-top: 2px;">${poi.Sub_Category || poi.Category}</div>
+                        <div style="font-size: 11px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${truncatedName}</div>
+                        <div style="font-size: 9px; color: #666;">${poi.Sub_Category || poi.Category}</div>
                     </div>
-                    <button onclick="selectPOI('${poiId}')" style="padding: 4px 8px; background: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.3); border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.2s; flex-shrink: 0; margin-left: 8px;">✕</button>
+                    <button onclick="selectPOI('${poiId}')" style="padding: 2px 6px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: 600; margin-left: 6px;">✕</button>
                 </div>
             `;
         }
@@ -1708,4 +1708,29 @@ console.log('✅ Enhanced features loaded successfully!');
 console.log('📌 New Features Available:');
 console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
 console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
+
+
+// Toggle collapsible sections
+function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const arrow = document.getElementById(sectionId + 'Arrow');
+    
+    if (section.style.display === 'none' || section.style.display === '') {
+        section.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        section.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Update status text when POI selection is toggled
+const originalTogglePOISelection = togglePOISelection;
+togglePOISelection = function() {
+    originalTogglePOISelection();
+    const status = document.getElementById('poiSelectionStatus');
+    if (status) {
+        status.textContent = poiSelectionEnabled ? 'Mode: Active ✓' : 'Click to expand';
+    }
+};
 
