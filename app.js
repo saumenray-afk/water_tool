@@ -77,6 +77,19 @@ function resetSessionTimeout() {
     }, SESSION_TIMEOUT * 60 * 1000);
 }
 
+// Check session timeout periodically
+function checkSessionTimeout() {
+    const loginTime = sessionStorage.getItem('loginTime');
+    if (loginTime) {
+        const elapsed = (new Date().getTime() - loginTime) / 1000 / 60;
+        if (elapsed >= SESSION_TIMEOUT) {
+            alert('Session expired. Please login again.');
+            sessionStorage.clear();
+            location.reload();
+        }
+    }
+}
+
 function checkSession() {
     const user = sessionStorage.getItem('user');
     const loginTime = sessionStorage.getItem('loginTime');
@@ -640,7 +653,8 @@ function createDistributorPopup(dist) {
 }
 
 
-setInterval(checkSessionTimeout, 5 * 60 * 1000);
+
+// Check session timeout periodically
 
 // POI Data Loading Functions
 async function loadPOIData() {
@@ -2255,3 +2269,5 @@ console.log('✅ Enhanced features loaded successfully!');
 console.log('📌 New Features Available:');
 console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
 console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
+// Start session timeout check
+setInterval(checkSessionTimeout, 5 * 60 * 1000);
