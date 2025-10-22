@@ -1899,3 +1899,99 @@ clearSelectedPOIs = function() {
 console.log('✅ Multiple selection in Expansion tab enabled!');
 console.log('📌 Select All Visible POIs button added');
 
+
+// ============================================================
+// MULTIPLE CATEGORY SELECTION WITH CHECKBOXES (GLOBAL)
+// ============================================================
+
+let selectedCategories = new Set();
+
+function updateCategorySelection() {
+    // Get all checked category checkboxes
+    selectedCategories.clear();
+    const checkboxes = document.querySelectorAll('.category-checkbox input[type="checkbox"]:checked');
+    
+    checkboxes.forEach(cb => {
+        selectedCategories.add(cb.value);
+    });
+    
+    // Update counter
+    document.getElementById('selectedCategoriesCount').textContent = selectedCategories.size;
+    
+    // Update visual style for checked items
+    document.querySelectorAll('.category-checkbox').forEach(label => {
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        if (checkbox.checked) {
+            label.style.borderColor = '#667eea';
+            label.style.background = '#f0f3ff';
+        } else {
+            label.style.borderColor = '#e0e0e0';
+            label.style.background = 'white';
+        }
+    });
+    
+    // Filter POIs on map based on selected categories
+    filterPOIsByMultipleCategories();
+}
+
+function filterPOIsByMultipleCategories() {
+    if (selectedCategories.size === 0) {
+        // No categories selected - show all POIs
+        currentViewPOIs = pois;
+    } else {
+        // Filter POIs by selected categories
+        currentViewPOIs = pois.filter(poi => {
+            return selectedCategories.has(poi.Category);
+        });
+    }
+    
+    // Apply radius filter if active
+    if (currentRadius > 0) {
+        currentViewPOIs = currentViewPOIs.filter(poi => {
+            return Object.values(plants).some(plant => {
+                const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
+                return distance <= currentRadius;
+            });
+        });
+    }
+    
+    // Update stats
+    currentViewStats.totalInRadius = currentViewPOIs.length;
+    currentViewStats.filtered = currentViewPOIs.length;
+    
+    // Update map
+    updateMap();
+    updateCurrentViewStats();
+    
+    console.log(`Filtered to ${currentViewPOIs.length} POIs across ${selectedCategories.size} categories`);
+}
+
+function selectAllCategories() {
+    // Check all category checkboxes
+    document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
+        cb.checked = true;
+    });
+    updateCategorySelection();
+    alert(`✅ All 6 categories selected!\n\nShowing POIs from all categories on the map.`);
+}
+
+function clearAllCategories() {
+    // Uncheck all category checkboxes
+    document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+    updateCategorySelection();
+    alert('✅ All categories cleared!\n\nMap will show POIs from all categories (no filter).');
+}
+
+// Function to get selected categories for export
+function getSelectedCategoriesForExport() {
+    if (selectedCategories.size === 0) {
+        return 'All Categories';
+    }
+    return Array.from(selectedCategories).join(', ');
+}
+
+console.log('✅ Multiple category selection enabled!');
+console.log('📌 Select multiple categories with checkboxes');
+
