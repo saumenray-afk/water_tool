@@ -282,8 +282,6 @@ console.log('✅ Core functions loaded successfully');
 // ============================================================
 // END OF COMPLETE FIX
 // Your existing code continues below...
-// ============================================================
-// Actual distributor data from your CSV file
 const distributorsData = [
     {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Not Assigned', classification: 'Distributor'},
     {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Not Assigned', classification: 'Distributor'},
@@ -645,59 +643,6 @@ function createDistributorPopup(dist) {
 // ============================================================
 // CORRECTED LOGIN FIX - Replace your existing handleLogin function
 // ============================================================
-
-function handleLogin(event) {
-    event.preventDefault();
-    
-    const username = document.getElementById('username');
-    const password = document.getElementById('password');
-    const errorMsg = document.getElementById('errorMessage');
-    const loginForm = document.getElementById('loginForm');
-    const app = document.getElementById('app');
-    const userDisplay = document.getElementById('userDisplay');
-    
-    // Check if all elements exist
-    if (!username || !password || !errorMsg || !loginForm || !app || !userDisplay) {
-        console.error('❌ Missing HTML elements!');
-        console.log('username:', username);
-        console.log('password:', password);
-        console.log('errorMessage:', errorMsg);
-        console.log('loginForm:', loginForm);
-        console.log('app:', app);
-        console.log('userDisplay:', userDisplay);
-        alert('Error: Page not loaded correctly. Please refresh.');
-        return;
-    }
-    
-    const usernameValue = username.value.trim();
-    const passwordValue = password.value;
-    
-    console.log('🔐 Attempting login for user:', usernameValue);
-    
-    if (VALID_USERS[usernameValue] && VALID_USERS[usernameValue] === passwordValue) {
-        console.log('✅ Login successful!');
-        
-        // Hide error message
-        errorMsg.classList.remove('show');
-        errorMsg.style.display = 'none';
-        
-        // Hide login form
-        loginForm.style.display = 'none';
-        
-        // Show main app
-        app.classList.add('active');
-        app.style.display = 'block';
-        
-        // Display username
-        userDisplay.textContent = usernameValue;
-        
-        // Set session
-        const loginTime = new Date().getTime();
-        sessionStorage.setItem('loggedIn', 'true');
-        sessionStorage.setItem('username', usernameValue);
-        sessionStorage.setItem('loginTime', loginTime);
-        
-        console.log('🚀 Initializing application...');
         
         // Initialize the application
         initializeApp();
@@ -721,40 +666,6 @@ function handleLogin(event) {
         }, 3000);
     }
 }
-
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.clear();
-        location.reload();
-    }
-}
-
-function checkSession() {
-    const loggedIn = sessionStorage.getItem('loggedIn');
-    const username = sessionStorage.getItem('username');
-    const loginTime = sessionStorage.getItem('loginTime');
-    
-    if (loggedIn === 'true' && username && loginTime) {
-        console.log('✅ Session found for user:', username);
-        
-        const loginForm = document.getElementById('loginForm');
-        const app = document.getElementById('app');
-        const userDisplay = document.getElementById('userDisplay');
-        
-        if (loginForm && app && userDisplay) {
-            loginForm.style.display = 'none';
-            app.classList.add('active');
-            app.style.display = 'block';
-            userDisplay.textContent = username;
-            
-            initializeApp();
-        }
-    } else {
-        console.log('ℹ️ No active session found');
-    }
-}
-
-console.log('✅ Login functions loaded');
 
 setInterval(checkSessionTimeout, 5 * 60 * 1000);
 
