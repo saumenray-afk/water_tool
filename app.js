@@ -2271,3 +2271,46 @@ console.log('   1. Multiple POI Selection - Select individual POIs by clicking')
 console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
 // Start session timeout check
 setInterval(checkSessionTimeout, 5 * 60 * 1000);
+
+// Custom radius functions for plant circles
+function setRadius() {
+    const select = document.getElementById('radiusSelect');
+    const customGroup = document.getElementById('customRadiusGroup');
+    
+    if (select.value === 'custom') {
+        // Show custom input
+        if (customGroup) {
+            customGroup.style.display = 'block';
+        }
+    } else {
+        // Hide custom input and apply preset radius
+        if (customGroup) {
+            customGroup.style.display = 'none';
+        }
+        currentRadius = parseInt(select.value);
+        customRadiusEnabled = false;
+        updateMap();
+    }
+}
+
+function applyCustomRadius() {
+    const input = document.getElementById('customRadiusInput');
+    const value = parseInt(input.value);
+    
+    if (isNaN(value) || value < 1 || value > 300) {
+        alert('Please enter a valid radius between 1 and 300 KM');
+        return;
+    }
+    
+    currentRadius = value;
+    customRadiusEnabled = true;
+    
+    // Update the select to show "custom"
+    const select = document.getElementById('radiusSelect');
+    if (select) {
+        select.value = 'custom';
+    }
+    
+    alert(`✅ Custom radius applied: ${value} KM`);
+    updateMap();
+}
