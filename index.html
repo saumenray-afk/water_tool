@@ -655,15 +655,45 @@
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">POI Category Filters</div>
-                        <div>
-                            <button class="filter-chip active" onclick="filterPOIsByCategory('all', this)">All Categories</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Distribution', this)">Distribution</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Retail', this)">Retail</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Food & Beverage', this)">F&B</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Hospitality', this)">Hospitality</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Corporate', this)">Corporate</button>
-                            <button class="filter-chip" onclick="filterPOIsByCategory('Healthcare', this)">Healthcare</button>
+                        <div class="section-title">POI Category Filters (Multiple Selection)</div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Distribution" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">Distribution</span>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Retail" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">Retail</span>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Food & Beverage" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">F&B</span>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Hospitality" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">Hospitality</span>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Corporate" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">Corporate</span>
+                                </label>
+                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
+                                    <input type="checkbox" value="Healthcare" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
+                                    <span style="font-size: 12px; font-weight: 600;">Healthcare</span>
+                                </label>
+                            </div>
+                            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button onclick="selectAllCategories()" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
+                                    ✓ Select All
+                                </button>
+                                <button onclick="clearAllCategories()" style="flex: 1; padding: 8px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
+                                    ✕ Clear All
+                                </button>
+                            </div>
+                            <div style="margin-top: 8px; padding: 8px; background: white; border-radius: 6px; font-size: 11px; color: #666;">
+                                Selected: <strong id="selectedCategoriesCount" style="color: #667eea;">0</strong> categories
+                            </div>
                         </div>
                         
                         <!-- Sub-category filters for Distribution -->
