@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Business Expansion Tool - Secure Access</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -503,7 +502,6 @@
                     <button class="tab active" data-tab="overview">📊 Overview</button>
                     <button class="tab" data-tab="distributors">📦 Distributors</button>
                     <button class="tab" data-tab="expansion">🎯 Expansion</button>
-                    <button class="tab" data-tab="selection">🎨 Selection</button>
                 </div>
 
                 <div class="tab-content active" id="overview-tab">
@@ -542,7 +540,7 @@
                             <button class="radius-btn" data-radius="75">75 KM</button>
                             <button class="radius-btn" data-radius="100">100 KM</button>
                             <button class="radius-btn" data-radius="125">125 KM</button>
-                            <button class="radius-btn" data-radius="0">Clear All Territories</button>
+                            <button class="radius-btn" data-radius="0">Clear</button>
                         </div>
                         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
                             <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
@@ -655,45 +653,32 @@
 
                 <div class="tab-content" id="expansion-tab">
                     <div class="control-section">
-                        <div class="section-title">POI Category Filters (Multiple Selection)</div>
-                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Distribution" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">Distribution</span>
-                                </label>
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Retail" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">Retail</span>
-                                </label>
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Food & Beverage" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">F&B</span>
-                                </label>
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Hospitality" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">Hospitality</span>
-                                </label>
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Corporate" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">Corporate</span>
-                                </label>
-                                <label style="display: flex; align-items: center; padding: 8px; background: white; border-radius: 6px; cursor: pointer; border: 2px solid #e0e0e0; transition: all 0.2s;" class="category-checkbox">
-                                    <input type="checkbox" value="Healthcare" onchange="updateCategorySelection()" style="width: 16px; height: 16px; margin-right: 8px; cursor: pointer;">
-                                    <span style="font-size: 12px; font-weight: 600;">Healthcare</span>
-                                </label>
-                            </div>
-                            <div style="margin-top: 10px; display: flex; gap: 8px;">
-                                <button onclick="selectAllCategories()" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
-                                    ✓ Select All
-                                </button>
-                                <button onclick="clearAllCategories()" style="flex: 1; padding: 8px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
-                                    ✕ Clear All
-                                </button>
-                            </div>
-                            <div style="margin-top: 8px; padding: 8px; background: white; border-radius: 6px; font-size: 11px; color: #666;">
-                                Selected: <strong id="selectedCategoriesCount" style="color: #667eea;">0</strong> categories
-                            </div>
+                        <div class="section-title">POI Category Filters</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Distribution" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                Distribution
+                            </label>
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Retail" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                Retail
+                            </label>
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Food & Beverage" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                F&B
+                            </label>
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Hospitality" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                Hospitality
+                            </label>
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Corporate" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                Corporate
+                            </label>
+                            <label style="display: inline-flex; align-items: center; padding: 6px 12px; background: white; border: 2px solid #ddd; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s;" class="cat-check">
+                                <input type="checkbox" value="Healthcare" onchange="handleCategoryCheck()" style="margin-right: 6px;">
+                                Healthcare
+                            </label>
                         </div>
                         
                         <!-- Sub-category filters for Distribution -->
@@ -709,8 +694,6 @@
                     </div>
 
                     <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        </div>
-                    </div>
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
                         <div class="stats-grid">
                             <div class="stat-item">
@@ -779,117 +762,6 @@
                 </div>
             </div>
 
-                <div class="tab-content" id="selection-tab">
-                    <div class="info-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 15px;">
-                        <strong style="font-size: 13px;">⭐ Global Selection & Multi-Territory Planning</strong><br>
-                        <span style="font-size: 11px; opacity: 0.95;">Select POIs across all tabs • Draw multiple territories • Export all at once</span>
-                    </div>
-
-
-
-
-
-                    <!-- POI Selection Section - Collapsible -->
-                    <div class="control-section" style="margin-bottom: 10px;">
-                        <div onclick="toggleSection('poiSection')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(255,152,0,0.3);">
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">⭐ POI Selection</div>
-                                <div style="font-size: 11px; opacity: 0.9;" id="poiSelectionStatus">Click to expand</div>
-                            </div>
-                            <span id="poiSectionArrow" style="font-size: 18px; transition: transform 0.3s;">▼</span>
-                        </div>
-                        
-                        <div id="poiSection" style="display: none; padding: 12px; background: #fff; border: 2px solid #FFC107; border-top: none; border-radius: 0 0 8px 8px;">
-                            <label style="display: flex; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">
-                                <input type="checkbox" id="poiSelectionMode" onchange="togglePOISelection()" style="width: 16px; height: 16px; cursor: pointer;">
-                                <span style="margin-left: 10px; font-weight: 600; font-size: 13px;">Enable Selection Mode</span>
-                            </label>
-                            
-                            <div id="selectedPOIPanel" style="display: none;">
-                                <div style="background: #FFF3CD; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <div style="font-size: 12px; font-weight: 600;">Selected: <span id="selectedCount" style="color: #FF9800; font-size: 16px; font-weight: 700;">0</span></div>
-                                        <button onclick="clearSelectedPOIs()" style="padding: 4px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">Clear All Territories</button>
-                                    </div>
-                                    
-                                    <div id="selectedPOIList" style="max-height: 100px; overflow-y: auto; margin-bottom: 8px; font-size: 11px;"></div>
-                                    
-                                    <button onclick="exportSelectedPOIs()" style="width: 100%; padding: 10px; background: #FF9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
-                                        📥 Export Selected POIs
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div style="font-size: 11px; color: #666; line-height: 1.4;">
-                                💡 Click POIs on map to select (they turn gold). Export to CSV.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Territory Section - Collapsible -->
-                    <div class="control-section" style="margin-bottom: 10px;">
-                        <div onclick="toggleSection('territorySection')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(23,162,184,0.3);">
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">🗺️ Territory Planning</div>
-                                <div style="font-size: 11px; opacity: 0.9;" id="territoryStatus">Click to expand</div>
-                            </div>
-                            <span id="territorySectionArrow" style="font-size: 18px; transition: transform 0.3s;">▼</span>
-                        </div>
-                        
-                        <div id="territorySection" style="display: none; padding: 12px; background: #fff; border: 2px solid #17a2b8; border-top: none; border-radius: 0 0 8px 8px;">
-                            <button onclick="enableTerritoryDrawing()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; margin-bottom: 10px;">
-                                ✏️ Start Drawing
-                            </button>
-                            
-                            <div id="territoryPanel" style="display: none;">
-                                <div style="background: #D1ECF1; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
-                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px;">
-                                        <div style="background: white; padding: 10px; border-radius: 6px; text-align: center;">
-                                            <div style="font-size: 18px; font-weight: 700; color: #17a2b8;"><span id="territoryPOICount">0</span></div>
-                                            <div style="font-size: 10px; color: #666;">POIs</div>
-                                        </div>
-                                        <div style="background: white; padding: 10px; border-radius: 6px; text-align: center;">
-                                            <div style="font-size: 18px; font-weight: 700; color: #17a2b8;"><span id="territoryArea">0</span></div>
-                                            <div style="font-size: 10px; color: #666;">km²</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <button onclick="exportAllTerritories()" style="width: 100%; padding: 10px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; margin-bottom: 6px;">
-                                        📥 Export All Territories (Combined)
-                                    </button>
-                                    
-                                    <button onclick="clearAllTerritories()" style="width: 100%; padding: 8px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
-                                        🗑️ Clear
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div style="font-size: 11px; color: #666; line-height: 1.4;">
-                                💡 Draw polygons/rectangles on map. Auto-calculates POIs inside.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Compact Stats -->
-                    <div class="control-section">
-                        <div class="section-title" style="font-size: 12px;">📊 Quick Stats</div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalVisiblePOIs">0</span></div>
-                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Visible</div>
-                            </div>
-                            <div style="background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalSelectedPOIs">0</span></div>
-                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Selected</div>
-                            </div>
-                            <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); padding: 10px; border-radius: 6px; text-align: center;">
-                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalTerritoryPOIs">0</span></div>
-                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Territory</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             <div id="map"></div>
         </div>
     </div>
@@ -902,7 +774,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="app.js"></script>
 </body>
