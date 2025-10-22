@@ -937,12 +937,11 @@ function updateMap() {
             .addTo(map);
             
             // Add click handler for selection if selection mode is enabled
-            if (poiSelectionEnabled) {
-                marker.on('click', function(e) {
-                    L.DomEvent.stopPropagation(e);
-                    selectPOI(poi.POI_ID);
-                });
-            }
+            // POI selection is now always enabled - global selection
+            marker.on('click', function(e) {
+                L.DomEvent.stopPropagation(e);
+                selectPOI(poi.POI_ID);
+            });
             
             const tooltipContent = `
                 <div style="text-align: center;">
@@ -1441,16 +1440,16 @@ let selectedPOIs = new Set();
 let poiSelectionEnabled = false;
 
 function togglePOISelection() {
-    poiSelectionEnabled = document.getElementById('poiSelectionMode').checked;
-    document.getElementById('selectedPOIPanel').style.display = poiSelectionEnabled ? 'block' : 'none';
+    // POI selection is now always global - this just shows/hides the panel
+    const checkbox = document.getElementById('poiSelectionMode');
+    const panel = document.getElementById('selectedPOIPanel');
     
-    if (poiSelectionEnabled) {
-        alert('✅ POI Selection Enabled!\n\nClick on any POI marker to select/deselect it.\nSelected POIs will turn GOLD.');
+    if (checkbox && checkbox.checked) {
+        if (panel) panel.style.display = 'block';
+        alert('✅ POI Selection Active!\n\nClick any POI on the map to select it.\nSelected POIs will turn GOLD and work across all tabs.');
     } else {
-        clearSelectedPOIs();
+        if (panel) panel.style.display = 'none';
     }
-    
-    updateMap();
 }
 
 function selectPOI(poiId) {
@@ -1733,4 +1732,111 @@ togglePOISelection = function() {
         status.textContent = poiSelectionEnabled ? 'Mode: Active ✓' : 'Click to expand';
     }
 };
+
+
+// ============================================================
+// ENHANCED: MULTIPLE TERRITORIES SUPPORT
+// ============================================================
+
+let allTerritories = []; // Array to store all territories
+let allTerritoryPOIs = new Set(); // Combined POIs from all territories
+
+// Override the calculate function to store each territory
+const originalCalculateTerritoryPOIs = calculateTerritoryPOIs;
+calculateTerritoryPOIs = function(layer) {
+    const territoryPOIs = [];
+    
+    pois.forEach(poi => {
+        const latlng = L.latLng(poi.Latitude, poi.Longitude);
+        
+        if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+            if (isPointInPolygon(latlng, layer.getLatLngs()[0])) {
+                territoryPOIs.push(poi.POI_ID);
+            }
+        }
+    });
+    
+    // Store this territory
+    const territoryNumber = allTerritories.length + 1;
+    allTerritories.push({
+        layer: layer,
+        pois: new Set(territoryPOIs),
+        number: territoryNumber
+    });
+    
+    // Add all POIs to combined set
+    territoryPOIs.forEach(id => allTerritoryPOIs.add(id));
+    
+    // Update the panel to show all territories
+    updateMultipleTerritoryPanel();
+};
+
+function updateMultipleTerritoryPanel() {
+    // Update total counts
+    document.getElementById('territoryPOICount').textContent = allTerritoryPOIs.size;
+    document.getElementById('totalTerritoryPOIs').textContent = allTerritoryPOIs.size;
+    
+    // Show territory count
+    const territoryCount = allTerritories.length;
+    if (territoryCount > 0) {
+        document.getElementById('territoryArea').textContent = territoryCount + ' areas';
+    }
+}
+
+// Export all territories combined
+function exportAllTerritories() {
+    if (allTerritoryPOIs.size === 0) {
+        alert('❌ No territories defined!\n\nPlease draw at least one territory first.');
+        return;
+    }
+    
+    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State,Territory_Number\n';
+    
+    allTerritoryPOIs.forEach(poiId => {
+        const poi = pois.find(p => p.POI_ID === poiId);
+        if (poi) {
+            // Find which territory/territories this POI belongs to
+            let territoryNumbers = [];
+            allTerritories.forEach((territory) => {
+                if (territory.pois.has(poiId)) {
+                    territoryNumbers.push(territory.number);
+                }
+            });
+            
+            const territoryStr = territoryNumbers.join(';');
+            csvContent += `"${poi.Business_Name || poi.POI_ID}","${poi.Category}","${poi.Sub_Category}",${poi.Latitude},${poi.Longitude},"${poi.City || ''}","${poi.State || ''}","${territoryStr}"\n`;
+        }
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `all_territories_combined_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    
+    alert(`✅ Exported ${allTerritoryPOIs.size} POIs from ${allTerritories.length} territories!\n\nNote: POIs in multiple territories show all territory numbers.`);
+}
+
+// Clear all territories at once
+function clearAllTerritories() {
+    if (allTerritories.length === 0) {
+        alert('No territories to clear.');
+        return;
+    }
+    
+    if (confirm(`Clear all ${allTerritories.length} territories and reset?`)) {
+        if (drawnItems) {
+            drawnItems.clearLayers();
+        }
+        allTerritories = [];
+        allTerritoryPOIs.clear();
+        updateMultipleTerritoryPanel();
+        document.getElementById('territoryPanel').style.display = 'none';
+        alert('✅ All territories cleared!');
+    }
+}
+
+console.log('✅ Multiple territories support loaded!');
+console.log('📌 Features: Draw multiple territories, export all POIs combined');
 
