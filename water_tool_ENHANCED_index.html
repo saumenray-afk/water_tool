@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Business Expansion Tool - Secure Access</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        #app {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: #f5f7fa;
+        }
+
+        #app.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 { font-size: 20px; margin-bottom: 3px; }
+        .header-left p { opacity: 0.9; font-size: 12px; }
+
+        .logout-btn {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container { display: flex; height: calc(100vh - 65px); }
+
+        .sidebar {
+            width: 380px;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            font-size: 13px;
+        }
+
+        .tab:hover { color: #667eea; }
+        .tab.active { color: #667eea; border-bottom-color: #667eea; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .stats-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 700; display: block; }
+        .stat-label { font-size: 11px; opacity: 0.9; margin-top: 5px; }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .radius-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .radius-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .radius-btn:hover { border-color: #667eea; background: #f8f9ff; }
+        .radius-btn.active { background: #667eea; color: white; border-color: #667eea; }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .action-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .distributor-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .distributor-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9ff;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .distributor-item:hover {
+            background: #e8ebff;
+            border-left-color: #667eea;
+        }
+
+        .distributor-item.selected {
+            background: #667eea;
+            color: white;
+            border-left-color: #4a56c9;
+        }
+
+        .distributor-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .distributor-meta {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-excellent { background: #28a745; color: white; }
+        .badge-good { background: #ffc107; color: #333; }
+        .badge-average { background: #ff9800; color: white; }
+        .badge-below { background: #dc3545; color: white; }
+
+        .filter-chip {
+            padding: 6px 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            display: inline-block;
+            margin: 4px;
+        }
+
+        .filter-chip:hover { border-color: #667eea; }
+        .filter-chip.active { background: #667eea; color: white; border-color: #667eea; }
+
+        .sub-category-filters {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sub-category-filters.active {
+            display: block;
+        }
+
+        .sub-category-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        #map { flex: 1; height: 100%; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover { color: #333; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover { background: #f8f9ff; }
+
+        .report-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .report-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .info-banner {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #1565c0;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginScreen">
+        <div class="login-header">
+            <div class="login-icon">🚰</div>
+            <h1>Water Business Tool</h1>
+            <p>Secure Access Portal</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            Invalid username or password. Please try again.
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required autocomplete="username">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="login-btn">🔐 Login</button>
+        </form>
+
+        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #999;">
+            Demo: admin/admin2024! or test/test2024!
+        </div>
+    </div>
+
+    <div id="app">
+        <div class="header">
+            <div class="header-left">
+                <h1>🚰 Water Business Expansion & Territory Planning Tool</h1>
+                <p><span id="poiCountHeader">Loading...</span> POIs • 46 Distributors • Real-time Analysis</p>
+            </div>
+            <div>
+                <span style="margin-right: 15px; font-size: 13px;" id="userDisplay"></span>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="sidebar">
+                <div class="tabs">
+                    <button class="tab active" data-tab="overview">📊 Overview</button>
+                    <button class="tab" data-tab="distributors">📦 Distributors</button>
+                    <button class="tab" data-tab="expansion">🎯 Expansion</button>
+                    <button class="tab" data-tab="selection">🎨 Selection</button>
+                </div>
+
+                <div class="tab-content active" id="overview-tab">
+                    <div class="info-banner">
+                        ✅ <strong>POI Database</strong><br>
+                        <span id="poiStatusText">Loading POI data from GitHub...</span>
+                    </div>
+
+                    <div class="stats-panel">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Business Metrics</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalDist">46</span>
+                                <span class="stat-label">Active Distributors</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalRetailers">5,000+</span>
+                                <span class="stat-label">Current Retailers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalPOIs">...</span>
+                                <span class="stat-label">Total POIs</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="coverage">...</span>
+                                <span class="stat-label">Market Coverage</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Expansion Simulation</div>
+                        <div class="radius-buttons">
+                            <button class="radius-btn" data-radius="25">25 KM</button>
+                            <button class="radius-btn active" data-radius="50">50 KM</button>
+                            <button class="radius-btn" data-radius="75">75 KM</button>
+                            <button class="radius-btn" data-radius="100">100 KM</button>
+                            <button class="radius-btn" data-radius="125">125 KM</button>
+                            <button class="radius-btn" data-radius="0">Clear</button>
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+                            <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                <input type="checkbox" id="useCustomRadius" onchange="toggleCustomRadius()">
+                                <span style="margin-left: 10px; font-weight: 600; font-size: 13px;">🎯 Use Custom Radius</span>
+                            </label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="customRadiusInput" min="1" max="500" placeholder="Enter KM (1-500)" disabled style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px;">
+                                <button onclick="applyCustomRadius()" style="padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Map Layers</div>
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" checked id="showPlants" onchange="updateMap()">
+                            <span style="margin-left: 10px;">🏭 Plants (2)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" checked id="showDistributors" onchange="updateMap()">
+                            <span style="margin-left: 10px;">📦 Distributors (46)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" checked id="showPOIs" onchange="updateMap()">
+                            <span style="margin-left: 10px;">📍 POIs</span>
+                        </label>
+                        <label style="display: flex; align-items: center; margin-bottom: 5px; cursor: pointer;">
+                            <input type="checkbox" id="showCoverage" onchange="updateMap()">
+                            <span style="margin-left: 10px;">🎯 Distributor Coverage Circles</span>
+                        </label>
+                        <div style="margin-left: 30px; margin-bottom: 10px;">
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Coverage Radius (KM):</label>
+                            <input type="number" id="coverageRadius" min="1" max="200" value="25" placeholder="25" 
+                                   onchange="updateMap()" 
+                                   style="width: 100px; padding: 6px 8px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 12px;">
+                        </div>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="showDistLines" onchange="updateMap()">
+                            <span style="margin-left: 10px;">📏 Plant-Distributor Distance Lines</span>
+                        </label>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📊 Current View Statistics</div>
+                        <div style="background: #f8f9ff; padding: 12px; border-radius: 8px; border-left: 4px solid #667eea;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">POIs in Current Radius:</div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="currentRadiusPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Total POIs</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #28a745;" id="filteredPOIs">0</div>
+                                    <div style="font-size: 10px; color: #666;">Filtered POIs</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Active Radius: <strong id="activeRadiusDisplay">None</strong></div>
+                                <div style="font-size: 11px; color: #666;">Active Filter: <strong id="activeFilterDisplay">All Categories</strong></div>
+                            </div>
+                            <button class="action-btn" onclick="exportCurrentViewPOIs()" style="margin-top: 10px;">
+                                📥 Export Current View POIs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Quick Reports</div>
+                        <button class="action-btn" onclick="showPerformanceReport()">
+                            📊 Distributor Performance
+                        </button>
+                        <button class="action-btn" onclick="showCoverageGaps()">
+                            🎯 Coverage Gap Analysis
+                        </button>
+                        <button class="action-btn" onclick="showNewWSPlan()">
+                            ⭐ New WS Opportunities
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="distributors-tab">
+                    <div class="control-section">
+                        <div class="section-title">Filter Distributors</div>
+                        <select id="perfFilter" onchange="filterDistributors()">
+                            <option value="all">All Performance Levels</option>
+                            <option value="Excellent">Excellent (90%+)</option>
+                            <option value="Good">Good (75-90%)</option>
+                            <option value="Average">Average (60-75%)</option>
+                            <option value="Below Average">Below Average (<60%)</option>
+                        </select>
+                        <select id="cityFilter" onchange="filterDistributors()">
+                            <option value="all">All Cities</option>
+                            <option value="Bangalore">Bangalore</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Tumkur">Tumkur</option>
+                        </select>
+                        <select id="classFilter" onchange="filterDistributors()">
+                            <option value="all">All Classifications</option>
+                            <option value="Distributor">Distributor</option>
+                            <option value="Retailer">Retailer</option>
+                        </select>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Distributor List</div>
+                        <div class="distributor-list" id="distributorList"></div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="expansion-tab">
+                    <div class="control-section">
+                        <div class="section-title">POI Category Filters</div>
+                        <div>
+                            <button class="filter-chip active" onclick="filterPOIsByCategory('all', this)">All Categories</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Distribution', this)">Distribution</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Retail', this)">Retail</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Food & Beverage', this)">F&B</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Hospitality', this)">Hospitality</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Corporate', this)">Corporate</button>
+                            <button class="filter-chip" onclick="filterPOIsByCategory('Healthcare', this)">Healthcare</button>
+                        </div>
+                        
+                        <!-- Sub-category filters for Distribution -->
+                        <div class="sub-category-filters" id="distributionSubFilters">
+                            <div class="sub-category-title">📦 Distribution Sub-Categories</div>
+                            <button class="filter-chip active" onclick="filterPOIsBySubCategory('all', this)">All Distribution</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Bulk Supplier', this)">Bulk Supplier</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Cash & Carry', this)">Cash & Carry</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Distributor', this)">Distributor</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Stockist', this)">Stockist</button>
+                            <button class="filter-chip" onclick="filterPOIsBySubCategory('Wholesaler', this)">Wholesaler</button>
+                        </div>
+                    </div>
+
+                    <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Expansion Opportunity</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value" id="newWSNeeded">...</span>
+                                <span class="stat-label">New WS Needed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="investment">...</span>
+                                <span class="stat-label">Investment</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="monthlyRev">...</span>
+                                <span class="stat-label">Monthly Revenue</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="roi">6 mo</span>
+                                <span class="stat-label">ROI Period</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">🏭 Export POIs by Plant</div>
+                        <select id="plantSelect">
+                            <option value="">Select a plant...</option>
+                            <option value="plant1">Bangalore Plant (Main)</option>
+                            <option value="plant2">Secondary Plant</option>
+                        </select>
+                        <button class="action-btn" onclick="exportPOIsByPlant()">
+                            📥 Export POIs from Selected Plant
+                        </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 Export will use current radius setting or 150 KM if no radius selected
+                        </p>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📦 Export POIs by Distributor</div>
+                        <select id="distributorSelect" onchange="updateDistributorExportInfo()">
+                            <option value="">Select a distributor...</option>
+                        </select>
+                        <div style="margin: 10px 0; padding: 8px; background: #f8f9ff; border-radius: 6px; border-left: 3px solid #667eea; display: none;" id="distExportInfo">
+                            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Selected Distributor Info:</div>
+                            <div style="font-size: 12px; font-weight: 600;" id="distInfoText"></div>
+                        </div>
+                        <button class="action-btn" onclick="exportPOIsBySelectedDistributor()">
+                            📥 Export POIs from Selected Distributor
+                        </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 Export will use coverage radius setting (default 25 KM)
+                        </p>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">Export Options</div>
+                        <button class="action-btn" onclick="exportDistributors()">
+                            📥 Export Distributors (CSV)
+                        </button>
+                        <button class="action-btn" onclick="exportPOIs()">
+                            📥 Export All POIs (CSV)
+                        </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 To export POIs around a specific distributor, click on the distributor marker on the map
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+                <div class="tab-content" id="selection-tab">
+                    <div class="control-section">
+                        <div class="section-title">🎨 POI Selection & Territory</div>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                            Select individual POIs or draw custom territories to analyze specific areas.
+                        </p>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📍 POI Selection Mode</div>
+                        <label style="display: flex; align-items: center; margin-bottom: 15px; cursor: pointer;">
+                            <input type="checkbox" id="poiSelectionMode" onchange="togglePOISelection()">
+                            <span style="margin-left: 10px; font-weight: 600;">Enable POI Selection</span>
+                        </label>
+                        
+                        <div id="selectedPOIPanel" style="display: none; background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong>Selected POIs: <span id="selectedCount">0</span></strong>
+                                <button onclick="clearSelectedPOIs()" style="padding: 4px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Clear All</button>
+                            </div>
+                            <div id="selectedPOIList" style="max-height: 150px; overflow-y: auto; font-size: 11px; color: #666;"></div>
+                            <button onclick="exportSelectedPOIs()" class="action-btn" style="width: 100%; margin-top: 10px;">
+                                📥 Export Selected POIs to CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">🗺️ Territory Definition</div>
+                        <p style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                            Draw custom shapes on the map to define territories and export POIs within them.
+                        </p>
+                        
+                        <button onclick="enableTerritoryDrawing()" class="action-btn" style="width: 100%; margin-bottom: 10px;">
+                            ✏️ Draw Territory
+                        </button>
+                        
+                        <div id="territoryPanel" style="display: none; background: #d1ecf1; padding: 15px; border-radius: 8px;">
+                            <div style="margin-bottom: 10px;">
+                                <strong>Territory Stats:</strong>
+                            </div>
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+                                POIs in Territory: <strong id="territoryPOICount">0</strong>
+                            </div>
+                            <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                                Area: <strong id="territoryArea">0</strong> km²
+                            </div>
+                            <button onclick="exportTerritoryPOIs()" class="action-btn" style="width: 100%; margin-bottom: 8px;">
+                                📥 Export Territory POIs
+                            </button>
+                            <button onclick="clearTerritory()" style="width: 100%; padding: 10px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                🗑️ Clear Territory
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">💡 Quick Stats</div>
+                        <div style="background: white; padding: 12px; border-radius: 8px; font-size: 12px;">
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: #666;">Total POIs on Map:</span>
+                                <strong id="totalVisiblePOIs">0</strong>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <span style="color: #666;">Selected POIs:</span>
+                                <strong id="totalSelectedPOIs" style="color: #ff9800;">0</strong>
+                            </div>
+                            <div>
+                                <span style="color: #666;">Territory POIs:</span>
+                                <strong id="totalTerritoryPOIs" style="color: #17a2b8;">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
