@@ -80,6 +80,7 @@ const plants = {
 let map, currentRadius = 50;
 let activeCategoryFilter = 'all';
 let activeSubCategoryFilter = 'all';
+let selectedCategories = new Set();
 let mapMarkers = [], coverageCircles = [], distributors = [], distanceLines = [];
 let pois = [], poisLoaded = false;
 let selectedPlantForExport = null;
@@ -1910,9 +1911,6 @@ console.log('📌 Select multiple categories with checkboxes');
 // FIXED: MULTIPLE CATEGORY SELECTION WITH SUBCATEGORIES
 // ============================================================
 
-let selectedCategories = new Set();
-let activeCategoryFilter = 'all';
-let activeSubCategoryFilter = 'all';
 
 function updateCategorySelection() {
     // Get all checked category checkboxes
