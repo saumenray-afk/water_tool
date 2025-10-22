@@ -19,282 +19,8 @@ const VALID_USERS = {
 };
 
 const SESSION_TIMEOUT = 120; // minutes
-// ============================================================
-// COMPLETE FIX - Copy this ENTIRE section into your app.js
-// Insert this RIGHT AFTER: const SESSION_TIMEOUT = 120;
-// ============================================================
 
-// Session management
-let sessionTimeout;
-
-function handleLogin(event) {
-    event.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const errorMessage = document.getElementById('errorMessage');
-    
-    if (VALID_USERS[username] === password) {
-        // Successful login
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('app').classList.add('active');
-        document.getElementById('userDisplay').textContent = username;
-        
-        // Set session
-        sessionStorage.setItem('user', username);
-        sessionStorage.setItem('loginTime', new Date().getTime());
-        
-        // Start session timeout
-        resetSessionTimeout();
-        
-        // Initialize the application
-        initializeApp();
-    } else {
-        // Failed login
-        errorMessage.textContent = 'Invalid username or password';
-        errorMessage.classList.add('show');
-        
-        setTimeout(() => {
-            errorMessage.classList.remove('show');
-        }, 3000);
-    }
-}
-
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.removeItem('user');
-        sessionStorage.removeItem('loginTime');
-        clearTimeout(sessionTimeout);
-        location.reload();
-    }
-}
-
-function resetSessionTimeout() {
-    clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(() => {
-        alert('Session expired. Please login again.');
-        logout();
-    }, SESSION_TIMEOUT * 60 * 1000);
-}
-
-// Check session timeout periodically
-function checkSessionTimeout() {
-    const loginTime = sessionStorage.getItem('loginTime');
-    if (loginTime) {
-        const elapsed = (new Date().getTime() - loginTime) / 1000 / 60;
-        if (elapsed >= SESSION_TIMEOUT) {
-            alert('Session expired. Please login again.');
-            sessionStorage.clear();
-            location.reload();
-        }
-    }
-}
-
-function checkSession() {
-    const user = sessionStorage.getItem('user');
-    const loginTime = sessionStorage.getItem('loginTime');
-    
-    if (user && loginTime) {
-        const elapsed = (new Date().getTime() - loginTime) / 1000 / 60;
-        
-        if (elapsed < SESSION_TIMEOUT) {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('app').classList.add('active');
-            document.getElementById('userDisplay').textContent = user;
-            resetSessionTimeout();
-            initializeApp();
-        } else {
-            sessionStorage.removeItem('user');
-            sessionStorage.removeItem('loginTime');
-        }
-    }
-}
-
-// Tab switching functionality
-function switchTab(tabName) {
-    // Hide all tab contents
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Remove active class from all tabs
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    // Show selected tab content
-    const selectedContent = document.getElementById(tabName + '-tab');
-    if (selectedContent) {
-        selectedContent.classList.add('active');
-    }
-    
-    // Find and activate the clicked tab button
-    const allTabs = document.querySelectorAll('.tab');
-    allTabs.forEach(tab => {
-        if (tab.textContent.toLowerCase().includes(tabName) || 
-            tab.onclick && tab.onclick.toString().includes(tabName)) {
-            tab.classList.add('active');
-        }
-    });
-    
-    // Update specific content when switching tabs
-    if (tabName === 'distributors') {
-        filterDistributors();
-    } else if (tabName === 'selection') {
-        // Update selection features if they exist
-        if (typeof updateSelectedPOIPanel === 'function') {
-            updateSelectedPOIPanel();
-        }
-        if (typeof updateTerritoryUI === 'function') {
-            updateTerritoryUI();
-        }
-    }
-}
-
-// Modal management
-function closeModal() {
-    const modal = document.getElementById('reportModal');
-    if (modal) {
-        modal.classList.remove('show');
-    }
-}
-
-function showModal(content) {
-    const modal = document.getElementById('reportModal');
-    const modalContent = document.getElementById('modalContent');
-    
-    if (modal && modalContent) {
-        modalContent.innerHTML = content;
-        modal.classList.add('show');
-    }
-}
-
-// Report functions
-function showPerformanceReport() {
-    const excellentDist = distributors.filter(d => d.rating === 'Excellent');
-    const goodDist = distributors.filter(d => d.rating === 'Good');
-    const avgDist = distributors.filter(d => d.rating === 'Average');
-    const belowDist = distributors.filter(d => d.rating === 'Below Average');
-    
-    const content = `
-        <h2 style="color: #667eea; margin-bottom: 20px;">📊 Distributor Performance Report</h2>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
-            <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <div style="font-size: 32px; font-weight: 700;">${excellentDist.length}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Excellent (90%+)</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #20c997, #17a2b8); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <div style="font-size: 32px; font-weight: 700;">${goodDist.length}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Good (75-90%)</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <div style="font-size: 32px; font-weight: 700;">${avgDist.length}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Average (60-75%)</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; padding: 20px; border-radius: 10px; text-align: center;">
-                <div style="font-size: 32px; font-weight: 700;">${belowDist.length}</div>
-                <div style="font-size: 14px; opacity: 0.9;">Below Average (<60%)</div>
-            </div>
-        </div>
-        <h3 style="color: #333; margin: 20px 0 10px;">Top Performers:</h3>
-        <div style="max-height: 300px; overflow-y: auto;">
-            ${excellentDist.slice(0, 10).map((d, i) => `
-                <div style="padding: 12px; margin: 8px 0; background: #f8f9fa; border-left: 4px solid #28a745; border-radius: 6px;">
-                    <div style="font-weight: 600;">${i + 1}. ${d.name}</div>
-                    <div style="font-size: 13px; color: #666; margin-top: 4px;">
-                        ${d.city} • Achievement: ${d.achievement.toFixed(1)}% • ${d.retailers} retailers
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    
-    showModal(content);
-}
-
-function showCoverageGaps() {
-    const content = `
-        <h2 style="color: #667eea; margin-bottom: 20px;">🎯 Coverage Gap Analysis</h2>
-        <p style="color: #666; margin-bottom: 20px;">
-            Analyzing areas with low distributor coverage and high POI density...
-        </p>
-        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-            <strong>Recommendation:</strong> Focus on areas with 50+ POIs but no nearby distributors within 25 KM.
-        </div>
-        <p style="color: #666;">
-            Use the map filters to identify specific gaps in your territory coverage.
-        </p>
-    `;
-    
-    showModal(content);
-}
-
-function showNewWSPlan() {
-    const wsNeeded = Math.ceil(pois.length / 150);
-    const investment = (wsNeeded * 0.6).toFixed(1);
-    const monthlyRev = (wsNeeded * 0.3).toFixed(1);
-    
-    const content = `
-        <h2 style="color: #667eea; margin-bottom: 20px;">⭐ New Water Station Opportunities</h2>
-        <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 25px; border-radius: 10px; margin-bottom: 20px;">
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
-                <div>
-                    <div style="font-size: 28px; font-weight: 700;">${wsNeeded}+</div>
-                    <div style="font-size: 13px; opacity: 0.9;">New WS Needed</div>
-                </div>
-                <div>
-                    <div style="font-size: 28px; font-weight: 700;">₹${investment}Cr</div>
-                    <div style="font-size: 13px; opacity: 0.9;">Investment</div>
-                </div>
-                <div>
-                    <div style="font-size: 28px; font-weight: 700;">₹${monthlyRev}Cr</div>
-                    <div style="font-size: 13px; opacity: 0.9;">Monthly Revenue</div>
-                </div>
-            </div>
-        </div>
-        <h3 style="color: #333; margin: 20px 0 10px;">Implementation Strategy:</h3>
-        <ol style="color: #666; line-height: 1.8;">
-            <li>Identify high-density POI clusters</li>
-            <li>Calculate optimal WS locations</li>
-            <li>Assess infrastructure requirements</li>
-            <li>Develop phased rollout plan</li>
-            <li>Monitor and optimize coverage</li>
-        </ol>
-    `;
-    
-    showModal(content);
-}
-
-// Utility functions
-function formatNumber(num) {
-    if (!num || isNaN(num)) return '0';
-    return parseFloat(num).toLocaleString('en-IN', {
-        maximumFractionDigits: 0
-    });
-}
-
-// Initialize on page load
-window.addEventListener('load', function() {
-    console.log('🚀 Application starting...');
-    checkSession();
-});
-
-// Keep session alive on user activity
-document.addEventListener('click', function() {
-    if (sessionTimeout) resetSessionTimeout();
-});
-
-document.addEventListener('keypress', function() {
-    if (sessionTimeout) resetSessionTimeout();
-});
-
-console.log('✅ Core functions loaded successfully');
-
-// ============================================================
-// END OF COMPLETE FIX
-// Your existing code continues below...
+// Actual distributor data from your CSV file
 const distributorsData = [
     {name: 'ADHITHYA EDIFICE CONCEPTZ(NEW)', city: 'Bangalore', retailers: 195, lat: 12.9386, lng: 77.5441, target: 14000000, sales: 8873418, tsm: 'Not Assigned', classification: 'Distributor'},
     {name: 'ADHITHYA ESSENTIALS', city: 'Bangalore', retailers: 155, lat: 12.9616, lng: 77.5385, target: 5000000, sales: 2697819, tsm: 'Not Assigned', classification: 'Distributor'},
@@ -652,9 +378,69 @@ function createDistributorPopup(dist) {
     `;
 }
 
+// Authentication functions
+function handleLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMessage');
+    
+    if (VALID_USERS[username] && VALID_USERS[username] === password) {
+        errorMsg.classList.remove('show');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('app').classList.add('active');
+        document.getElementById('userDisplay').textContent = `👤 ${username}`;
+        
+        const loginTime = new Date().getTime();
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('username', username);
+        sessionStorage.setItem('loginTime', loginTime);
+        
+        initializeApp();
+    } else {
+        errorMsg.classList.add('show');
+        document.getElementById('password').value = '';
+        document.getElementById('username').focus();
+    }
+}
 
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.clear();
+        location.reload();
+    }
+}
 
-// Check session timeout periodically
+function checkSessionTimeout() {
+    const loginTime = sessionStorage.getItem('loginTime');
+    if (loginTime) {
+        const currentTime = new Date().getTime();
+        const elapsed = (currentTime - loginTime) / 1000 / 60;
+        
+        if (elapsed > SESSION_TIMEOUT) {
+            alert('⏰ Session expired. Please login again.');
+            sessionStorage.clear();
+            location.reload();
+        }
+    }
+}
+
+window.addEventListener('load', function() {
+    if (sessionStorage.getItem('loggedIn') === 'true') {
+        checkSessionTimeout();
+        
+        if (sessionStorage.getItem('loggedIn') === 'true') {
+            const username = sessionStorage.getItem('username');
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('app').classList.add('active');
+            document.getElementById('userDisplay').textContent = `👤 ${username}`;
+            initializeApp();
+        }
+    }
+});
+
+setInterval(checkSessionTimeout, 5 * 60 * 1000);
 
 // POI Data Loading Functions
 async function loadPOIData() {
@@ -1133,23 +919,37 @@ function updateMap() {
         const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
 
         displayPOIs.forEach(poi => {
-            const color = getMarkerColor(poi.Category);
+            // Check if this POI is selected
+            const isSelected = selectedPOIs.has(poi.POI_ID);
+            
+            // Use gold color for selected POIs, otherwise normal category color
+            const color = isSelected ? '#FFD700' : getMarkerColor(poi.Category);
             const size = poi.Priority === 'High' ? 8 : 5;
+            const selectedSize = isSelected ? size + 3 : size;
             
             const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
-                radius: size,
+                radius: selectedSize,
                 fillColor: color,
-                color: 'white',
-                weight: 1,
-                fillOpacity: 0.7
+                color: isSelected ? '#FF8C00' : 'white',
+                weight: isSelected ? 2 : 1,
+                fillOpacity: isSelected ? 1.0 : 0.7
             }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
             .addTo(map);
+            
+            // Add click handler for selection if selection mode is enabled
+            if (poiSelectionEnabled) {
+                marker.on('click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    selectPOI(poi.POI_ID);
+                });
+            }
             
             const tooltipContent = `
                 <div style="text-align: center;">
                     <b>${poi.Business_Name || poi.POI_ID}</b><br>
                     <span style="font-size: 11px;">${poi.Sub_Category || poi.Category} • ${poi.City}</span><br>
                     <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
+                    ${isSelected ? '<br><span style="color: #FFD700; font-weight: bold;">⭐ SELECTED</span>' : ''}
                 </div>
             `;
             marker.bindTooltip(tooltipContent, {
@@ -1170,6 +970,7 @@ function updateMap() {
 
 function updateCurrentViewStats() {
     document.getElementById('currentRadiusPOIs').textContent = currentViewStats.totalInRadius.toLocaleString();
+    document.getElementById("totalVisiblePOIs").textContent = currentViewStats.filtered.toLocaleString();
     document.getElementById('filteredPOIs').textContent = currentViewStats.filtered.toLocaleString();
     
     // Update active radius display
@@ -1541,36 +1342,6 @@ function populateDistributorDropdown() {
     });
 }
 
-function focusDistributor() {
-    const select = document.getElementById('distributorSelect');
-    if (!select || !select.value) return;
-    
-    const distIndex = parseInt(select.value);
-    const dist = distributors[distIndex];
-    
-    if (dist && map) {
-        // Center map on distributor
-        map.setView([dist.lat, dist.lng], 13);
-        
-        // Highlight the distributor temporarily
-        const tempCircle = L.circle([dist.lat, dist.lng], {
-            radius: 1000,
-            color: '#ff0000',
-            fillColor: '#ff0000',
-            fillOpacity: 0.3,
-            weight: 3
-        }).addTo(map);
-        
-        // Remove highlight after 3 seconds
-        setTimeout(() => {
-            map.removeLayer(tempCircle);
-        }, 3000);
-        
-        // Show distributor info
-        alert(`📍 ${dist.name}\n🏙️ ${dist.city}\n📊 Achievement: ${dist.achievement.toFixed(1)}%\n🎯 Rating: ${dist.rating}`);
-    }
-}
-
 function updateDistributorExportInfo() {
     const select = document.getElementById('distributorSelect');
     const infoDiv = document.getElementById('distExportInfo');
@@ -1661,686 +1432,274 @@ function downloadCSV(csv, filename) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
+
 // ============================================================
-// ENHANCED FEATURES - POI SELECTION & TERRITORY MANAGEMENT
-// Version 2.0 - Added by Enhancement Script
+// FEATURE 1: MULTIPLE POI SELECTION
 // ============================================================
 
-// Global variables for new features
 let selectedPOIs = new Set();
-let poiSelectionModeEnabled = false;
-let drawnItems = new L.FeatureGroup();
-let drawControl = null;
-let currentTerritory = null;
-let territoryPOIs = [];
+let poiSelectionEnabled = false;
 
-// ============================================================
-// FEATURE 1: Multiple POI Selection
-// ============================================================
-
-function togglePOISelectionMode() {
-    poiSelectionModeEnabled = document.getElementById('poiSelectionMode').checked;
+function togglePOISelection() {
+    poiSelectionEnabled = document.getElementById('poiSelectionMode').checked;
+    document.getElementById('selectedPOIPanel').style.display = poiSelectionEnabled ? 'block' : 'none';
     
-    if (poiSelectionModeEnabled) {
-        alert('✅ POI Selection Mode Enabled!\n\nClick on any POI marker on the map to select it.\nSelected POIs will be highlighted in GOLD color.');
+    if (poiSelectionEnabled) {
+        alert('✅ POI Selection Enabled!\n\nClick on any POI marker to select/deselect it.\nSelected POIs will turn GOLD.');
     } else {
-        alert('❌ POI Selection Mode Disabled');
+        clearSelectedPOIs();
     }
     
-    // Refresh map to apply selection styles
     updateMap();
 }
 
-function selectPOI(poi, marker) {
-    if (!poiSelectionModeEnabled) return;
-    
-    const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
+function selectPOI(poiId) {
+    if (!poiSelectionEnabled) return;
     
     if (selectedPOIs.has(poiId)) {
         // Deselect
         selectedPOIs.delete(poiId);
-        marker.setStyle({
-            fillColor: getMarkerColor(poi.Category),
-            fillOpacity: 0.7,
-            weight: 1
-        });
     } else {
         // Select
         selectedPOIs.add(poiId);
-        poi._selectionId = poiId;
-        marker.setStyle({
-            fillColor: '#FFD700',  // Gold color for selected
-            fillOpacity: 1,
-            weight: 2
-        });
     }
     
     updateSelectedPOIPanel();
+    updateMap(); // Refresh map to show selected POIs in different color
 }
 
 function updateSelectedPOIPanel() {
-    const panel = document.getElementById('selectedPOIPanel');
-    const count = document.getElementById('selectedPOICount');
-    const list = document.getElementById('selectedPOIList');
-    const statsCount = document.getElementById('statsSelectedPOIs');
+    const count = selectedPOIs.size;
+    document.getElementById('selectedCount').textContent = count;
+    document.getElementById('totalSelectedPOIs').textContent = count;
     
-    count.textContent = selectedPOIs.size;
-    statsCount.textContent = selectedPOIs.size;
+    if (count === 0) {
+        document.getElementById('selectedPOIList').innerHTML = '<em>No POIs selected</em>';
+        return;
+    }
     
-    if (selectedPOIs.size > 0) {
-        panel.classList.add('active');
-        
-        // Build list of selected POIs
-        let listHTML = '';
-        const selectedPOIArray = getSelectedPOIArray();
-        
-        selectedPOIArray.slice(0, 20).forEach((poi, index) => {
-            const name = (poi.Business_Name || poi.POI_ID || 'Unknown').substring(0, 30);
-            const category = (poi.Sub_Category || poi.Category || 'N/A').substring(0, 20);
-            const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
-            listHTML += `
-                <div class="selected-poi-item">
-                    <span>${index + 1}. ${name} - ${category}</span>
-                    <span class="remove-poi-btn" onclick="removePOIFromSelection('${poiId.replace(/'/g, "\\'")}')">✕</span>
+    let html = '<div style="display: flex; flex-direction: column; gap: 4px;">';
+    selectedPOIs.forEach(poiId => {
+        const poi = pois.find(p => p.id === poiId);
+        if (poi) {
+            html += `
+                <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: white; border-radius: 4px;">
+                    <span>${poi.name}</span>
+                    <button onclick="selectPOI('${poiId}')" style="padding: 2px 6px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">✕</button>
                 </div>
             `;
-        });
-        
-        if (selectedPOIArray.length > 20) {
-            listHTML += `<div style="text-align: center; padding: 8px; color: #856404;">...and ${selectedPOIArray.length - 20} more</div>`;
         }
-        
-        list.innerHTML = listHTML;
-    } else {
-        panel.classList.remove('active');
-        list.innerHTML = '';
-    }
-}
-
-function getSelectedPOIArray() {
-    return pois.filter(poi => {
-        const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
-        return selectedPOIs.has(poiId);
     });
+    html += '</div>';
+    
+    document.getElementById('selectedPOIList').innerHTML = html;
 }
 
-function removePOIFromSelection(poiId) {
-    selectedPOIs.delete(poiId);
+function clearSelectedPOIs() {
+    selectedPOIs.clear();
     updateSelectedPOIPanel();
     updateMap();
 }
 
-function clearPOISelection() {
-    if (selectedPOIs.size === 0) return;
-    
-    if (confirm(`Clear all ${selectedPOIs.size} selected POIs?`)) {
-        selectedPOIs.clear();
-        updateSelectedPOIPanel();
-        updateMap();
-    }
-}
-
 function exportSelectedPOIs() {
     if (selectedPOIs.size === 0) {
-        alert('❌ No POIs selected.\n\nTo select POIs:\n1. Enable "POI Selection Mode" in the Selection tab\n2. Click on POI markers on the map to select them\n3. Selected POIs will turn GOLD');
+        alert('❌ No POIs selected!\n\nPlease select POIs first by clicking on them.');
         return;
     }
     
-    const selectedPOIArray = getSelectedPOIArray();
-    const date = new Date().toISOString().split('T')[0];
-    const filename = `Selected_POIs_${selectedPOIArray.length}_${date}.csv`;
+    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State\n';
     
-    // Add selection metadata
-    const enrichedPOIs = selectedPOIArray.map((poi, index) => {
-        const nearestPlant = findNearestPlant(poi.Latitude, poi.Longitude);
-        return {
-            Selection_Order: index + 1,
-            Export_Date: new Date().toISOString(),
-            Selection_Mode: 'Manual',
-            ...poi,
-            Nearest_Plant: nearestPlant.name,
-            Distance_To_Plant_KM: nearestPlant.distance.toFixed(2)
-        };
+    selectedPOIs.forEach(poiId => {
+        const poi = pois.find(p => p.id === poiId);
+        if (poi) {
+            csvContent += `"${poi.name}","${poi.category}","${poi.subCategory}",${poi.lat},${poi.lng},"${poi.city || ''}","${poi.state || ''}"\n`;
+        }
     });
     
-    exportPOIsToCSV(enrichedPOIs, filename);
-    alert(`✅ Successfully Exported!\n\n${selectedPOIArray.length} selected POIs exported to:\n${filename}`);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `selected_pois_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    
+    alert(`✅ Exported ${selectedPOIs.size} POIs to CSV!`);
 }
 
 // ============================================================
-// FEATURE 2: Territory Definition & Export
+// FEATURE 2: TERRITORY DRAWING & EXPORT
 // ============================================================
 
-function initializeDrawControls() {
-    // Add drawn items layer to map
-    map.addLayer(drawnItems);
+let drawnItems;
+let drawControl;
+let territoryPOIs = [];
+
+function enableTerritoryDrawing() {
+    if (!map) {
+        alert('❌ Map not initialized yet. Please wait...');
+        return;
+    }
     
-    // Initialize draw control
-    drawControl = new L.Control.Draw({
-        position: 'topright',
-        draw: {
-            polygon: {
-                allowIntersection: false,
-                showArea: true,
-                drawError: {
-                    color: '#e74c3c',
-                    message: '<strong>Error:</strong> Shape edges cannot cross!'
+    // Initialize FeatureGroup for drawn items if not exists
+    if (!drawnItems) {
+        drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        
+        // Initialize draw control
+        drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            },
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    drawError: {
+                        color: '#e1e100',
+                        message: '<strong>Error:</strong> Shape edges cannot cross!'
+                    },
+                    shapeOptions: {
+                        color: '#667eea',
+                        weight: 3,
+                        opacity: 0.8,
+                        fillOpacity: 0.2
+                    }
                 },
-                shapeOptions: {
-                    color: '#0dcaf0',
-                    fillColor: '#0dcaf0',
-                    fillOpacity: 0.2,
-                    weight: 3
+                polyline: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                    shapeOptions: {
+                        color: '#667eea',
+                        weight: 3,
+                        opacity: 0.8,
+                        fillOpacity: 0.2
+                    }
                 }
-            },
-            polyline: false,
-            rectangle: {
-                shapeOptions: {
-                    color: '#0dcaf0',
-                    fillColor: '#0dcaf0',
-                    fillOpacity: 0.2,
-                    weight: 3
-                }
-            },
-            circle: false,
-            circlemarker: false,
-            marker: false
-        },
-        edit: {
-            featureGroup: drawnItems,
-            remove: false
-        }
-    });
-    
-    // Handle draw events
-    map.on(L.Draw.Event.CREATED, function (e) {
-        const layer = e.layer;
-        
-        // Clear previous territory
-        drawnItems.clearLayers();
-        drawnItems.addLayer(layer);
-        
-        currentTerritory = layer;
-        analyzeTerritoryPOIs();
-        updateTerritoryUI();
-        
-        // Remove draw control after drawing
-        if (drawControl._map) {
-            map.removeControl(drawControl);
-        }
-    });
-    
-    map.on(L.Draw.Event.EDITED, function (e) {
-        analyzeTerritoryPOIs();
-        updateTerritoryUI();
-    });
-}
-
-function startDrawingTerritory() {
-    if (!drawControl) {
-        alert('⚠️ Draw controls not initialized yet. Please wait a moment and try again.');
-        return;
-    }
-    
-    // Add draw control to map
-    if (!drawControl._map) {
-        map.addControl(drawControl);
-    }
-    
-    alert('✏️ Draw Your Territory\n\n' +
-          '1. Click the POLYGON or RECTANGLE tool in the top-right corner\n' +
-          '2. Draw your territory boundaries on the map\n' +
-          '3. For polygon: Double-click to finish\n' +
-          '4. For rectangle: Click and drag\n\n' +
-          'The system will automatically find all POIs within your territory!');
-}
-
-function analyzeTerritoryPOIs() {
-    if (!currentTerritory || pois.length === 0) {
-        territoryPOIs = [];
-        return;
-    }
-    
-    console.log('Analyzing territory POIs...');
-    
-    // Get territory bounds
-    const isPolygon = currentTerritory instanceof L.Polygon || currentTerritory instanceof L.Rectangle;
-    
-    if (!isPolygon) {
-        territoryPOIs = [];
-        return;
-    }
-    
-    // Filter POIs within territory
-    territoryPOIs = pois.filter(poi => {
-        const point = L.latLng(poi.Latitude, poi.Longitude);
-        
-        try {
-            // First check if point is within bounds for performance
-            const bounds = currentTerritory.getBounds();
-            if (!bounds.contains(point)) {
-                return false;
             }
-            
-            // More precise check using point-in-polygon
-            return isPointInPolygon(point, currentTerritory);
-        } catch (error) {
-            console.error('Error checking point in polygon:', error);
-            return false;
+        });
+        map.addControl(drawControl);
+        
+        // Handle draw created
+        map.on(L.Draw.Event.CREATED, function (e) {
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+            calculateTerritoryPOIs(layer);
+        });
+        
+        // Handle draw edited
+        map.on(L.Draw.Event.EDITED, function (e) {
+            const layers = e.layers;
+            layers.eachLayer(function (layer) {
+                calculateTerritoryPOIs(layer);
+            });
+        });
+        
+        // Handle draw deleted
+        map.on(L.Draw.Event.DELETED, function (e) {
+            if (drawnItems.getLayers().length === 0) {
+                territoryPOIs = [];
+                updateTerritoryPanel();
+            }
+        });
+    }
+    
+    alert('✅ Territory Drawing Enabled!\n\n1. Use the drawing tools in the top-right corner\n2. Draw a polygon or rectangle around your target area\n3. POIs within the territory will be calculated automatically\n4. Export the POIs when done');
+    
+    document.getElementById('territoryPanel').style.display = 'block';
+}
+
+function calculateTerritoryPOIs(layer) {
+    const bounds = layer.getBounds ? layer.getBounds() : null;
+    
+    if (!bounds) return;
+    
+    territoryPOIs = [];
+    
+    pois.forEach(poi => {
+        const latlng = L.latLng(poi.lat, poi.lng);
+        
+        // Check if point is in polygon for polygon layers
+        if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+            if (isPointInPolygon(latlng, layer.getLatLngs()[0])) {
+                territoryPOIs.push(poi);
+            }
         }
     });
     
-    console.log(`✅ Found ${territoryPOIs.length} POIs in territory`);
+    updateTerritoryPanel(layer);
 }
 
 function isPointInPolygon(point, polygon) {
-    // Get polygon coordinates
-    let latlngs;
-    if (polygon instanceof L.Rectangle) {
-        latlngs = polygon.getLatLngs()[0];
-    } else {
-        latlngs = polygon.getLatLngs()[0];
-    }
-    
-    // Ray casting algorithm
     let inside = false;
-    const x = point.lng;
-    const y = point.lat;
-    
-    for (let i = 0, j = latlngs.length - 1; i < latlngs.length; j = i++) {
-        const xi = latlngs[i].lng;
-        const yi = latlngs[i].lat;
-        const xj = latlngs[j].lng;
-        const yj = latlngs[j].lat;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i].lat, yi = polygon[i].lng;
+        const xj = polygon[j].lat, yj = polygon[j].lng;
         
-        const intersect = ((yi > y) !== (yj > y)) && 
-                         (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-        
+        const intersect = ((yi > point.lng) !== (yj > point.lng))
+            && (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
         if (intersect) inside = !inside;
     }
-    
     return inside;
 }
 
-function updateTerritoryUI() {
-    const statusElement = document.getElementById('territoryStatus');
-    const infoElement = document.getElementById('territoryInfo');
-    const countElement = document.getElementById('territoryPOICount');
-    const areaElement = document.getElementById('territoryArea');
-    const exportBtn = document.getElementById('exportTerritoryBtn');
-    const clearBtn = document.getElementById('clearTerritoryBtn');
-    const statsCount = document.getElementById('statsTerritoryPOIs');
+function updateTerritoryPanel(layer) {
+    const count = territoryPOIs.length;
+    document.getElementById('territoryPOICount').textContent = count;
+    document.getElementById('totalTerritoryPOIs').textContent = count;
     
-    if (currentTerritory && territoryPOIs.length >= 0) {
-        statusElement.textContent = `✅ Territory Defined (${territoryPOIs.length} POIs)`;
-        statusElement.style.color = '#0f5132';
-        statusElement.style.fontWeight = '700';
+    // Calculate area
+    if (layer && layer.getBounds) {
+        const bounds = layer.getBounds();
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
         
-        countElement.textContent = territoryPOIs.length.toLocaleString();
-        statsCount.textContent = territoryPOIs.length.toLocaleString();
+        // Rough area calculation in km²
+        const latDiff = ne.lat - sw.lat;
+        const lngDiff = ne.lng - sw.lng;
+        const area = Math.abs(latDiff * lngDiff * 111 * 111); // Very rough approximation
         
-        // Calculate area in km²
-        try {
-            const latlngs = currentTerritory.getLatLngs()[0];
-            let area = 0;
-            
-            // Calculate area using shoelace formula (approximation)
-            for (let i = 0; i < latlngs.length; i++) {
-                const j = (i + 1) % latlngs.length;
-                area += latlngs[i].lng * latlngs[j].lat;
-                area -= latlngs[j].lng * latlngs[i].lat;
-            }
-            area = Math.abs(area / 2) * 12364; // Rough conversion to km²
-            
-            areaElement.textContent = area.toFixed(2);
-        } catch (error) {
-            areaElement.textContent = 'N/A';
-        }
-        
-        infoElement.classList.add('active');
-        exportBtn.style.display = 'block';
-        clearBtn.style.display = 'block';
-    } else {
-        statusElement.textContent = 'No territory defined';
-        statusElement.style.color = '#055160';
-        statusElement.style.fontWeight = '600';
-        
-        infoElement.classList.remove('active');
-        exportBtn.style.display = 'none';
-        clearBtn.style.display = 'none';
-        
-        countElement.textContent = '0';
-        areaElement.textContent = '0';
-        statsCount.textContent = '0';
-    }
-}
-
-function clearTerritory() {
-    if (!currentTerritory) {
-        alert('No territory to clear.');
-        return;
-    }
-    
-    if (confirm(`Clear the current territory?\n\nThis will remove the territory boundary and reset the ${territoryPOIs.length} POIs found.`)) {
-        drawnItems.clearLayers();
-        currentTerritory = null;
-        territoryPOIs = [];
-        updateTerritoryUI();
-        
-        alert('✅ Territory cleared successfully!');
+        document.getElementById('territoryArea').textContent = area.toFixed(2);
     }
 }
 
 function exportTerritoryPOIs() {
-    if (!currentTerritory) {
-        alert('❌ No territory defined.\n\nTo define a territory:\n1. Go to the "Selection" tab\n2. Click "Draw Territory" button\n3. Use the drawing tools to define your area');
-        return;
-    }
-    
     if (territoryPOIs.length === 0) {
-        alert('❌ No POIs found in the defined territory.\n\nTry:\n1. Drawing a larger territory area\n2. Checking if POIs are loaded on the map\n3. Adjusting your radius filters');
+        alert('❌ No territory defined!\n\nPlease draw a territory first using the drawing tools.');
         return;
     }
     
-    const date = new Date().toISOString().split('T')[0];
-    const filename = `Territory_POIs_${territoryPOIs.length}_${date}.csv`;
+    let csvContent = 'POI Name,Category,Sub-Category,Latitude,Longitude,City,State\n';
     
-    // Calculate territory metadata
-    const bounds = currentTerritory.getBounds();
-    let area = 0;
-    try {
-        const latlngs = currentTerritory.getLatLngs()[0];
-        for (let i = 0; i < latlngs.length; i++) {
-            const j = (i + 1) % latlngs.length;
-            area += latlngs[i].lng * latlngs[j].lat;
-            area -= latlngs[j].lng * latlngs[i].lat;
-        }
-        area = Math.abs(area / 2) * 12364;
-    } catch (error) {
-        area = 0;
-    }
-    
-    // Add territory metadata to POIs
-    const enrichedPOIs = territoryPOIs.map((poi, index) => {
-        const nearestPlant = findNearestPlant(poi.Latitude, poi.Longitude);
-        return {
-            Territory_Order: index + 1,
-            Export_Date: new Date().toISOString(),
-            Territory_Area_KM2: area.toFixed(2),
-            Territory_Center_Lat: bounds.getCenter().lat.toFixed(6),
-            Territory_Center_Lng: bounds.getCenter().lng.toFixed(6),
-            ...poi,
-            Nearest_Plant: nearestPlant.name,
-            Distance_To_Plant_KM: nearestPlant.distance.toFixed(2)
-        };
+    territoryPOIs.forEach(poi => {
+        csvContent += `"${poi.name}","${poi.category}","${poi.subCategory}",${poi.lat},${poi.lng},"${poi.city || ''}","${poi.state || ''}"\n`;
     });
     
-    exportPOIsToCSV(enrichedPOIs, filename);
-    alert(`✅ Successfully Exported!\n\n${territoryPOIs.length} POIs from territory exported to:\n${filename}\n\nTerritory Area: ${area.toFixed(2)} km²`);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `territory_pois_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    
+    alert(`✅ Exported ${territoryPOIs.length} POIs from territory to CSV!`);
 }
 
-// ============================================================
-// Enhanced updateMap Function
-// ============================================================
-
-// Store the original updateMap function
-const originalUpdateMapFunction = updateMap;
-
-// Create enhanced version
-updateMap = function() {
-    mapMarkers.forEach(marker => map.removeLayer(marker));
-    mapMarkers = [];
-    coverageCircles.forEach(circle => map.removeLayer(circle));
-    coverageCircles = [];
-
-    // Reset current view stats
-    currentViewPOIs = [];
-    currentViewStats = {
-        totalInRadius: 0,
-        filtered: 0,
-        radius: currentRadius,
-        category: activeCategoryFilter,
-        subCategory: activeSubCategoryFilter
-    };
-
-    if (currentRadius > 0 && document.getElementById('showPlants').checked) {
-        Object.values(plants).forEach(plant => {
-            const circle = L.circle([plant.lat, plant.lng], {
-                radius: currentRadius * 1000,
-                color: '#667eea',
-                fillColor: '#667eea',
-                fillOpacity: 0.15,
-                weight: 2
-            }).addTo(map);
-            coverageCircles.push(circle);
-        });
-    }
-
-    if (document.getElementById('showDistributors').checked) {
-        distributors.forEach(dist => {
-            const color = dist.achievement >= 75 ? '#28a745' : 
-                         dist.achievement >= 60 ? '#ffc107' : '#dc3545';
-            const distIcon = L.divIcon({
-                html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
-                className: '',
-                iconSize: [20, 20]
-            });
-
-            const marker = L.marker([dist.lat, dist.lng], {icon: distIcon})
-                .bindPopup(createDistributorPopup(dist), { maxWidth: 350 })
-                .addTo(map);
-            
-            marker.bindTooltip(`<b>${dist.name}</b><br>${dist.achievement.toFixed(1)}% • ${dist.classification}`, {
-                permanent: false,
-                direction: 'top'
-            });
-            
-            mapMarkers.push(marker);
-        });
-    }
-
-    if (document.getElementById('showCoverage').checked) {
-        const coverageRadius = parseInt(document.getElementById('coverageRadius').value) || 25;
-        distributors.forEach(dist => {
-            const circle = L.circle([dist.lat, dist.lng], {
-                radius: coverageRadius * 1000,
-                color: '#28a745',
-                fillColor: '#28a745',
-                fillOpacity: 0.08,
-                weight: 1
-            }).addTo(map);
-            
-            circle.bindTooltip(
-                `<div style="text-align: center;">
-                    <b>${dist.name}</b><br>
-                    Coverage: ${coverageRadius} KM
-                </div>`,
-                {
-                    permanent: false,
-                    direction: 'center'
-                }
-            );
-            
-            coverageCircles.push(circle);
-        });
-    }
-
-    // ENHANCED POI DISPLAY WITH SELECTION SUPPORT
-    if (document.getElementById('showPOIs').checked && pois.length > 0) {
-        let poisInRadius = pois;
-
-        if (currentRadius > 0) {
-            poisInRadius = poisInRadius.filter(poi => {
-                return Object.values(plants).some(plant => {
-                    const distance = calculateDistance(poi.Latitude, poi.Longitude, plant.lat, plant.lng);
-                    return distance <= currentRadius;
-                });
-            });
+function clearTerritory() {
+    if (confirm('Are you sure you want to clear the territory?')) {
+        if (drawnItems) {
+            drawnItems.clearLayers();
         }
-
-        currentViewStats.totalInRadius = poisInRadius.length;
-
-        let filteredPOIs = poisInRadius;
-        if (activeCategoryFilter !== 'all') {
-            filteredPOIs = filteredPOIs.filter(poi => poi.Category === activeCategoryFilter);
-        }
-
-        if (activeCategoryFilter === 'Distribution' && activeSubCategoryFilter !== 'all') {
-            filteredPOIs = filteredPOIs.filter(poi => poi.Sub_Category === activeSubCategoryFilter);
-        }
-
-        currentViewPOIs = filteredPOIs;
-        currentViewStats.filtered = filteredPOIs.length;
-
-        updateCurrentViewStats();
-
-        // Display POIs on map (sample for performance)
-        const displayPOIs = filteredPOIs.filter((_, index) => index % 10 === 0);
-
-        displayPOIs.forEach(poi => {
-            // Generate unique POI ID
-            const poiId = `${poi.Latitude}-${poi.Longitude}-${poi.POI_ID || poi.Business_Name || ''}`;
-            poi._selectionId = poiId;
-            
-            // Check if POI is selected
-            const isSelected = selectedPOIs.has(poiId);
-            const color = isSelected ? '#FFD700' : getMarkerColor(poi.Category);
-            const size = poi.Priority === 'High' ? 8 : 5;
-            
-            const marker = L.circleMarker([poi.Latitude, poi.Longitude], {
-                radius: size,
-                fillColor: color,
-                color: 'white',
-                weight: isSelected ? 2 : 1,
-                fillOpacity: isSelected ? 1 : 0.7
-            }).bindPopup(createPOIPopup(poi), { maxWidth: 380 })
-            .addTo(map);
-            
-            // Add click handler for selection
-            marker.on('click', function(e) {
-                if (poiSelectionModeEnabled) {
-                    L.DomEvent.stopPropagation(e);
-                    selectPOI(poi, marker);
-                }
-            });
-            
-            const tooltipContent = `
-                <div style="text-align: center;">
-                    <b>${poi.Business_Name || poi.POI_ID}</b><br>
-                    <span style="font-size: 11px;">${poi.Sub_Category || poi.Category} • ${poi.City}</span><br>
-                    <span style="font-size: 11px; color: #667eea;">${formatNumber(poi.Monthly_Requirement_Liters)} L/month</span>
-                    ${isSelected ? '<br><span style="font-size: 10px; color: #FFD700; font-weight: 700;">⭐ SELECTED</span>' : ''}
-                </div>
-            `;
-            marker.bindTooltip(tooltipContent, {
-                permanent: false,
-                direction: 'top',
-                offset: [0, -5]
-            });
-            
-            mapMarkers.push(marker);
-        });
-    } else {
-        updateCurrentViewStats();
+        territoryPOIs = [];
+        updateTerritoryPanel();
+        document.getElementById('territoryPanel').style.display = 'none';
+        alert('✅ Territory cleared!');
     }
-    
-    // Draw distance lines
-    drawPlantDistributorLines();
-};
-
-// ============================================================
-// Enhanced Initialization
-// ============================================================
-
-// Store original initializeApp
-const originalInitializeAppFunction = initializeApp;
-
-// Enhanced initialization
-initializeApp = function() {
-    // Call original initialization
-    originalInitializeAppFunction();
-    
-    // Initialize enhanced features after a short delay
-    setTimeout(() => {
-        console.log('🚀 Initializing enhanced features...');
-        
-        try {
-            initializeDrawControls();
-            console.log('✅ Draw controls initialized');
-        } catch (error) {
-            console.error('❌ Error initializing draw controls:', error);
-        }
-        
-        // Initialize UI elements
-        updateSelectedPOIPanel();
-        updateTerritoryUI();
-        
-        console.log('✅ Enhanced features ready!');
-    }, 1000);
-};
-
-// ============================================================
-// Tab Switching Enhancement
-// ============================================================
-
-const originalSwitchTab = switchTab;
-
-switchTab = function(tabName) {
-    originalSwitchTab(tabName);
-    
-    // Update stats when switching to selection tab
-    if (tabName === 'selection') {
-        updateSelectedPOIPanel();
-        updateTerritoryUI();
-    }
-};
+}
 
 console.log('✅ Enhanced features loaded successfully!');
 console.log('📌 New Features Available:');
 console.log('   1. Multiple POI Selection - Select individual POIs by clicking');
 console.log('   2. Territory Definition - Draw custom areas and export all POIs within');
-// Start session timeout check
-setInterval(checkSessionTimeout, 5 * 60 * 1000);
-
-// Custom radius functions for plant circles
-function setRadius() {
-    const select = document.getElementById('radiusSelect');
-    const customGroup = document.getElementById('customRadiusGroup');
-    
-    if (select.value === 'custom') {
-        // Show custom input
-        if (customGroup) {
-            customGroup.style.display = 'block';
-        }
-    } else {
-        // Hide custom input and apply preset radius
-        if (customGroup) {
-            customGroup.style.display = 'none';
-        }
-        currentRadius = parseInt(select.value);
-        customRadiusEnabled = false;
-        updateMap();
-    }
-}
-
-function applyCustomRadius() {
-    const input = document.getElementById('customRadiusInput');
-    const value = parseInt(input.value);
-    
-    if (isNaN(value) || value < 1 || value > 300) {
-        alert('Please enter a valid radius between 1 and 300 KM');
-        return;
-    }
-    
-    currentRadius = value;
-    customRadiusEnabled = true;
-    
-    // Update the select to show "custom"
-    const select = document.getElementById('radiusSelect');
-    if (select) {
-        select.value = 'custom';
-    }
-    
-    alert(`✅ Custom radius applied: ${value} KM`);
-    updateMap();
-}
