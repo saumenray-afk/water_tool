@@ -1840,3 +1840,62 @@ function clearAllTerritories() {
 console.log('✅ Multiple territories support loaded!');
 console.log('📌 Features: Draw multiple territories, export all POIs combined');
 
+
+// ============================================================
+// SELECT ALL VISIBLE POIs (for Expansion tab)
+// ============================================================
+
+function selectAllVisiblePOIs() {
+    if (currentViewPOIs.length === 0) {
+        alert('❌ No POIs visible!\n\nPlease apply filters first to show POIs on the map.');
+        return;
+    }
+    
+    // Select all currently visible POIs
+    let newSelections = 0;
+    currentViewPOIs.forEach(poi => {
+        if (!selectedPOIs.has(poi.POI_ID)) {
+            selectedPOIs.add(poi.POI_ID);
+            newSelections++;
+        }
+    });
+    
+    updateSelectedPOIPanel();
+    updateExpansionSelectedCount();
+    updateMap(); // Refresh to show gold POIs
+    
+    alert(`✅ Selected ${newSelections} new POIs!\n\nTotal selected: ${selectedPOIs.size}\n\nThey're now highlighted in GOLD on the map.`);
+}
+
+// Update the expansion tab counter
+function updateExpansionSelectedCount() {
+    const countElem = document.getElementById('expansionSelectedCount');
+    if (countElem) {
+        countElem.textContent = selectedPOIs.size;
+    }
+}
+
+// Override updateSelectedPOIPanel to also update expansion counter
+const originalUpdateSelectedPOIPanel = updateSelectedPOIPanel;
+updateSelectedPOIPanel = function() {
+    originalUpdateSelectedPOIPanel();
+    updateExpansionSelectedCount();
+};
+
+// Override selectPOI to update expansion counter
+const originalSelectPOI = selectPOI;
+selectPOI = function(poiId) {
+    originalSelectPOI(poiId);
+    updateExpansionSelectedCount();
+};
+
+// Override clearSelectedPOIs to update expansion counter
+const originalClearSelectedPOIs = clearSelectedPOIs;
+clearSelectedPOIs = function() {
+    originalClearSelectedPOIs();
+    updateExpansionSelectedCount();
+};
+
+console.log('✅ Multiple selection in Expansion tab enabled!');
+console.log('📌 Select All Visible POIs button added');
+
