@@ -502,6 +502,7 @@
                     <button class="tab active" data-tab="overview">📊 Overview</button>
                     <button class="tab" data-tab="distributors">📦 Distributors</button>
                     <button class="tab" data-tab="expansion">🎯 Expansion</button>
+                    <button class="tab" data-tab="territory">🗺️ Territory Mgmt</button>
                 </div>
 
                 <div class="tab-content active" id="overview-tab">
@@ -760,6 +761,71 @@
                         </p>
                     </div>
                 </div>
+
+                <div class="tab-content" id="territory-tab">
+                    <div class="control-section">
+                        <div class="section-title">🗺️ Define Territory</div>
+                        <button class="action-btn" onclick="startDrawingTerritory()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            ✏️ Draw Territory on Map
+                        </button>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">
+                            💡 Use polygon or rectangle tool to draw territory boundaries on the map
+                        </p>
+                    </div>
+
+                    <div class="control-section" id="territoryAssignPanel" style="display: none;">
+                        <div class="section-title">📋 Territory Details</div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #333;">Territory Name:</label>
+                                <input type="text" id="territoryName" placeholder="e.g. North Bangalore" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #333;">Assign to Sales Person:</label>
+                                <input type="text" id="salesPerson" placeholder="e.g. Rajesh Kumar" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #333;">Contact Number:</label>
+                                <input type="tel" id="salesContact" placeholder="e.g. +91 9876543210" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #333;">Target (Monthly):</label>
+                                <input type="number" id="monthlyTarget" placeholder="e.g. 50000" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                            </div>
+                            
+                            <div style="background: white; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+                                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">POIs in Territory:</div>
+                                <div style="font-size: 20px; font-weight: 700; color: #667eea;" id="territoryPOICount">0</div>
+                            </div>
+                            
+                            <button class="action-btn" onclick="saveTerritory()" style="width: 100%; background: #28a745;">
+                                💾 Save Territory Assignment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📊 All Territories</div>
+                        <div id="territoriesList" style="max-height: 400px; overflow-y: auto;">
+                            <div style="text-align: center; padding: 20px; color: #999; font-size: 13px;">
+                                No territories defined yet. Click "Draw Territory" to start.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <div class="section-title">📥 Export Options</div>
+                        <button class="action-btn" onclick="exportTerritories()">
+                            📥 Export All Territories (CSV)
+                        </button>
+                        <button class="action-btn" onclick="exportTerritoryPOIs()">
+                            📥 Export All Territory POIs (CSV)
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div id="map"></div>
@@ -776,5 +842,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="app.js"></script>
+    <script src="territory_mgmt.js"></script>
 </body>
 </html>
