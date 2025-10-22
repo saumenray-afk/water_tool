@@ -635,7 +635,15 @@
                                 <option value="75">75 KM</option>
                                 <option value="100">100 KM</option>
                                 <option value="150">150 KM</option>
+                                <option value="custom">Custom Radius...</option>
                             </select>
+                        </div>
+                        <div class="control-group" id="customRadiusGroup" style="display: none;">
+                            <label for="customRadiusInput">Custom Plant Radius (KM)</label>
+                            <input type="number" id="customRadiusInput" value="50" min="1" max="300" placeholder="Enter radius in KM">
+                            <button class="action-btn" onclick="applyCustomRadius()" style="margin-top: 8px;">
+                                ✓ Apply Custom Radius
+                            </button>
                         </div>
                         <div class="control-group">
                             <label for="coverageRadius">Distributor Coverage Radius (KM)</label>
