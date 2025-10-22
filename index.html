@@ -748,106 +748,107 @@
             </div>
 
                 <div class="tab-content" id="selection-tab">
-                    <div class="info-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <strong>🎨 Advanced Selection Tools</strong><br>
-                        Select individual POIs or define custom territories for targeted analysis
+                    <div class="info-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 15px;">
+                        <strong style="font-size: 13px;">🎨 Selection Tools</strong><br>
+                        <span style="font-size: 11px; opacity: 0.95;">Click sections below to expand</span>
                     </div>
 
-                    <div class="control-section">
-                        <div class="section-title">📍 POI Selection</div>
-                        <label style="display: flex; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
-                            <input type="checkbox" id="poiSelectionMode" onchange="togglePOISelection()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span style="margin-left: 12px; font-weight: 600; font-size: 14px;">Enable POI Selection Mode</span>
-                        </label>
-                        <div style="margin-top: 8px; font-size: 12px; color: #666; padding-left: 12px;">
-                            Click POIs on map to select them (they turn gold ⭐)
+                    <!-- POI Selection Section - Collapsible -->
+                    <div class="control-section" style="margin-bottom: 10px;">
+                        <div onclick="toggleSection('poiSection')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(255,152,0,0.3);">
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px;">⭐ POI Selection</div>
+                                <div style="font-size: 11px; opacity: 0.9;" id="poiSelectionStatus">Click to expand</div>
+                            </div>
+                            <span id="poiSectionArrow" style="font-size: 18px; transition: transform 0.3s;">▼</span>
                         </div>
                         
-                        <div id="selectedPOIPanel" style="display: none; margin-top: 15px;">
-                            <div style="background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(255,152,0,0.3);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <div>
-                                        <div style="font-size: 12px; color: rgba(255,255,255,0.9); margin-bottom: 2px;">SELECTED POIS</div>
-                                        <div style="font-size: 24px; font-weight: 700; color: white;"><span id="selectedCount">0</span></div>
+                        <div id="poiSection" style="display: none; padding: 12px; background: #fff; border: 2px solid #FFC107; border-top: none; border-radius: 0 0 8px 8px;">
+                            <label style="display: flex; align-items: center; padding: 10px; background: #f8f9fa; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">
+                                <input type="checkbox" id="poiSelectionMode" onchange="togglePOISelection()" style="width: 16px; height: 16px; cursor: pointer;">
+                                <span style="margin-left: 10px; font-weight: 600; font-size: 13px;">Enable Selection Mode</span>
+                            </label>
+                            
+                            <div id="selectedPOIPanel" style="display: none;">
+                                <div style="background: #FFF3CD; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="font-size: 12px; font-weight: 600;">Selected: <span id="selectedCount" style="color: #FF9800; font-size: 16px; font-weight: 700;">0</span></div>
+                                        <button onclick="clearSelectedPOIs()" style="padding: 4px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">Clear</button>
                                     </div>
-                                    <button onclick="clearSelectedPOIs()" style="padding: 8px 14px; background: rgba(255,255,255,0.25); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.3s;">
-                                        🗑️ Clear All
+                                    
+                                    <div id="selectedPOIList" style="max-height: 100px; overflow-y: auto; margin-bottom: 8px; font-size: 11px;"></div>
+                                    
+                                    <button onclick="exportSelectedPOIs()" style="width: 100%; padding: 10px; background: #FF9800; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">
+                                        📥 Export Selected POIs
                                     </button>
                                 </div>
-                                
-                                <div id="selectedPOIList" style="max-height: 120px; overflow-y: auto; margin-bottom: 12px; padding-right: 5px;">
-                                    <div style="color: rgba(255,255,255,0.8); font-size: 12px; font-style: italic;">No POIs selected</div>
-                                </div>
-                                
-                                <button onclick="exportSelectedPOIs()" style="width: 100%; padding: 12px; background: white; color: #FF9800; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.3s;">
-                                    📥 Export Selected POIs to CSV
-                                </button>
+                            </div>
+                            
+                            <div style="font-size: 11px; color: #666; line-height: 1.4;">
+                                💡 Click POIs on map to select (they turn gold). Export to CSV.
                             </div>
                         </div>
                     </div>
 
-                    <div class="control-section">
-                        <div class="section-title">🗺️ Territory Planning</div>
-                        <div style="font-size: 12px; color: #666; margin-bottom: 12px; line-height: 1.5;">
-                            Draw custom polygons or rectangles to define territories. All POIs within the territory will be automatically identified.
-                        </div>
-                        
-                        <button onclick="enableTerritoryDrawing()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(102,126,234,0.4); transition: all 0.3s;">
-                            ✏️ Start Drawing Territory
-                        </button>
-                        
-                        <div id="territoryPanel" style="display: none; margin-top: 15px;">
-                            <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(23,162,184,0.3);">
-                                <div style="color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 8px; font-weight: 600;">TERRITORY ANALYSIS</div>
-                                
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px;">
-                                    <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; text-align: center;">
-                                        <div style="font-size: 20px; font-weight: 700; color: white;"><span id="territoryPOICount">0</span></div>
-                                        <div style="font-size: 11px; color: rgba(255,255,255,0.8);">POIs Found</div>
-                                    </div>
-                                    <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; text-align: center;">
-                                        <div style="font-size: 20px; font-weight: 700; color: white;"><span id="territoryArea">0</span></div>
-                                        <div style="font-size: 11px; color: rgba(255,255,255,0.8);">Area (km²)</div>
-                                    </div>
-                                </div>
-                                
-                                <button onclick="exportTerritoryPOIs()" style="width: 100%; padding: 12px; background: white; color: #17a2b8; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: all 0.3s;">
-                                    📥 Export Territory POIs
-                                </button>
-                                
-                                <button onclick="clearTerritory()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;">
-                                    🗑️ Clear Territory
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stats-panel" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: white;">📊 Selection Summary</div>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <span class="stat-value" id="totalVisiblePOIs">0</span>
-                                <span class="stat-label">Visible POIs</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="totalSelectedPOIs" style="color: #FFD700;">0</span>
-                                <span class="stat-label">Selected</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="totalTerritoryPOIs" style="color: #17a2b8;">0</span>
-                                <span class="stat-label">In Territory</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="control-section">
-                        <div class="section-title">💡 Quick Tips</div>
-                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.6;">
-                            <div style="margin-bottom: 8px;">
-                                <strong style="color: #FF9800;">⭐ POI Selection:</strong> Enable mode, click POIs (they turn gold), export list
-                            </div>
+                    <!-- Territory Section - Collapsible -->
+                    <div class="control-section" style="margin-bottom: 10px;">
+                        <div onclick="toggleSection('territorySection')" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(23,162,184,0.3);">
                             <div>
-                                <strong style="color: #667eea;">🗺️ Territory:</strong> Click Draw button, use tools in map corner, export POIs inside
+                                <div style="font-weight: 700; font-size: 13px;">🗺️ Territory Planning</div>
+                                <div style="font-size: 11px; opacity: 0.9;" id="territoryStatus">Click to expand</div>
+                            </div>
+                            <span id="territorySectionArrow" style="font-size: 18px; transition: transform 0.3s;">▼</span>
+                        </div>
+                        
+                        <div id="territorySection" style="display: none; padding: 12px; background: #fff; border: 2px solid #17a2b8; border-top: none; border-radius: 0 0 8px 8px;">
+                            <button onclick="enableTerritoryDrawing()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; margin-bottom: 10px;">
+                                ✏️ Start Drawing
+                            </button>
+                            
+                            <div id="territoryPanel" style="display: none;">
+                                <div style="background: #D1ECF1; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px;">
+                                        <div style="background: white; padding: 10px; border-radius: 6px; text-align: center;">
+                                            <div style="font-size: 18px; font-weight: 700; color: #17a2b8;"><span id="territoryPOICount">0</span></div>
+                                            <div style="font-size: 10px; color: #666;">POIs</div>
+                                        </div>
+                                        <div style="background: white; padding: 10px; border-radius: 6px; text-align: center;">
+                                            <div style="font-size: 18px; font-weight: 700; color: #17a2b8;"><span id="territoryArea">0</span></div>
+                                            <div style="font-size: 10px; color: #666;">km²</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button onclick="exportTerritoryPOIs()" style="width: 100%; padding: 10px; background: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; margin-bottom: 6px;">
+                                        📥 Export Territory POIs
+                                    </button>
+                                    
+                                    <button onclick="clearTerritory()" style="width: 100%; padding: 8px; background: white; color: #dc3545; border: 1px solid #dc3545; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px;">
+                                        🗑️ Clear
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 11px; color: #666; line-height: 1.4;">
+                                💡 Draw polygons/rectangles on map. Auto-calculates POIs inside.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compact Stats -->
+                    <div class="control-section">
+                        <div class="section-title" style="font-size: 12px;">📊 Quick Stats</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 10px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalVisiblePOIs">0</span></div>
+                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Visible</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%); padding: 10px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalSelectedPOIs">0</span></div>
+                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Selected</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); padding: 10px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 16px; font-weight: 700; color: white;"><span id="totalTerritoryPOIs">0</span></div>
+                                <div style="font-size: 9px; color: rgba(255,255,255,0.9);">Territory</div>
                             </div>
                         </div>
                     </div>
